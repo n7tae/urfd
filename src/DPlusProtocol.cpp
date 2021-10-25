@@ -1,27 +1,20 @@
-//
-//  cdplusprotocol.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 01/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -34,14 +27,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDplusProtocol::Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6)
+bool CDplusProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
 	// update time
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.start();
 
 	// done
 	return true;
@@ -166,13 +159,13 @@ void CDplusProtocol::Task(void)
 	HandleQueue();
 
 	// keep client alive
-	if ( m_LastKeepaliveTime.DurationSinceNow() > DPLUS_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > DPLUS_KEEPALIVE_PERIOD )
 	{
 		//
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 	}
 }
 
@@ -320,7 +313,7 @@ void CDplusProtocol::SendDvHeader(CDvHeaderPacket *packet, CDplusClient *client)
 			// clone the packet and patch it
 			CDvHeaderPacket packet2(*((CDvHeaderPacket *)packet));
 			CCallsign rpt2 = packet2.GetRpt2Callsign();
-			rpt2.PatchCallsign(0, (const uint8 *)"XRF", 3);
+			rpt2.PatchCallsign(0, (const uint8_t *)"XRF", 3);
 			packet2.SetRpt2Callsign(rpt2);
 
 			// encode it
@@ -392,13 +385,13 @@ void CDplusProtocol::HandleKeepalives(void)
 
 bool CDplusProtocol::IsValidConnectPacket(const CBuffer &Buffer)
 {
-	uint8 tag[] = { 0x05,0x00,0x18,0x00,0x01 };
+	uint8_t tag[] = { 0x05,0x00,0x18,0x00,0x01 };
 	return (Buffer == CBuffer(tag, sizeof(tag)));
 }
 
 bool CDplusProtocol::IsValidLoginPacket(const CBuffer &Buffer, CCallsign *Callsign)
 {
-	uint8 Tag[] = { 0x1C,0xC0,0x04,0x00 };
+	uint8_t Tag[] = { 0x1C,0xC0,0x04,0x00 };
 	bool valid = false;
 
 	if ( (Buffer.size() == 28) &&(::memcmp(Buffer.data(), Tag, sizeof(Tag)) == 0) )
@@ -411,22 +404,22 @@ bool CDplusProtocol::IsValidLoginPacket(const CBuffer &Buffer, CCallsign *Callsi
 
 bool CDplusProtocol::IsValidDisconnectPacket(const CBuffer &Buffer)
 {
-	uint8 tag[] = { 0x05,0x00,0x18,0x00,0x00 };
+	uint8_t tag[] = { 0x05,0x00,0x18,0x00,0x00 };
 	return (Buffer == CBuffer(tag, sizeof(tag)));
 }
 
 bool CDplusProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer)
 {
-	uint8 tag[] = { 0x03,0x60,0x00 };
+	uint8_t tag[] = { 0x03,0x60,0x00 };
 	return (Buffer == CBuffer(tag, sizeof(tag)));
 }
 
 bool CDplusProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header)
 {
-	if ( 58==Buffer.size() && 0x3AU==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0==Buffer.Compare((uint8 *)"DSVT", 2, 4) && 0x10U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
+	if ( 58==Buffer.size() && 0x3AU==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0==Buffer.Compare((uint8_t *)"DSVT", 2, 4) && 0x10U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
 	{
 		// create packet
-		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[17]), *((uint16 *)&(Buffer.data()[14])), 0x80));
+		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[17]), *((uint16_t *)&(Buffer.data()[14])), 0x80));
 		// check validity of packet
 		if ( header && header->IsValid() )
 			return true;
@@ -436,10 +429,10 @@ bool CDplusProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_pt
 
 bool CDplusProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	if ( 29==Buffer.size() && 0x1DU==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0==Buffer.Compare((uint8 *)"DSVT", 2, 4) && 0x20U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
+	if ( 29==Buffer.size() && 0x1DU==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0==Buffer.Compare((uint8_t *)"DSVT", 2, 4) && 0x20U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[17]), *((uint16 *)&(Buffer.data()[14])), Buffer.data()[16]));
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[17]), *((uint16_t *)&(Buffer.data()[14])), Buffer.data()[16]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -449,10 +442,10 @@ bool CDplusProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr
 
 bool CDplusProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
 {
-	if ( 32==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 2, 4) && 0x20U==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0x20U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
+	if ( 32==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 2, 4) && 0x20U==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0x20U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[17]), *((uint16 *)&(Buffer.data()[14])), Buffer.data()[16]));
+		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[17]), *((uint16_t *)&(Buffer.data()[14])), Buffer.data()[16]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -466,53 +459,53 @@ bool CDplusProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique
 
 void CDplusProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 0x03,0x60,0x00 };
+	uint8_t tag[] = { 0x03,0x60,0x00 };
 	Buffer->Set(tag, sizeof(tag));
 }
 
 void CDplusProtocol::EncodeLoginAckPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 0x08,0xC0,0x04,0x00,'O','K','R','W' };
+	uint8_t tag[] = { 0x08,0xC0,0x04,0x00,'O','K','R','W' };
 	Buffer->Set(tag, sizeof(tag));
 }
 
 void CDplusProtocol::EncodeLoginNackPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 0x08,0xC0,0x04,0x00,'B','U','S','Y' };
+	uint8_t tag[] = { 0x08,0xC0,0x04,0x00,'B','U','S','Y' };
 	Buffer->Set(tag, sizeof(tag));
 }
 
 void CDplusProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 0x05,0x00,0x18,0x00,0x00 };
+	uint8_t tag[] = { 0x05,0x00,0x18,0x00,0x00 };
 	Buffer->Set(tag, sizeof(tag));
 }
 
 
 bool CDplusProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[]	= { 0x3A,0x80,0x44,0x53,0x56,0x54,0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[]	= { 0x3A,0x80,0x44,0x53,0x56,0x54,0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)0x80);
-	Buffer->Append((uint8 *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer->Append((uint8_t)0x80);
+	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
 bool CDplusProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[] = { 0x1D,0x80,0x44,0x53,0x56,0x54,0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[] = { 0x1D,0x80,0x44,0x53,0x56,0x54,0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)(Packet.GetPacketId() % 21));
-	Buffer->Append((uint8 *)Packet.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8 *)Packet.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
+	Buffer->Append((uint8_t *)Packet.GetAmbe(), AMBE_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetDvData(), DVDATA_SIZE);
 
 	return true;
 
@@ -520,12 +513,12 @@ bool CDplusProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *
 
 bool CDplusProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag1[] = { 0x20,0x80,0x44,0x53,0x56,0x54,0x20,0x00,0x81,0x00,0x20,0x00,0x01,0x02 };
-	uint8 tag2[] = { 0x55,0xC8,0x7A,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x25,0x1A,0xC6 };
+	uint8_t tag1[] = { 0x20,0x80,0x44,0x53,0x56,0x54,0x20,0x00,0x81,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x25,0x1A,0xC6 };
 
 	Buffer->Set(tag1, sizeof(tag1));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)((Packet.GetPacketId() % 21) | 0x40));
+	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
 	Buffer->Append(tag2, sizeof(tag2));
 
 	return true;

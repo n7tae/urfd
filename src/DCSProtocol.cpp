@@ -1,46 +1,39 @@
-//
-//  cdcsprotocol.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 07/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
 #include "DCSClient.h"
-#include "cdcsprotocol.h"
+#include "DCSProtocol.h"
 #include "Reflector.h"
 #include "GateKeeper.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDcsProtocol::Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6)
+bool CDcsProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
 	// update time
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.start();
 
 	// done
 	return true;
@@ -178,13 +171,13 @@ void CDcsProtocol::Task(void)
 	HandleQueue();
 
 	// keep client alive
-	if ( m_LastKeepaliveTime.DurationSinceNow() > DCS_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > DCS_KEEPALIVE_PERIOD )
 	{
 		//
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 	}
 }
 
@@ -392,23 +385,23 @@ bool CDcsProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *call
 
 bool CDcsProtocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header, std::unique_ptr<CDvFramePacket> &frame)
 {
-	uint8 tag[] = { '0','0','0','1' };
+	uint8_t tag[] = { '0','0','0','1' };
 
 	if ( (Buffer.size() >= 100) && (Buffer.Compare(tag, sizeof(tag)) == 0) )
 	{
 		// get the header
-		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[4]), *((uint16 *)&(Buffer.data()[43])), 0x80));
+		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[4]), *((uint16_t *)&(Buffer.data()[43])), 0x80));
 
 		// get the frame
 		if ( Buffer.data()[45] & 0x40U )
 		{
 			// it's the last frame
-			frame = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[46]), *((uint16 *)&(Buffer.data()[43])), Buffer.data()[45]));
+			frame = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
 		}
 		else
 		{
 			// it's a regular DV frame
-			frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[46]), *((uint16 *)&(Buffer.data()[43])), Buffer.data()[45]));
+			frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
 		}
 
 		// check validity of packets
@@ -420,7 +413,7 @@ bool CDcsProtocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHea
 
 bool CDcsProtocol::IsIgnorePacket(const CBuffer &Buffer)
 {
-	uint8 tag[] = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, };
+	uint8_t tag[] = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, };
 
 	if ( Buffer.size() == 15 && Buffer.Compare(tag, sizeof(tag)) == 0 )
 		return true;
@@ -438,75 +431,75 @@ void CDcsProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
 
 void CDcsProtocol::EncodeKeepAlivePacket(CBuffer *Buffer, std::shared_ptr<CClient>Client)
 {
-	uint8 tag[] = { 0x0A,0x00,0x20,0x20 };
+	uint8_t tag[] = { 0x0A,0x00,0x20,0x20 };
 
-	Buffer->Set((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN-1);
-	Buffer->Append((uint8)Client->GetReflectorModule());
-	Buffer->Append((uint8)' ');
-	Buffer->Append((uint8 *)(const char *)Client->GetCallsign(), CALLSIGN_LEN-1);
-	Buffer->Append((uint8)Client->GetModule());
-	Buffer->Append((uint8)Client->GetModule());
+	Buffer->Set((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN-1);
+	Buffer->Append((uint8_t)Client->GetReflectorModule());
+	Buffer->Append((uint8_t)' ');
+	Buffer->Append((uint8_t *)(const char *)Client->GetCallsign(), CALLSIGN_LEN-1);
+	Buffer->Append((uint8_t)Client->GetModule());
+	Buffer->Append((uint8_t)Client->GetModule());
 	Buffer->Append(tag, sizeof(tag));
 }
 
 void CDcsProtocol::EncodeConnectAckPacket(const CCallsign &Callsign, char ReflectorModule, CBuffer *Buffer)
 {
-	uint8 tag[] = { 'A','C','K',0x00 };
-	uint8 cs[CALLSIGN_LEN];
+	uint8_t tag[] = { 'A','C','K',0x00 };
+	uint8_t cs[CALLSIGN_LEN];
 
 	Callsign.GetCallsign(cs);
 	Buffer->Set(cs, CALLSIGN_LEN-1);
-	Buffer->Append((uint8)' ');
-	Buffer->Append((uint8)Callsign.GetModule());
-	Buffer->Append((uint8)ReflectorModule);
+	Buffer->Append((uint8_t)' ');
+	Buffer->Append((uint8_t)Callsign.GetModule());
+	Buffer->Append((uint8_t)ReflectorModule);
 	Buffer->Append(tag, sizeof(tag));
 }
 
 void CDcsProtocol::EncodeConnectNackPacket(const CCallsign &Callsign, char ReflectorModule, CBuffer *Buffer)
 {
-	uint8 tag[] = { 'N','A','K',0x00 };
-	uint8 cs[CALLSIGN_LEN];
+	uint8_t tag[] = { 'N','A','K',0x00 };
+	uint8_t cs[CALLSIGN_LEN];
 
 	Callsign.GetCallsign(cs);
 	Buffer->Set(cs, CALLSIGN_LEN-1);
-	Buffer->Append((uint8)' ');
-	Buffer->Append((uint8)Callsign.GetModule());
-	Buffer->Append((uint8)ReflectorModule);
+	Buffer->Append((uint8_t)' ');
+	Buffer->Append((uint8_t)Callsign.GetModule());
+	Buffer->Append((uint8_t)ReflectorModule);
 	Buffer->Append(tag, sizeof(tag));
 }
 
 void CDcsProtocol::EncodeDisconnectPacket(CBuffer *Buffer, std::shared_ptr<CClient>Client)
 {
-	Buffer->Set((uint8 *)(const char *)Client->GetCallsign(), CALLSIGN_LEN-1);
-	Buffer->Append((uint8)' ');
-	Buffer->Append((uint8)Client->GetModule());
-	Buffer->Append((uint8)0x00);
-	Buffer->Append((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN-1);
-	Buffer->Append((uint8)' ');
-	Buffer->Append((uint8)0x00);
+	Buffer->Set((uint8_t *)(const char *)Client->GetCallsign(), CALLSIGN_LEN-1);
+	Buffer->Append((uint8_t)' ');
+	Buffer->Append((uint8_t)Client->GetModule());
+	Buffer->Append((uint8_t)0x00);
+	Buffer->Append((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN-1);
+	Buffer->Append((uint8_t)' ');
+	Buffer->Append((uint8_t)0x00);
 }
 
-void CDcsProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32 iSeq, CBuffer *Buffer) const
+void CDcsProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer *Buffer) const
 {
-	uint8 tag[] = { '0','0','0','1' };
+	uint8_t tag[] = { '0','0','0','1' };
 	struct dstar_header DstarHeader;
 
 	Header.ConvertToDstarStruct(&DstarHeader);
 
 	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append((uint8 *)&DstarHeader, sizeof(struct dstar_header) - sizeof(uint16));
+	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header) - sizeof(uint16_t));
 	Buffer->Append(DvFrame.GetStreamId());
-	Buffer->Append((uint8)(DvFrame.GetPacketId() % 21));
-	Buffer->Append((uint8 *)DvFrame.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8 *)DvFrame.GetDvData(), DVDATA_SIZE);
-	Buffer->Append((uint8)((iSeq >> 0) & 0xFF));
-	Buffer->Append((uint8)((iSeq >> 8) & 0xFF));
-	Buffer->Append((uint8)((iSeq >> 16) & 0xFF));
-	Buffer->Append((uint8)0x01);
-	Buffer->Append((uint8)0x00, 38);
+	Buffer->Append((uint8_t)(DvFrame.GetPacketId() % 21));
+	Buffer->Append((uint8_t *)DvFrame.GetAmbe(), AMBE_SIZE);
+	Buffer->Append((uint8_t *)DvFrame.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t)((iSeq >> 0) & 0xFF));
+	Buffer->Append((uint8_t)((iSeq >> 8) & 0xFF));
+	Buffer->Append((uint8_t)((iSeq >> 16) & 0xFF));
+	Buffer->Append((uint8_t)0x01);
+	Buffer->Append((uint8_t)0x00, 38);
 }
 
-void CDcsProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32 iSeq, CBuffer *Buffer) const
+void CDcsProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer *Buffer) const
 {
 	EncodeDvPacket(Header, DvFrame, iSeq, Buffer);
 	(Buffer->data())[45] |= 0x40;

@@ -1,29 +1,22 @@
-//
-//  Callsign.h
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 31/10/2015.
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+///  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-#ifndef ccallsign_h
-#define ccallsign_h
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define
@@ -40,7 +33,7 @@ class CCallsign
 public:
 	// contructors
 	CCallsign();
-	CCallsign(const char *, uint32 = 0);
+	CCallsign(const char *, uint32_t = 0);
 
 	// status
 	bool IsValid(void) const;
@@ -49,25 +42,25 @@ public:
 
 	// set
 	void SetCallsign(const char *, bool = true);
-	void SetCallsign(const uint8 *, int, bool = true);
+	void SetCallsign(const uint8_t *, int, bool = true);
 #ifndef NO_XLX
-	void SetDmrid(uint32, bool = true);
-	void SetDmrid(const uint8 *, bool = true);
+	void SetDmrid(uint32_t, bool = true);
+	void SetDmrid(const uint8_t *, bool = true);
 #endif
 	void SetModule(char);
 	void SetSuffix(const char *);
-	void SetSuffix(const uint8 *, int);
+	void SetSuffix(const uint8_t *, int);
 
 	// modify
-	void PatchCallsign(int, const uint8 *, int);
+	void PatchCallsign(int, const uint8_t *, int);
 
 	// get
-	void GetCallsign(uint8 *) const;
+	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
 #ifndef NO_XLX
-	uint32 GetDmrid(void) const             { return m_uiDmrid; }
+	uint32_t GetDmrid(void) const             { return m_uiDmrid; }
 #endif
-	void GetSuffix(uint8 *) const;
+	void GetSuffix(uint8_t *) const;
 	char GetModule(void) const              { return m_Module; }
 
 	// compare
@@ -93,9 +86,6 @@ protected:
 	char    m_Module;
 	mutable char	m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
 #ifndef NO_XLX
-	uint32  m_uiDmrid;
+	uint32_t  m_uiDmrid;
 #endif
 };
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* ccallsign_h */

@@ -1,31 +1,22 @@
-//
-//  YSFProtocol.h
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 20/05/2018.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef cysfprotocol_h
-#define cysfprotocol_h
-
+#pragma once
 
 #include "Timer.h"
 #include "DCSProtocol.h"
@@ -34,7 +25,7 @@
 #include "DVLastFramePacket.h"
 #include "YSFDefines.h"
 #include "YSFFich.h"
-#include "WiresXCmdInc.h"
+#include "WiresXInfo.h"
 #include "WiresXCmdHandler.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +55,7 @@ public:
 	CDvHeaderPacket m_dvHeader;
 	CDvFramePacket  m_dvFrames[5];
 
-	//uint8  m_uiSeqId;
+	//uint8_t  m_uiSeqId;
 };
 
 class CYsfProtocol : public CProtocol
@@ -74,7 +65,7 @@ public:
 	CYsfProtocol();
 
 	// initialization
-	bool Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6);
+	bool Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 	void Close(void);
 
 	// task
@@ -111,13 +102,13 @@ protected:
 
 	// server status packet decoding helpers
 	bool IsValidServerStatusPacket(const CBuffer &) const;
-	uint32 CalcHash(const uint8 *, int) const;
+	uint32_t CalcHash(const uint8_t *, int) const;
 
 	// server status packet encoding helpers
 	bool EncodeServerStatusPacket(CBuffer *) const;
 
 	// uiStreamId helpers
-	uint32 IpToStreamId(const CIp &) const;
+	uint32_t IpToStreamId(const CIp &) const;
 
 	// debug
 	bool DebugTestDecodePacket(const CBuffer &);
@@ -127,7 +118,7 @@ protected:
 
 protected:
 	// for keep alive
-	CTimePoint          m_LastKeepaliveTime;
+	CTimer m_LastKeepaliveTime;
 
 	// for queue header caches
 	std::array<CYsfStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;
@@ -136,6 +127,3 @@ protected:
 	CWiresxCmdHandler   m_WiresxCmdHandler;
 	unsigned char m_seqNo;
 };
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* cysfprotocol_h */

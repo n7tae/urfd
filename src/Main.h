@@ -1,30 +1,22 @@
-//
-//  Main.h
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 31/10/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Eary, N7TAE
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
-#ifndef main_h
-#define main_h
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
 
 #include <atomic>
 #include <vector>
@@ -209,26 +201,18 @@
 #define PIDFILE_PATH                    "/var/run/xlxd.pid"
 #endif
 
-////////////////////////////////////////////////////////////////////////////////////////
-// typedefs
-
-typedef unsigned char           uint8;
-typedef unsigned short          uint16;
-typedef unsigned int            uint32;
-typedef unsigned int            uint;
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // macros
 
 #define MIN(a,b) 				((a)<(b))?(a):(b)
 #define MAX(a,b) 				((a)>(b))?(a):(b)
-#define MAKEWORD(low, high)		((uint16)(((uint8)(low)) | (((uint16)((uint8)(high))) << 8)))
-#define MAKEDWORD(low, high)	((uint32)(((uint16)(low)) | (((uint32)((uint16)(high))) << 16)))
-#define LOBYTE(w)				((uint8)(uint16)(w & 0x00FF))
-#define HIBYTE(w)				((uint8)((((uint16)(w)) >> 8) & 0xFF))
-#define LOWORD(dw)				((uint16)(uint32)(dw & 0x0000FFFF))
-#define HIWORD(dw)				((uint16)((((uint32)(dw)) >> 16) & 0xFFFF))
+#define MAKEWORD(low, high)		((uint16_t)(((uint8_t)(low)) | (((uint16_t)((uint8_t)(high))) << 8)))
+#define MAKEDWORD(low, high)	((uint32_t)(((uint16_t)(low)) | (((uint32_t)((uint16_t)(high))) << 16)))
+#define LOBYTE(w)				((uint8_t)(uint16_t)(w & 0x00FF))
+#define HIBYTE(w)				((uint8_t)((((uint16_t)(w)) >> 8) & 0xFF))
+#define LOWORD(dw)				((uint16_t)(uint32_t)(dw & 0x0000FFFF))
+#define HIWORD(dw)				((uint16_t)((((uint32_t)(dw)) >> 16) & 0xFFFF))
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // global objects
@@ -259,7 +243,3 @@ extern CYsfNodeDirFile   g_YsfNodeDir;
 class CTranscoder;
 extern CTranscoder g_Transcoder;
 #endif
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* main_h */

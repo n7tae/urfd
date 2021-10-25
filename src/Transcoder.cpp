@@ -1,26 +1,20 @@
-//
-//  ctranscoder.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 13/04/2017.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include "Reflector.h"
@@ -48,8 +42,8 @@ CTranscoder::CTranscoder()
 {
 	keep_running = true;
 	m_bConnected = false;
-	m_LastKeepaliveTime.Now();
-	m_LastActivityTime.Now();
+	m_LastKeepaliveTime.start();
+	m_LastActivityTime.start();
 	m_bStreamOpened = false;
 	m_StreamidOpenStream = 0;
 	m_PortOpenStream = 0;
@@ -147,14 +141,14 @@ void CTranscoder::Task(void)
 {
 	CBuffer     Buffer;
 	CIp         Ip;
-	uint16      StreamId;
-	uint16      Port;
+	uint16_t      StreamId;
+	uint16_t      Port;
 
 	// anything coming in from codec server ?
 	//if ( (m_Socket.Receive(&Buffer, &Ip, 20) != -1) && (Ip == m_Ip) )
 	if ( m_Socket.Receive(Buffer, Ip, 20) )
 	{
-		m_LastActivityTime.Now();
+		m_LastActivityTime.start();
 
 		// crack packet
 		if ( IsValidStreamDescrPacket(Buffer, &StreamId, &Port) )
@@ -182,20 +176,20 @@ void CTranscoder::Task(void)
 	}
 
 	// keep client alive
-	if ( m_LastKeepaliveTime.DurationSinceNow() > TRANSCODER_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > TRANSCODER_KEEPALIVE_PERIOD )
 	{
 		//
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // manage streams
 
-std::shared_ptr<CCodecStream> CTranscoder::GetCodecStream(CPacketStream *PacketStream, uint8 uiCodecIn)
+std::shared_ptr<CCodecStream> CTranscoder::GetCodecStream(CPacketStream *PacketStream, uint8_t uiCodecIn)
 {
 	CBuffer     Buffer;
 
@@ -315,7 +309,7 @@ void CTranscoder::HandleKeepalives(void)
 	m_Socket.Send(keepalive, m_Ip, TRANSCODER_PORT);
 
 	// check if still with us
-	if ( m_bConnected && (m_LastActivityTime.DurationSinceNow() >= TRANSCODER_KEEPALIVE_TIMEOUT) )
+	if ( m_bConnected && (m_LastActivityTime.time() >= TRANSCODER_KEEPALIVE_TIMEOUT) )
 	{
 		// no, disconnect
 		m_bConnected = false;
@@ -328,7 +322,7 @@ void CTranscoder::HandleKeepalives(void)
 
 bool CTranscoder::IsValidKeepAlivePacket(const CBuffer &Buffer)
 {
-	uint8 tag[] = { 'A','M','B','E','D','P','O','N','G' };
+	uint8_t tag[] = { 'A','M','B','E','D','P','O','N','G' };
 
 	bool valid = false;
 	if ( (Buffer.size() == 9) && (Buffer.Compare(tag, sizeof(tag)) == 0) )
@@ -338,17 +332,17 @@ bool CTranscoder::IsValidKeepAlivePacket(const CBuffer &Buffer)
 	return valid;
 }
 
-bool CTranscoder::IsValidStreamDescrPacket(const CBuffer &Buffer, uint16 *Id, uint16 *Port)
+bool CTranscoder::IsValidStreamDescrPacket(const CBuffer &Buffer, uint16_t *Id, uint16_t *Port)
 {
-	uint8 tag[] = { 'A','M','B','E','D','S','T','D' };
+	uint8_t tag[] = { 'A','M','B','E','D','S','T','D' };
 
 	bool valid = false;
 	if ( (Buffer.size() == 14) && (Buffer.Compare(tag, sizeof(tag)) == 0) )
 	{
-		*Id = *(uint16 *)(&Buffer.data()[8]);
-		*Port = *(uint16 *)(&Buffer.data()[10]);
-		// uint8 CodecIn = Buffer.data()[12];
-		// uint8 CodecOut = Buffer.data()[13];
+		*Id = *(uint16_t *)(&Buffer.data()[8]);
+		*Port = *(uint16_t *)(&Buffer.data()[10]);
+		// uint8_t CodecIn = Buffer.data()[12];
+		// uint8_t CodecOut = Buffer.data()[13];
 		valid = true;
 	}
 	return valid;
@@ -356,7 +350,7 @@ bool CTranscoder::IsValidStreamDescrPacket(const CBuffer &Buffer, uint16 *Id, ui
 
 bool CTranscoder::IsValidNoStreamAvailablePacket(const CBuffer&Buffer)
 {
-	uint8 tag[] = { 'A','M','B','E','D','B','U','S','Y' };
+	uint8_t tag[] = { 'A','M','B','E','D','B','U','S','Y' };
 
 	return  ( (Buffer.size() == 9) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
 }
@@ -367,26 +361,26 @@ bool CTranscoder::IsValidNoStreamAvailablePacket(const CBuffer&Buffer)
 
 void CTranscoder::EncodeKeepAlivePacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 'A','M','B','E','D','P','I','N','G' };
+	uint8_t tag[] = { 'A','M','B','E','D','P','I','N','G' };
 
 	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append((uint8 *)(const char *)g_Reflector.GetCallsign(), CALLSIGN_LEN);
+	Buffer->Append((uint8_t *)(const char *)g_Reflector.GetCallsign(), CALLSIGN_LEN);
 }
 
-void CTranscoder::EncodeOpenstreamPacket(CBuffer *Buffer, uint8 uiCodecIn, uint8 uiCodecOut)
+void CTranscoder::EncodeOpenstreamPacket(CBuffer *Buffer, uint8_t uiCodecIn, uint8_t uiCodecOut)
 {
-	uint8 tag[] = { 'A','M','B','E','D','O','S' };
+	uint8_t tag[] = { 'A','M','B','E','D','O','S' };
 
 	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append((uint8 *)(const char *)g_Reflector.GetCallsign(), CALLSIGN_LEN);
-	Buffer->Append((uint8)uiCodecIn);
-	Buffer->Append((uint8)uiCodecOut);
+	Buffer->Append((uint8_t *)(const char *)g_Reflector.GetCallsign(), CALLSIGN_LEN);
+	Buffer->Append((uint8_t)uiCodecIn);
+	Buffer->Append((uint8_t)uiCodecOut);
 }
 
-void CTranscoder::EncodeClosestreamPacket(CBuffer *Buffer, uint16 uiStreamId)
+void CTranscoder::EncodeClosestreamPacket(CBuffer *Buffer, uint16_t uiStreamId)
 {
-	uint8 tag[] = { 'A','M','B','E','D','C','S' };
+	uint8_t tag[] = { 'A','M','B','E','D','C','S' };
 
 	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append((uint16)uiStreamId);
+	Buffer->Append((uint16_t)uiStreamId);
 }

@@ -1,37 +1,30 @@
-//
-//  creflector.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 31/10/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
 #include "Reflector.h"
 #include "GateKeeper.h"
-#include "cdmriddirfile.h"
+#include "DMRIdDirFile.h"
 #include "DMRIdDirHttp.h"
 #include "Transcoder.h"
 #include "YSFNodeDirFile.h"
-#include "YSFNodeDirhttp.h"
+#include "YSFNodeDirHttp.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -243,7 +236,7 @@ void CReflector::CloseStream(CPacketStream *stream)
 			bEmpty = stream->empty();
 			stream->Unlock();
 			if ( !bEmpty )
-				CTimePoint::TaskSleepFor(10);
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 		while (!bEmpty);
 
@@ -282,7 +275,7 @@ void CReflector::CloseStream(CPacketStream *stream)
 void CReflector::RouterThread(CPacketStream *streamIn)
 {
 	// get our module
-	uint8 uiModuleId = GetStreamModule(streamIn);
+	uint8_t uiModuleId = GetStreamModule(streamIn);
 
 	// get on input queue
 	std::unique_ptr<CPacket> packet;
@@ -334,7 +327,7 @@ void CReflector::RouterThread(CPacketStream *streamIn)
 		}
 		else
 		{
-			CTimePoint::TaskSleepFor(10);
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
 }
@@ -366,7 +359,7 @@ void CReflector::XmlReportThread()
 
 		// and wait a bit
 		for (int i=0; i< XML_UPDATE_PERIOD && keep_running; i++)
-			CTimePoint::TaskSleepFor(1000);
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }
 
@@ -391,7 +384,7 @@ void CReflector::JsonReportThread()
 			if ( Socket.Receive(Buffer, Ip, 50) )
 			{
 				// check verb
-				if ( Buffer.Compare((uint8 *)"hello", 5) == 0 )
+				if ( Buffer.Compare((uint8_t *)"hello", 5) == 0 )
 				{
 					std::cout << "Monitor socket connected with " << Ip << std::endl;
 
@@ -405,7 +398,7 @@ void CReflector::JsonReportThread()
 					SendJsonNodesObject(Socket, Ip);
 					SendJsonStationsObject(Socket, Ip);
 				}
-				else if ( Buffer.Compare((uint8 *)"bye", 3) == 0 )
+				else if ( Buffer.Compare((uint8_t *)"bye", 3) == 0 )
 				{
 					std::cout << "Monitor socket disconnected" << std::endl;
 
@@ -451,7 +444,7 @@ void CReflector::JsonReportThread()
 				case NOTIFICATION_NONE:
 				default:
 					// nothing to do, just sleep a bit
-					CTimePoint::TaskSleepFor(250);
+					std::this_thread::sleep_for(std::chrono::milliseconds(250);
 					break;
 				}
 			}
@@ -623,7 +616,7 @@ void CReflector::SendJsonReflectorObject(CUdpSocket &Socket, CIp &Ip)
 	char mod[8] = "\"A\"";
 
 	// get reflector callsign
-	m_Callsign.GetCallsign((uint8 *)cs);
+	m_Callsign.GetCallsign((uint8_t *)cs);
 	cs[CALLSIGN_LEN] = 0;
 
 	// build string

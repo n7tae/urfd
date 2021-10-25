@@ -1,30 +1,22 @@
-//
-//  DCSProtocol.h
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 01/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
-#ifndef cprotocol_h
-#define cprotocol_h
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
 
 #include "UDPSocket.h"
 #include "PacketStream.h"
@@ -77,7 +69,7 @@ public:
 	virtual ~CProtocol();
 
 	// initialization
-	virtual bool Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6);
+	virtual bool Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 	virtual void Close(void);
 
 	// queue
@@ -104,7 +96,7 @@ protected:
 	virtual void OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &, const CIp * = nullptr);
 
 	// stream handle helpers
-	CPacketStream *GetStream(uint16, const CIp * = nullptr);
+	CPacketStream *GetStream(uint16_t, const CIp * = nullptr);
 	void CheckStreamsTimeout(void);
 
 	// queue helper
@@ -119,8 +111,8 @@ protected:
 	bool IsSpace(char) const;
 
 	// dmr DstId to Module helper
-	virtual char DmrDstIdToModule(uint32) const;
-	virtual uint32 ModuleToDmrDestId(char) const;
+	virtual char DmrDstIdToModule(uint32_t) const;
+	virtual uint32_t ModuleToDmrDestId(char) const;
 
 	bool Receive6(CBuffer &buf, CIp &Ip, int time_ms);
 	bool Receive4(CBuffer &buf, CIp &Ip, int time_ms);
@@ -128,8 +120,8 @@ protected:
 
 	void Send(const CBuffer &buf, const CIp &Ip) const;
 	void Send(const char    *buf, const CIp &Ip) const;
-	void Send(const CBuffer &buf, const CIp &Ip, uint16 port) const;
-	void Send(const char    *buf, const CIp &Ip, uint16 port) const;
+	void Send(const CBuffer &buf, const CIp &Ip, uint16_t port) const;
+	void Send(const char    *buf, const CIp &Ip, uint16_t port) const;
 
 	// socket
 	CUdpSocket m_Socket4;
@@ -149,8 +141,5 @@ protected:
 	CCallsign       m_ReflectorCallsign;
 
 	// debug
-	CTimePoint      m_DebugTimer;
+	CTimer      m_DebugTimer;
 };
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* cprotocol_h */

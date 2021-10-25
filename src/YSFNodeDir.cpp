@@ -1,26 +1,20 @@
-//
-//  cysfnodedir.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 08/10/2019.
 //  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include <mysql/mysql.h>
@@ -80,7 +74,7 @@ void CYsfNodeDir::Thread()
 		// Wait YSFNODEDB_REFRESH_RATE minutes
 		for (int i=0; keep_running && (i < 30*YSFNODEDB_REFRESH_RATE); i++)
 		{
-			CTimePoint::TaskSleepFor(2000);
+			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 #if YSF_DB_SUPPORT==true
 			if (keep_running && (0 == i % 450))
 			{
@@ -116,7 +110,7 @@ bool CYsfNodeDir::Reload(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // find
 
-bool CYsfNodeDir::FindFrequencies(const CCallsign &callsign, uint32 *txfreq, uint32 *rxfreq)
+bool CYsfNodeDir::FindFrequencies(const CCallsign &callsign, uint32_t *txfreq, uint32_t *rxfreq)
 {
 	auto found = find(callsign);
 	if ( found != end() )

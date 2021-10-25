@@ -16,8 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(YSFConvolution_H)
-#define  YSFConvolution_H
+#pragma once
 
 #include "YSFConvolution.h"
 
@@ -35,12 +34,10 @@ public:
 	void encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const;
 
 private:
-	uint16_t m_metrics1[16];
-	uint16_t m_metrics2[16];
-	uint16_t* m_oldMetrics;
-	uint16_t* m_newMetrics;
-	uint64_t m_decisions[180];
-	uint64_t* m_dp;
+	uint16_t  m_metrics1[16];
+	uint16_t  m_metrics2[16];
+	uint16_t *m_oldMetrics;
+	uint16_t *m_newMetrics;
+	uint64_t  m_decisions[180];
+	uint64_t *m_dp;
 };
-
-#endif

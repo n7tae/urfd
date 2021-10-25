@@ -1,27 +1,20 @@
-//
-//  cg3protocol.cpp
-//  xlxd
-//
-//  Created by Marius Petrescu (YO2LOJ) on 03/06/2019.
 //  Copyright © 2019 Marius Petrescu (YO2LOJ). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -38,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CG3Protocol::Initialize(const char */*type*/, const int /*type*/, const uint16 /*port*/, const bool /*has_ipv4*/, const bool /*has_ipv6*/)
+bool CG3Protocol::Initialize(const char */*type*/, const int /*type*/, const uint16_t /*port*/, const bool /*has_ipv4*/, const bool /*has_ipv6*/)
 // everything is hard coded until ICOM gets their act together and start supporting IPv6
 {
 	ReadOptions();
@@ -50,7 +43,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const int /*type*/, const uin
 	keep_running = true;
 
 	// update the reflector callsign
-	//m_ReflectorCallsign.PatchCallsign(0, (const uint8 *)"XLX", 3);
+	//m_ReflectorCallsign.PatchCallsign(0, (const uint8_t *)"XLX", 3);
 
 	// create our sockets
 	auto s = g_Reflector.m_Address.GetV4Address(PROTOCOL_G3);
@@ -93,7 +86,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const int /*type*/, const uin
 	m_IcmpFuture     = std::async(std::launch::async, &CG3Protocol::IcmpThread, this);
 
 	// update time
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.start();
 
 	std::cout << "Initialized G3 Protocol, all threads started" << std::endl;
 	return true;
@@ -178,7 +171,7 @@ void CG3Protocol::PresenceTask(void)
 
 			if (m_GwAddress == 0)
 			{
-				Buffer.Append(*(uint32 *)m_ConfigSocket.GetLocalAddr());
+				Buffer.Append(*(uint32_t *)m_ConfigSocket.GetLocalAddr());
 			}
 			else
 			{
@@ -295,24 +288,24 @@ void CG3Protocol::ConfigTask(void)
 
 			// UR
 			Buffer.resize(8);
-			Buffer.Append((uint8 *)(const char *)Call, CALLSIGN_LEN - 1);
-			Buffer.Append((uint8)module);
+			Buffer.Append((uint8_t *)(const char *)Call, CALLSIGN_LEN - 1);
+			Buffer.Append((uint8_t)module);
 
 			// RPT1
-			Buffer.Append((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN - 1);
-			Buffer.Append((uint8)'G');
+			Buffer.Append((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN - 1);
+			Buffer.Append((uint8_t)'G');
 
 			// RPT2
-			Buffer.Append((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN - 1);
+			Buffer.Append((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN - 1);
 
 			if (isRepeaterCall)
 			{
-				Buffer.Append((uint8)Call.GetModule());
+				Buffer.Append((uint8_t)Call.GetModule());
 			}
 			else
 			{
 				// routed - no module for now
-				Buffer.Append((uint8)' ');
+				Buffer.Append((uint8_t)' ');
 			}
 
 			if (Buffer.data()[3] == 0x00)
@@ -321,7 +314,7 @@ void CG3Protocol::ConfigTask(void)
 
 				if (m_GwAddress == 0)
 				{
-					Buffer.Append(*(uint32 *)m_ConfigSocket.GetLocalAddr());
+					Buffer.Append(*(uint32_t *)m_ConfigSocket.GetLocalAddr());
 				}
 				else
 				{
@@ -399,7 +392,7 @@ void CG3Protocol::Task(void)
 				client->Alive();
 				// supress host checks - no ping needed to trigger potential ICMPs
 				// the regular data flow will do it
-				m_LastKeepaliveTime.Now();
+				m_LastKeepaliveTime.start();
 				break;
 			}
 		}
@@ -435,13 +428,13 @@ void CG3Protocol::Task(void)
 	HandleQueue();
 
 	// keep alive during idle if needed
-	if ( m_LastKeepaliveTime.DurationSinceNow() > G3_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > G3_KEEPALIVE_PERIOD )
 	{
 		// handle keep alives
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 
 		// reload option if needed - called once every G3_KEEPALIVE_PERIOD
 		NeedReload();
@@ -457,7 +450,7 @@ void CG3Protocol::HandleQueue(void)
 	while ( !m_Queue.empty() )
 	{
 		// supress host checks
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 
 		// get the packet
 		auto packet = m_Queue.front();
@@ -498,7 +491,7 @@ void CG3Protocol::HandleKeepalives(void)
 	// G3 Terminal mode does not support keepalive
 	// We will send some short packed and expect
 	// A ICMP unreachable on failure
-	CBuffer keepalive((uint8 *)"PING", 4);
+	CBuffer keepalive((uint8_t *)"PING", 4);
 
 	// iterate on clients
 	CClients *clients = g_Reflector.GetClients();
@@ -599,10 +592,10 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 
 bool CG3Protocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header)
 {
-	if ( 56==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x10U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
+	if ( 56==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x10U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
 	{
 		// create packet
-		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[15]), *((uint16 *)&(Buffer.data()[12])), 0x80));
+		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), 0x80));
 		// check validity of packet
 		if ( header && header->IsValid() )
 			return true;
@@ -612,10 +605,10 @@ bool CG3Protocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<C
 
 bool CG3Protocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
+	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16 *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -625,10 +618,10 @@ bool CG3Protocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CD
 
 bool CG3Protocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
 {
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
+	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16 *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -641,28 +634,28 @@ bool CG3Protocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_pt
 
 bool CG3Protocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)0x80);
-	Buffer->Append((uint8 *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer->Append((uint8_t)0x80);
+	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
 bool CG3Protocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)(Packet.GetPacketId() % 21));
-	Buffer->Append((uint8 *)Packet.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8 *)Packet.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
+	Buffer->Append((uint8_t *)Packet.GetAmbe(), AMBE_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetDvData(), DVDATA_SIZE);
 
 	return true;
 
@@ -670,12 +663,12 @@ bool CG3Protocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buf
 
 bool CG3Protocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
-	uint8 tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
+	uint8_t tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
 
 	Buffer->Set(tag1, sizeof(tag1));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)((Packet.GetPacketId() % 21) | 0x40));
+	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
 	Buffer->Append(tag2, sizeof(tag2));
 
 	return true;

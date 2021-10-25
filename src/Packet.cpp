@@ -1,34 +1,23 @@
-//
-//  cpacket.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 04/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include "Packet.h"
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// constructor
 
 CPacket::CPacket()
 {
@@ -45,7 +34,7 @@ CPacket::CPacket()
 
 // dstar contrsuctor
 
-CPacket::CPacket(uint16 sid, uint8 dstarpid)
+CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 {
 	m_uiStreamId = sid;
 	m_uiDstarPacketId = dstarpid;
@@ -60,7 +49,7 @@ CPacket::CPacket(uint16 sid, uint8 dstarpid)
 
 // dmr constructor
 
-CPacket::CPacket(uint16 sid, uint8 dmrpid, uint8 dmrspid)
+CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid)
 {
 	m_uiStreamId = sid;
 	m_uiDmrPacketId = dmrpid;
@@ -75,7 +64,7 @@ CPacket::CPacket(uint16 sid, uint8 dmrpid, uint8 dmrspid)
 
 // ysf constructor
 
-CPacket::CPacket(uint16 sid, uint8 ysfpid, uint8 ysfsubpid, uint8 ysffrid)
+CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid)
 {
 	m_uiStreamId = sid;
 	m_uiYsfPacketId = ysfpid;
@@ -90,7 +79,7 @@ CPacket::CPacket(uint16 sid, uint8 ysfpid, uint8 ysfsubpid, uint8 ysffrid)
 
 // xlx  constructor
 
-CPacket::CPacket(uint16 sid, uint8 dstarpid, uint8 dmrpid, uint8 dmrsubpid, uint8 ysfpid, uint8 ysfsubpid, uint8 ysffrid)
+CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid)
 {
 	m_uiStreamId = sid;
 	m_uiDstarPacketId = dstarpid;
@@ -106,7 +95,7 @@ CPacket::CPacket(uint16 sid, uint8 dstarpid, uint8 dmrpid, uint8 dmrsubpid, uint
 ////////////////////////////////////////////////////////////////////////////////////////
 // pid conversion
 
-void CPacket::UpdatePids(uint32 pid)
+void CPacket::UpdatePids(uint32_t pid)
 {
 	// called while phusing this packet in a stream queue
 	// so now packet sequence number is known and undefined pids can be updated

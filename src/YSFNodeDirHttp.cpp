@@ -1,31 +1,25 @@
-//
-//  cysfnodedirhttp.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 08/10/2019.
 //  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include "Main.h"
 #include "Reflector.h"
-#include "YSFNodeDirhttp.h"
+#include "YSFNodeDirHttp.h"
 
 #if (YSFNODEDB_USE_RLX_SERVER == 1)
 CYsfNodeDirHttp g_YsfNodeDir;
@@ -151,7 +145,7 @@ bool CYsfNodeDirHttp::HttpGet(const char *hostname, const char *filename, int po
 					len = read(sock_id, buf, 1440);
 					if ( len > 0 )
 					{
-						buffer->Append((uint8 *)buf, (int)len);
+						buffer->Append((uint8_t *)buf, (int)len);
 						ok = true;
 					}
 					//}
@@ -159,7 +153,7 @@ bool CYsfNodeDirHttp::HttpGet(const char *hostname, const char *filename, int po
 
 				}
 				while (!done);
-				buffer->Append((uint8)0);
+				buffer->Append((uint8_t)0);
 
 				// and disconnect
 				close(sock_id);

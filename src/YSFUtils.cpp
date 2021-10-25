@@ -1,29 +1,23 @@
-//
-//  cysfutils.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 14/04/2019.
 //  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+//  Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 //  Copyright (C) 2018 by Andy Uribe CA6JAU
 //  Copyright (C) 2018 by Manuel Sanchez EA7EE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -482,7 +476,7 @@ const unsigned char WHITENING_DATA[] = {0x93U, 0xD7U, 0x51U, 0x21U, 0x9CU, 0x2FU
 ////////////////////////////////////////////////////////////////////////////////////////
 //
 
-void CYsfUtils::DecodeVD2Vchs(uint8 *data, uint8 **ambe)
+void CYsfUtils::DecodeVD2Vchs(uint8_t *data, uint8_t **ambe)
 {
 	int frame = 0;
 
@@ -572,7 +566,7 @@ void CYsfUtils::DecodeVD2Vchs(uint8 *data, uint8 **ambe)
 	}
 }
 
-void CYsfUtils::EncodeVD2Vch(uint8 *ambe, uint8 *data)
+void CYsfUtils::EncodeVD2Vch(uint8_t *ambe, uint8_t *data)
 {
 	// convert from ambe2plus
 	unsigned int a = 0U;

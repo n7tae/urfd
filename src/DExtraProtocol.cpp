@@ -1,27 +1,20 @@
-//
-//  cdextraprotocol.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 01/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -35,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDextraProtocol::Initialize(const char *type, int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6)
+bool CDextraProtocol::Initialize(const char *type, int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -499,10 +492,10 @@ bool CDextraProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *c
 
 bool CDextraProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header)
 {
-	if ( 56==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x10U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
+	if ( 56==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x10U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
 	{
 		// create packet
-		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[15]), *((uint16 *)&(Buffer.data()[12])), 0x80));
+		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), 0x80));
 		// check validity of packet
 		if ( header && header->IsValid() )
 			return true;
@@ -512,10 +505,10 @@ bool CDextraProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_p
 
 bool CDextraProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
+	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16 *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -525,10 +518,10 @@ bool CDextraProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_pt
 
 bool CDextraProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
 {
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40) )
+	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16 *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -546,12 +539,12 @@ void CDextraProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
 
 void CDextraProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 {
-	uint8 lm = (uint8)Modules[0];
-	uint8 rm = (uint8)Modules[1];
-	Buffer->Set((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
+	uint8_t lm = (uint8_t)Modules[0];
+	uint8_t rm = (uint8_t)Modules[1];
+	Buffer->Set((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
 	Buffer->Append(lm);
 	Buffer->Append(rm);
-	Buffer->Append((uint8)0);
+	Buffer->Append((uint8_t)0);
 }
 
 void CDextraProtocol::EncodeConnectAckPacket(CBuffer *Buffer, int ProtRev)
@@ -560,18 +553,18 @@ void CDextraProtocol::EncodeConnectAckPacket(CBuffer *Buffer, int ProtRev)
 	if ( ProtRev == 2 )
 	{
 		// XRFxxx
-		uint8 rm = (Buffer->data())[8];
-		uint8 lm = (Buffer->data())[9];
+		uint8_t rm = (Buffer->data())[8];
+		uint8_t lm = (Buffer->data())[9];
 		Buffer->clear();
-		Buffer->Set((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
+		Buffer->Set((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
 		Buffer->Append(lm);
 		Buffer->Append(rm);
-		Buffer->Append((uint8)0);
+		Buffer->Append((uint8_t)0);
 	}
 	else
 	{
 		// regular repeater
-		uint8 tag[] = { 'A','C','K',0 };
+		uint8_t tag[] = { 'A','C','K',0 };
 		Buffer->resize(Buffer->size()-1);
 		Buffer->Append(tag, sizeof(tag));
 	}
@@ -579,49 +572,49 @@ void CDextraProtocol::EncodeConnectAckPacket(CBuffer *Buffer, int ProtRev)
 
 void CDextraProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 'N','A','K',0 };
+	uint8_t tag[] = { 'N','A','K',0 };
 	Buffer->resize(Buffer->size()-1);
 	Buffer->Append(tag, sizeof(tag));
 }
 
 void CDextraProtocol::EncodeDisconnectPacket(CBuffer *Buffer, char Module)
 {
-	uint8 tag[] = { ' ',0 };
-	Buffer->Set((uint8 *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
-	Buffer->Append((uint8)Module);
+	uint8_t tag[] = { ' ',0 };
+	Buffer->Set((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
+	Buffer->Append((uint8_t)Module);
 	Buffer->Append(tag, sizeof(tag));
 }
 
 void CDextraProtocol::EncodeDisconnectedPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 'D','I','S','C','O','N','N','E','C','T','E','D' };
+	uint8_t tag[] = { 'D','I','S','C','O','N','N','E','C','T','E','D' };
 	Buffer->Set(tag, sizeof(tag));
 }
 
 bool CDextraProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)0x80);
-	Buffer->Append((uint8 *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer->Append((uint8_t)0x80);
+	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
 bool CDextraProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)(Packet.GetPacketId() % 21));
-	Buffer->Append((uint8 *)Packet.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8 *)Packet.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
+	Buffer->Append((uint8_t *)Packet.GetAmbe(), AMBE_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetDvData(), DVDATA_SIZE);
 
 	return true;
 
@@ -629,12 +622,12 @@ bool CDextraProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer 
 
 bool CDextraProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
-	uint8 tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
+	uint8_t tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
 
 	Buffer->Set(tag1, sizeof(tag1));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)((Packet.GetPacketId() % 21) | 0x40));
+	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
 	Buffer->Append(tag2, sizeof(tag2));
 
 	return true;

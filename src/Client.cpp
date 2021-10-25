@@ -1,26 +1,20 @@
-//
-//  cclient.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 31/10/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -34,7 +28,7 @@ CClient::CClient()
 {
 	m_ReflectorModule = ' ';
 	m_ModuleMastered = ' ';
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.start();
 	m_ConnectTime = std::time(nullptr);
 	m_LastHeardTime = std::time(nullptr);
 }
@@ -45,7 +39,7 @@ CClient::CClient(const CCallsign &callsign, const CIp &ip, char reflectorModule)
 	m_Callsign = callsign;
 	m_Ip = ip;
 	m_ModuleMastered = ' ';
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.start();
 	m_ConnectTime = std::time(nullptr);
 	m_LastHeardTime = std::time(nullptr);
 }
@@ -66,7 +60,7 @@ CClient::CClient(const CClient &client)
 
 void CClient::Alive(void)
 {
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.time();
 }
 
 

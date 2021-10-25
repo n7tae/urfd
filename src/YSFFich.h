@@ -17,8 +17,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(YSFFICH_H)
-#define  YSFFICH_H
+#pragma once
 
 class CYSFFICH
 {
@@ -61,5 +60,3 @@ public:
 private:
 	unsigned char m_fich[6];
 };
-
-#endif

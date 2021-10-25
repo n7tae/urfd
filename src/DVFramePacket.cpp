@@ -1,30 +1,23 @@
-//
-//  cdvframepacket.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 01/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
 #include <string.h>
+#include "Main.h"
 #include "DVFramePacket.h"
 
 
@@ -43,7 +36,7 @@ CDvFramePacket::CDvFramePacket()
 
 // dstar constructor
 
-CDvFramePacket::CDvFramePacket(const struct dstar_dvframe *dvframe, uint16 sid, uint8 pid)
+CDvFramePacket::CDvFramePacket(const struct dstar_dvframe *dvframe, uint16_t sid, uint8_t pid)
 	: CPacket(sid, pid)
 {
 	::memcpy(m_uiAmbe, dvframe->AMBE, sizeof(m_uiAmbe));
@@ -57,7 +50,7 @@ CDvFramePacket::CDvFramePacket(const struct dstar_dvframe *dvframe, uint16 sid, 
 #ifndef NO_XLX
 // dmr constructor
 
-CDvFramePacket::CDvFramePacket(const uint8 *ambe, const uint8 *sync, uint16 sid, uint8 pid, uint8 spid)
+CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid)
 	: CPacket(sid, pid, spid)
 {
 	::memcpy(m_uiAmbePlus, ambe, sizeof(m_uiAmbePlus));
@@ -68,7 +61,7 @@ CDvFramePacket::CDvFramePacket(const uint8 *ambe, const uint8 *sync, uint16 sid,
 
 // ysf constructor
 
-CDvFramePacket::CDvFramePacket(const uint8 *ambe, uint16 sid, uint8 pid, uint8 spid, uint8 fid)
+CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid)
 	: CPacket(sid, pid, spid, fid)
 {
 	::memcpy(m_uiAmbePlus, ambe, sizeof(m_uiAmbePlus));
@@ -80,9 +73,9 @@ CDvFramePacket::CDvFramePacket(const uint8 *ambe, uint16 sid, uint8 pid, uint8 s
 // xlx constructor
 
 CDvFramePacket::CDvFramePacket
-(uint16 sid,
- uint8 dstarpid, const uint8 *dstarambe, const uint8 *dstardvdata,
- uint8 dmrpid, uint8 dprspid, const uint8 *dmrambe, const uint8 *dmrsync)
+(uint16_t sid,
+ uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata,
+ uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync)
 	: CPacket(sid, dstarpid, dmrpid, dprspid, 0xFF, 0xFF, 0xFF)
 {
 	::memcpy(m_uiAmbe, dstarambe, sizeof(m_uiAmbe));
@@ -103,7 +96,7 @@ std::unique_ptr<CPacket> CDvFramePacket::Duplicate(void) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // get
 
-const uint8 *CDvFramePacket::GetAmbe(uint8 uiCodec) const
+const uint8_t *CDvFramePacket::GetAmbe(uint8_t uiCodec) const
 {
 	switch (uiCodec)
 	{
@@ -121,12 +114,12 @@ const uint8 *CDvFramePacket::GetAmbe(uint8 uiCodec) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // set
 
-void CDvFramePacket::SetDvData(uint8 *DvData)
+void CDvFramePacket::SetDvData(uint8_t *DvData)
 {
 	::memcpy(m_uiDvData, DvData, sizeof(m_uiDvData));
 }
 
-void CDvFramePacket::SetAmbe(uint8 uiCodec, uint8 *Ambe)
+void CDvFramePacket::SetAmbe(uint8_t uiCodec, uint8_t *Ambe)
 {
 	switch (uiCodec)
 	{

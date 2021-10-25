@@ -1,31 +1,25 @@
-//
-//  ccallsign.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 31/10/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
 #include <cctype>
-#include "cdmriddirfile.h"
+#include "DMRIdDirFile.h"
 #include "DMRIdDirHttp.h"
 #include "Callsign.h"
 
@@ -43,7 +37,7 @@ CCallsign::CCallsign()
 #endif
 }
 
-CCallsign::CCallsign(const char *sz, uint32 dmrid)
+CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 {
 	// blank all
 	::memset(m_Callsign, ' ', sizeof(m_Callsign));
@@ -168,7 +162,7 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 #endif
 }
 
-void CCallsign::SetCallsign(const uint8 *buffer, int len, bool UpdateDmrid)
+void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 {
 	// set callsign
 	::memset(m_Callsign, ' ', sizeof(m_Callsign));
@@ -198,7 +192,7 @@ void CCallsign::SetCallsign(const uint8 *buffer, int len, bool UpdateDmrid)
 }
 
 #ifndef NO_XLX
-void CCallsign::SetDmrid(uint32 dmrid, bool UpdateCallsign)
+void CCallsign::SetDmrid(uint32_t dmrid, bool UpdateCallsign)
 {
 	m_uiDmrid = dmrid;
 	if ( UpdateCallsign )
@@ -215,12 +209,12 @@ void CCallsign::SetDmrid(uint32 dmrid, bool UpdateCallsign)
 	}
 }
 
-void CCallsign::SetDmrid(const uint8 *buffer, bool UpdateCallsign)
+void CCallsign::SetDmrid(const uint8_t *buffer, bool UpdateCallsign)
 {
 	char sz[9];
 	::memcpy(sz, buffer, 8);
 	sz[8] = 0;
-	SetDmrid((uint32)::strtol(sz, nullptr, 16), UpdateCallsign);
+	SetDmrid((uint32_t)::strtol(sz, nullptr, 16), UpdateCallsign);
 }
 #endif
 
@@ -236,7 +230,7 @@ void CCallsign::SetSuffix(const char *sz)
 	::memcpy(m_Suffix, sz, MIN(strlen(sz), sizeof(m_Suffix)));
 }
 
-void CCallsign::SetSuffix(const uint8 *buffer, int len)
+void CCallsign::SetSuffix(const uint8_t *buffer, int len)
 {
 	len = MIN(len, (int)sizeof(m_Suffix));
 	::memset(m_Suffix, ' ', sizeof(m_Suffix));
@@ -246,7 +240,7 @@ void CCallsign::SetSuffix(const uint8 *buffer, int len)
 ////////////////////////////////////////////////////////////////////////////////////////
 // modify
 
-void CCallsign::PatchCallsign(int off, const uint8 *patch, int len)
+void CCallsign::PatchCallsign(int off, const uint8_t *patch, int len)
 {
 	if ( off < CALLSIGN_LEN )
 	{
@@ -258,7 +252,7 @@ void CCallsign::PatchCallsign(int off, const uint8 *patch, int len)
 ////////////////////////////////////////////////////////////////////////////////////////
 // get
 
-void CCallsign::GetCallsign(uint8 *buffer) const
+void CCallsign::GetCallsign(uint8_t *buffer) const
 {
 	::memcpy(buffer, m_Callsign, sizeof(m_Callsign));
 	if ( HasModule() )
@@ -277,7 +271,7 @@ void CCallsign::GetCallsignString(char *sz) const
 	sz[i] = 0;
 }
 
-void CCallsign::GetSuffix(uint8 *buffer) const
+void CCallsign::GetSuffix(uint8_t *buffer) const
 {
 	::memcpy(buffer, m_Suffix, sizeof(m_Suffix));
 }

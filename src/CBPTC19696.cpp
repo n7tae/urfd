@@ -1,30 +1,30 @@
-/*
- *	 Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
- *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
+//	 Copyright (C) 2012 by Ian Wraith
+//   Copyright (C) 2015 by Jonathan Naylor G4KLX
 
-#include "CBPT19696.h"
-
-#include "Hamming.h"
-#include "Utils.h"
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+
+#include "CBPTC19696.h"
+
+#include "Hamming.h"
+#include "Utils.h"
 
 CBPTC19696::CBPTC19696()
 {

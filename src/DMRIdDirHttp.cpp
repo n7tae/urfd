@@ -1,26 +1,20 @@
-//
-//  cdmriddirhttp.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 29/12/2017.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include "Main.h"
@@ -68,12 +62,12 @@ bool CDmridDirHttp::RefreshContent(const CBuffer &buffer)
 				if ( ((callsign = ::strtok(nullptr, ";")) != nullptr) )
 				{
 					// new entry
-					uint32 ui = atoi(dmrid);
+					uint32_t ui = atoi(dmrid);
 					CCallsign cs(callsign, ui);
 					if ( cs.IsValid() )
 					{
-						m_CallsignMap.insert(std::pair<uint32,CCallsign>(ui, cs));
-						m_DmridMap.insert(std::pair<CCallsign,uint32>(cs,ui));
+						m_CallsignMap.insert(std::pair<uint32_t,CCallsign>(ui, cs));
+						m_DmridMap.insert(std::pair<CCallsign,uint32_t>(cs,ui));
 					}
 				}
 			}
@@ -148,7 +142,7 @@ bool CDmridDirHttp::HttpGet(const char *hostname, const char *filename, int port
 					len = read(sock_id, buf, 1440);
 					if ( len > 0 )
 					{
-						buffer->Append((uint8 *)buf, (int)len);
+						buffer->Append((uint8_t *)buf, (int)len);
 						ok = true;
 					}
 					//}
@@ -156,7 +150,7 @@ bool CDmridDirHttp::HttpGet(const char *hostname, const char *filename, int port
 
 				}
 				while (!done);
-				buffer->Append((uint8)0);
+				buffer->Append((uint8_t)0);
 
 				// and disconnect
 				close(sock_id);

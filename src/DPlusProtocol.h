@@ -1,41 +1,28 @@
-//
-//  DPlusProtocol.h
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 01/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
-#ifndef cdplusprotocol_h
-#define cdplusprotocol_h
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
 
 #include "Timer.h"
 #include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
 #include "DVLastFramePacket.h"
-
-////////////////////////////////////////////////////////////////////////////////////////
-// define
-
-////////////////////////////////////////////////////////////////////////////////////////
-// class
 
 class CDplusClient;
 
@@ -45,14 +32,14 @@ public:
 	CDPlusStreamCacheItem()     { m_iSeqCounter = 0; }
 
 	CDvHeaderPacket m_dvHeader;
-	uint8           m_iSeqCounter;
+	uint8_t           m_iSeqCounter;
 };
 
 class CDplusProtocol : public CProtocol
 {
 public:
 	// initialization
-	bool Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6);
+	bool Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 
 	// task
 	void Task(void);
@@ -89,11 +76,8 @@ protected:
 
 protected:
 	// for keep alive
-	CTimePoint          m_LastKeepaliveTime;
+	CTimer          m_LastKeepaliveTime;
 
 	// for queue header caches
 	std::array<CDPlusStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;
 };
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* cdplusprotocol_h */

@@ -1,27 +1,20 @@
-//
-//  cprotocol.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 01/11/2015.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include "DCSProtocol.h"
@@ -56,7 +49,7 @@ CProtocol::~CProtocol()
 ////////////////////////////////////////////////////////////////////////////////////////
 // initialization
 
-bool CProtocol::Initialize(const char *type, int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6)
+bool CProtocol::Initialize(const char *type, int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// init reflector apparent callsign
 	m_ReflectorCallsign = g_Reflector.GetCallsign();
@@ -66,7 +59,7 @@ bool CProtocol::Initialize(const char *type, int ptype, const uint16 port, const
 
 	// update the reflector callsign
 	if (type)
-		m_ReflectorCallsign.PatchCallsign(0, (const uint8 *)type, 3);
+		m_ReflectorCallsign.PatchCallsign(0, (const uint8_t *)type, 3);
 
 	// create our sockets
 #ifdef LISTEN_IPV4
@@ -199,7 +192,7 @@ void CProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &Frame
 ////////////////////////////////////////////////////////////////////////////////////////
 // stream handle helpers
 
-CPacketStream *CProtocol::GetStream(uint16 uiStreamId, const CIp *Ip)
+CPacketStream *CProtocol::GetStream(uint16_t uiStreamId, const CIp *Ip)
 {
 	for ( auto it=m_Streams.begin(); it!=m_Streams.end(); it++ )
 	{
@@ -261,14 +254,14 @@ bool CProtocol::IsSpace(char c) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // DestId to Module helper
 
-char CProtocol::DmrDstIdToModule(uint32 tg) const
+char CProtocol::DmrDstIdToModule(uint32_t tg) const
 {
 	return ((char)((tg % 26)-1) + 'A');
 }
 
-uint32 CProtocol::ModuleToDmrDestId(char m) const
+uint32_t CProtocol::ModuleToDmrDestId(char m) const
 {
-	return (uint32)(m - 'A')+1;
+	return (uint32_t)(m - 'A')+1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

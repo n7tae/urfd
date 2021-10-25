@@ -1,27 +1,20 @@
-//
-//  cxlxprotocol.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 28/01/2016.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early, N7TAE
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -35,14 +28,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CUlxProtocol::Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6)
+bool CUlxProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
 	// update time
-	m_LastKeepaliveTime.Now();
-	m_LastPeersLinkTime.Now();
+	m_LastKeepaliveTime.start();
+	m_LastPeersLinkTime.start();
 
 	// done
 	return true;
@@ -202,23 +195,23 @@ void CUlxProtocol::Task(void)
 	HandleQueue();
 
 	// keep alive
-	if ( m_LastKeepaliveTime.DurationSinceNow() > XLX_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > XLX_KEEPALIVE_PERIOD )
 	{
 		// handle keep alives
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 	}
 
 	// peer connections
-	if ( m_LastPeersLinkTime.DurationSinceNow() > XLX_RECONNECT_PERIOD )
+	if ( m_LastPeersLinkTime.time() > XLX_RECONNECT_PERIOD )
 	{
 		// handle remote peers connections
 		HandlePeerLinks();
 
 		// update time
-		m_LastPeersLinkTime.Now();
+		m_LastPeersLinkTime.start();
 	}
 }
 
@@ -470,7 +463,7 @@ bool CUlxProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 	bool valid = false;
 	if ((Buffer.size() == 39) && (Buffer.data()[0] == 'L') && (Buffer.data()[38] == 0))
 	{
-		callsign->SetCallsign((const uint8 *)&(Buffer.data()[1]), 8);
+		callsign->SetCallsign((const uint8_t *)&(Buffer.data()[1]), 8);
 		::strcpy(modules, (const char *)&(Buffer.data()[12]));
 		valid = callsign->IsValid();
 		*version = CVersion(Buffer.data()[9], Buffer.data()[10], Buffer.data()[11]);
@@ -487,7 +480,7 @@ bool CUlxProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *cal
 	bool valid = false;
 	if ((Buffer.size() == 10) && (Buffer.data()[0] == 'U') && (Buffer.data()[9] == 0))
 	{
-		callsign->SetCallsign((const uint8 *)&(Buffer.data()[1]), 8);
+		callsign->SetCallsign((const uint8_t *)&(Buffer.data()[1]), 8);
 		valid = callsign->IsValid();
 	}
 	return valid;
@@ -498,7 +491,7 @@ bool CUlxProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, 
 	bool valid = false;
 	if ((Buffer.size() == 39) && (Buffer.data()[0] == 'A') && (Buffer.data()[38] == 0))
 	{
-		callsign->SetCallsign((const uint8 *)&(Buffer.data()[1]), 8);
+		callsign->SetCallsign((const uint8_t *)&(Buffer.data()[1]), 8);
 		::strcpy(modules, (const char *)&(Buffer.data()[12]));
 		valid = callsign->IsValid();
 		*version = CVersion(Buffer.data()[9], Buffer.data()[10], Buffer.data()[11]);
@@ -515,7 +508,7 @@ bool CUlxProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
 	bool valid = false;
 	if ((Buffer.size() == 10) && (Buffer.data()[0] == 'N') && (Buffer.data()[9] == 0))
 	{
-		callsign->SetCallsign((const uint8 *)&(Buffer.data()[1]), 8);
+		callsign->SetCallsign((const uint8_t *)&(Buffer.data()[1]), 8);
 		valid = callsign->IsValid();
 	}
 	return valid;
@@ -528,12 +521,12 @@ bool CUlxProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<C
 		return true;
 
 	// otherwise try protocol revision 2
-	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0==(Buffer.data()[14] & 0x40) )
+	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0==(Buffer.data()[14] & 0x40) )
 	{
 		// create packet
 		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(
 			// sid
-			*((uint16 *)&(Buffer.data()[12])),
+			*((uint16_t *)&(Buffer.data()[12])),
 			// dstar
 			Buffer.data()[14], &(Buffer.data()[15]), &(Buffer.data()[24]),
 			// dmr
@@ -553,12 +546,12 @@ bool CUlxProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_p
 		return true;
 
 	// otherwise try protocol revision 2
-	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8 *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
+	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
 		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket(
 			// sid
-			*((uint16 *)&(Buffer.data()[12])),
+			*((uint16_t *)&(Buffer.data()[12])),
 			// dstar
 			Buffer.data()[14], &(Buffer.data()[15]), &(Buffer.data()[24]),
 			// dmr
@@ -581,7 +574,7 @@ void CUlxProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
 
 void CUlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 {
-	uint8 tag[] = { 'L' };
+	uint8_t tag[] = { 'L' };
 
 	// tag
 	Buffer->Set(tag, sizeof(tag));
@@ -589,9 +582,9 @@ void CUlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->resize(Buffer->size()+8);
 	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
 	// our version
-	Buffer->Append((uint8)VERSION_MAJOR);
-	Buffer->Append((uint8)VERSION_MINOR);
-	Buffer->Append((uint8)VERSION_REVISION);
+	Buffer->Append((uint8_t)VERSION_MAJOR);
+	Buffer->Append((uint8_t)VERSION_MINOR);
+	Buffer->Append((uint8_t)VERSION_REVISION);
 	// the modules we share
 	Buffer->Append(Modules);
 	Buffer->resize(39);
@@ -599,19 +592,19 @@ void CUlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 
 void CUlxProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 'U' };
+	uint8_t tag[] = { 'U' };
 
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// our callsign
 	Buffer->resize(Buffer->size()+8);
 	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
-	Buffer->Append((uint8)0);
+	Buffer->Append((uint8_t)0);
 }
 
 void CUlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 {
-	uint8 tag[] = { 'A' };
+	uint8_t tag[] = { 'A' };
 
 	// tag
 	Buffer->Set(tag, sizeof(tag));
@@ -619,9 +612,9 @@ void CUlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->resize(Buffer->size()+8);
 	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
 	// our version
-	Buffer->Append((uint8)VERSION_MAJOR);
-	Buffer->Append((uint8)VERSION_MINOR);
-	Buffer->Append((uint8)VERSION_REVISION);
+	Buffer->Append((uint8_t)VERSION_MAJOR);
+	Buffer->Append((uint8_t)VERSION_MINOR);
+	Buffer->Append((uint8_t)VERSION_REVISION);
 	// the modules we share
 	Buffer->Append(Modules);
 	Buffer->resize(39);
@@ -629,30 +622,30 @@ void CUlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 
 void CUlxProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 {
-	uint8 tag[] = { 'N' };
+	uint8_t tag[] = { 'N' };
 
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// our callsign
 	Buffer->resize(Buffer->size()+8);
 	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
-	Buffer->Append((uint8)0);
+	Buffer->Append((uint8_t)0);
 }
 
 bool CUlxProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)(Packet.GetDstarPacketId() % 21));
-	Buffer->Append((uint8 *)Packet.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8 *)Packet.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t)(Packet.GetDstarPacketId() % 21));
+	Buffer->Append((uint8_t *)Packet.GetAmbe(), AMBE_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetDvData(), DVDATA_SIZE);
 
-	Buffer->Append((uint8)Packet.GetDmrPacketId());
-	Buffer->Append((uint8)Packet.GetDmrPacketSubid());
-	Buffer->Append((uint8 *)Packet.GetAmbePlus(), AMBEPLUS_SIZE);
-	Buffer->Append((uint8 *)Packet.GetDvSync(), DVSYNC_SIZE);
+	Buffer->Append((uint8_t)Packet.GetDmrPacketId());
+	Buffer->Append((uint8_t)Packet.GetDmrPacketSubid());
+	Buffer->Append((uint8_t *)Packet.GetAmbePlus(), AMBEPLUS_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetDvSync(), DVSYNC_SIZE);
 
 	return true;
 
@@ -660,21 +653,21 @@ bool CUlxProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Bu
 
 bool CUlxProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
 {
-	uint8 tag[]         = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
-	uint8 dstarambe[]   = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00 };
-	uint8 dstardvdata[] = { 0x25,0x1A,0xC6 };
+	uint8_t tag[]         = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	uint8_t dstarambe[]   = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00 };
+	uint8_t dstardvdata[] = { 0x25,0x1A,0xC6 };
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8)((Packet.GetPacketId() % 21) | 0x40));
+	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
 	Buffer->Append(dstarambe, sizeof(dstarambe));
 	Buffer->Append(dstardvdata, sizeof(dstardvdata));
 
 
-	Buffer->Append((uint8)Packet.GetDmrPacketId());
-	Buffer->Append((uint8)Packet.GetDmrPacketSubid());
-	Buffer->Append((uint8 *)Packet.GetAmbePlus(), AMBEPLUS_SIZE);
-	Buffer->Append((uint8 *)Packet.GetDvSync(), DVSYNC_SIZE);
+	Buffer->Append((uint8_t)Packet.GetDmrPacketId());
+	Buffer->Append((uint8_t)Packet.GetDmrPacketSubid());
+	Buffer->Append((uint8_t *)Packet.GetAmbePlus(), AMBEPLUS_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetDvSync(), DVSYNC_SIZE);
 
 	return true;
 }

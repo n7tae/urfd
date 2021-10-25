@@ -1,29 +1,22 @@
-//
-//  G3Protocol.h
-//  xlxd
-//
-//  Created by Marius Petrescu (YO2LOJ) on 03/06/2019.
 //  Copyright © 2019 Marius Petrescu (YO2LOJ). All rights reserved.
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
-#ifndef cg3protocol_h
-#define cg3protocol_h
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
 
 #include <string>
 #include "Timer.h"
@@ -67,7 +60,7 @@ public:
 	CG3Protocol() : m_GwAddress(0u), m_Modules("*"), m_LastModTime(0) {}
 
 	// initialization
-	bool Initialize(const char *type, const int ptype, const uint16 port, const bool has_ipv4, const bool has_ipv6);
+	bool Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 
 	// close
 	void Close(void);
@@ -116,7 +109,7 @@ protected:
 	std::future<void> m_PresenceFuture, m_ConfigFuture, m_IcmpFuture;
 
 	// time
-	CTimePoint          m_LastKeepaliveTime;
+	CTimer              m_LastKeepaliveTime;
 
 	// sockets
 	CUdpSocket          m_PresenceSocket;
@@ -124,10 +117,7 @@ protected:
 	CRawSocket          m_IcmpRawSocket;
 
 	// optional params
-	uint32              m_GwAddress;
+	uint32_t              m_GwAddress;
 	std::string         m_Modules;
 	time_t              m_LastModTime;
 };
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* cg3protocol_h */

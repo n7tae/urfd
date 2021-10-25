@@ -16,8 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(YSFDefines_H)
-#define    YSFDefines_H
+#pragma once
 
 const unsigned int YSF_FRAME_LENGTH_BYTES = 120U;
 
@@ -45,5 +44,3 @@ const unsigned char YSF_CM_INDIVIDUAL = 0x03U;
 
 const unsigned char YSF_MR_NOT_BUSY = 0x01U;
 const unsigned char YSF_MR_BUSY     = 0x02U;
-
-#endif

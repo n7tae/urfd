@@ -1,26 +1,20 @@
-//
-//  ccodecstream.cpp
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 13/04/2017.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
 //
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
 #include <string.h>
@@ -36,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16 uiId, uint8 uiCodecIn, uint8 uiCodecOut)
+CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t uiId, uint8_t uiCodecIn, uint8_t uiCodecOut)
 {
 	keep_running = true;
 	m_uiStreamId = uiId;
@@ -72,7 +66,7 @@ CCodecStream::~CCodecStream()
 ////////////////////////////////////////////////////////////////////////////////////////
 // initialization
 
-bool CCodecStream::Init(uint16 uiPort)
+bool CCodecStream::Init(uint16_t uiPort)
 {
 	m_bConnected = keep_running = false;	// prepare for the worst
 
@@ -155,8 +149,8 @@ void CCodecStream::Task(void)
 {
 	CBuffer Buffer;
 	CIp     Ip;
-	uint8   Ambe[AMBE_SIZE];
-	uint8   DStarSync[] = { 0x55,0x2D,0x16 };
+	uint8_t   Ambe[AMBE_SIZE];
+	uint8_t   DStarSync[] = { 0x55,0x2D,0x16 };
 
 	// any packet from transcoder
 	if ( m_Socket.Receive(Buffer, Ip, 5) )
@@ -165,10 +159,10 @@ void CCodecStream::Task(void)
 		if ( IsValidAmbePacket(Buffer, Ambe) )
 		{
 			// tickle
-			m_TimeoutTimer.Now();
+			m_TimeoutTimer.start();
 
 			// update statistics
-			double ping = m_StatsTimer.DurationSinceNow();
+			double ping = m_StatsTimer.time();
 			if ( m_fPingMin == -1 )
 			{
 				m_fPingMin = ping;
@@ -222,7 +216,7 @@ void CCodecStream::Task(void)
 		// this assume that thread pushing the Packet
 		// have verified that the CodecStream is connected
 		// and that the packet needs transcoding
-		m_StatsTimer.Now();
+		m_StatsTimer.start();
 		m_uiTotalPackets++;
 		EncodeAmbePacket(&Buffer, Frame->GetAmbe(m_uiCodecIn));
 		m_Socket.Send(Buffer, m_Ip, m_uiPort);
@@ -232,7 +226,7 @@ void CCodecStream::Task(void)
 	}
 
 	// handle timeout
-	if ( !m_LocalQueue.empty() && (m_TimeoutTimer.DurationSinceNow() >= (TRANSCODER_AMBEPACKET_TIMEOUT/1000.0f)) )
+	if ( !m_LocalQueue.empty() && (m_TimeoutTimer.time() >= (TRANSCODER_AMBEPACKET_TIMEOUT/1000.0f)) )
 	{
 		//std::cout << "ambed packet timeout" << std::endl;
 		m_uiTimeoutPackets++;
@@ -242,7 +236,7 @@ void CCodecStream::Task(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 /// packet decoding helpers
 
-bool CCodecStream::IsValidAmbePacket(const CBuffer &Buffer, uint8 *Ambe)
+bool CCodecStream::IsValidAmbePacket(const CBuffer &Buffer, uint8_t *Ambe)
 {
 	bool valid = false;
 
@@ -257,10 +251,10 @@ bool CCodecStream::IsValidAmbePacket(const CBuffer &Buffer, uint8 *Ambe)
 ////////////////////////////////////////////////////////////////////////////////////////
 /// packet encoding helpers
 
-void CCodecStream::EncodeAmbePacket(CBuffer *Buffer, const uint8 *Ambe)
+void CCodecStream::EncodeAmbePacket(CBuffer *Buffer, const uint8_t *Ambe)
 {
 	Buffer->clear();
 	Buffer->Append(m_uiCodecIn);
 	Buffer->Append(m_uiPid);
-	Buffer->Append((uint8 *)Ambe, 9);
+	Buffer->Append((uint8_t *)Ambe, 9);
 }

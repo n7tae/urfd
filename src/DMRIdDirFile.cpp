@@ -1,4 +1,4 @@
-//  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
@@ -20,33 +20,34 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "Main.h"
-#include "YSFNodeDirFile.h"
+#include "DMRIdDirFile.h"
 
 
-#if (YSFNODEDB_USE_RLX_SERVER == 0)
-CYsfNodeDirFile   g_YsfNodeDir;
+#if (DMRIDDB_USE_RLX_SERVER == 0)
+CDmridDirFile g_DmridDir;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor & destructor
 
-CYsfNodeDirFile::CYsfNodeDirFile()
+CDmridDirFile::CDmridDirFile()
 {
 	::memset(&m_LastModTime, 0, sizeof(time_t));
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // init & close
 
-bool CYsfNodeDirFile::Init(void)
+bool CDmridDirFile::Init(void)
 {
-	return CYsfNodeDir::Init();
+	return CDmridDir::Init();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // refresh
 
-bool CYsfNodeDirFile::NeedReload(void)
+bool CDmridDirFile::NeedReload(void)
 {
 	bool needReload = false;
 
@@ -58,14 +59,14 @@ bool CYsfNodeDirFile::NeedReload(void)
 	return needReload;
 }
 
-bool CYsfNodeDirFile::LoadContent(CBuffer *buffer)
+bool CDmridDirFile::LoadContent(CBuffer *buffer)
 {
 	bool ok = false;
 	std::ifstream file;
 	std::streampos size;
 
 	// open file
-	file.open(YSFNODEDB_PATH, std::ios::in | std::ios::binary | std::ios::ate);
+	file.open(DMRIDDB_PATH, std::ios::in | std::ios::binary | std::ios::ate);
 	if ( file.is_open() )
 	{
 		// read file
@@ -92,12 +93,13 @@ bool CYsfNodeDirFile::LoadContent(CBuffer *buffer)
 	return ok;
 }
 
-bool CYsfNodeDirFile::RefreshContent(const CBuffer &buffer)
+bool CDmridDirFile::RefreshContent(const CBuffer &buffer)
 {
 	bool ok = false;
 
 	// clear directory
-	clear();
+	m_CallsignMap.clear();
+	m_DmridMap.clear();
 
 	// scan buffer
 	if ( buffer.size() > 0 )
@@ -111,22 +113,19 @@ bool CYsfNodeDirFile::RefreshContent(const CBuffer &buffer)
 		{
 			*ptr2 = 0;
 			// get items
+			char *dmrid;
 			char *callsign;
-			char *txfreq;
-			char *rxfreq;
-			if ( ((callsign = ::strtok(ptr1, ";")) != nullptr) )
+			if ( ((dmrid = ::strtok(ptr1, ";")) != nullptr) && IsValidDmrid(dmrid) )
 			{
-				if ( ((txfreq = ::strtok(nullptr, ";")) != nullptr) )
+				if ( ((callsign = ::strtok(nullptr, ";")) != nullptr) )
 				{
-					if ( ((rxfreq = ::strtok(nullptr, ";")) != nullptr) )
+					// new entry
+					uint32_t ui = atoi(dmrid);
+					CCallsign cs(callsign, ui);
+					if ( cs.IsValid() )
 					{
-						// new entry
-						CCallsign cs(callsign);
-						CYsfNode node(atoi(txfreq), atoi(rxfreq));
-						if ( cs.IsValid() && node.IsValid() )
-						{
-							insert(std::pair<CCallsign, CYsfNode>(cs, node));
-						}
+						m_CallsignMap.insert(std::pair<uint32_t,CCallsign>(ui, cs));
+						m_DmridMap.insert(std::pair<CCallsign,uint32_t>(cs,ui));
 					}
 				}
 			}
@@ -138,21 +137,20 @@ bool CYsfNodeDirFile::RefreshContent(const CBuffer &buffer)
 		ok = true;
 	}
 
-
 	// report
-	std::cout << "Read " << size() << " YSF nodes from file " << YSFNODEDB_PATH << std::endl;
+	std::cout << "Read " << m_DmridMap.size() << " DMR ids from file " << DMRIDDB_PATH << std::endl;
 
 	// done
 	return ok;
 }
 
 
-bool CYsfNodeDirFile::GetLastModTime(time_t *time)
+bool CDmridDirFile::GetLastModTime(time_t *time)
 {
 	bool ok = false;
 
 	struct stat fileStat;
-	if( ::stat(YSFNODEDB_PATH, &fileStat) != -1 )
+	if( ::stat(DMRIDDB_PATH, &fileStat) != -1 )
 	{
 		*time = fileStat.st_mtime;
 		ok = true;

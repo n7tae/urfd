@@ -1,4 +1,4 @@
-//  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
@@ -18,16 +18,16 @@
 
 #pragma once
 
-#include "YSFNodeDir.h"
+#include "DMRIdDir.h"
 
-class CYsfNodeDirFile : public CYsfNodeDir
+class CDmridDirFile : public CDmridDir
 {
 public:
 	// constructor
-	CYsfNodeDirFile();
+	CDmridDirFile();
 
 	// destructor
-	~CYsfNodeDirFile() {}
+	~CDmridDirFile() {}
 
 	// init & close
 	bool Init(void);

@@ -1,41 +1,26 @@
-//
-//  Transcoder.h
-//  xlxd
-//
-//  Created by Jean-Luc Deltombe (LX3JL) on 13/04/2017.
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//  Copyright © 2020 Thomas A. Early N7TAE
-//
-// ----------------------------------------------------------------------------
-//    This file is part of xlxd.
-//
-//    xlxd is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    xlxd is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-// ----------------------------------------------------------------------------
 
-#ifndef ctranscoder_h
-#define ctranscoder_h
+// ulxd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
 
 #include "Semaphore.h"
 #include "CodecStream.h"
 #include "UDPSocket.h"
-
-////////////////////////////////////////////////////////////////////////////////////////
-// define
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// class
 
 class CPacketStream;
 
@@ -60,7 +45,7 @@ public:
 	bool IsConnected(void) const        { return m_bConnected; }
 
 	// manage streams
-	std::shared_ptr<CCodecStream> GetCodecStream(CPacketStream *, uint8);
+	std::shared_ptr<CCodecStream> GetCodecStream(CPacketStream *, uint8_t);
 	void ReleaseStream(std::shared_ptr<CCodecStream>);
 
 	// task
@@ -73,13 +58,13 @@ protected:
 
 	// packet decoding helpers
 	bool IsValidKeepAlivePacket(const CBuffer &);
-	bool IsValidStreamDescrPacket(const CBuffer &, uint16 *, uint16 *);
+	bool IsValidStreamDescrPacket(const CBuffer &, uint16_t *, uint16_t *);
 	bool IsValidNoStreamAvailablePacket(const CBuffer&);
 
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer *);
-	void EncodeOpenstreamPacket(CBuffer *, uint8, uint8);
-	void EncodeClosestreamPacket(CBuffer *, uint16);
+	void EncodeOpenstreamPacket(CBuffer *, uint8_t, uint8_t);
+	void EncodeClosestreamPacket(CBuffer *, uint16_t);
 
 protected:
 	// streams
@@ -89,8 +74,8 @@ protected:
 	// sync objects for Openstream
 	CSemaphore      m_SemaphoreOpenStream;
 	bool            m_bStreamOpened;
-	uint16          m_StreamidOpenStream;
-	uint16          m_PortOpenStream;
+	uint16_t          m_StreamidOpenStream;
+	uint16_t          m_PortOpenStream;
 
 	// thread
 	std::atomic<bool> keep_running;
@@ -102,10 +87,6 @@ protected:
 	bool            m_bConnected;
 
 	// time
-	CTimePoint      m_LastKeepaliveTime;
-	CTimePoint      m_LastActivityTime;
+	CTimer m_LastKeepaliveTime;
+	CTimer m_LastActivityTime;
 };
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-#endif /* ctranscoder_h */
