@@ -1,0 +1,14 @@
+*.o
+*.d
+.vscode
+./*.blacklist
+./*.whitelist
+./*.interlink
+./*.terminal
+./*.service
+configure.mk
+configure.h
+configure.sql
+reflector.cfg
+wiresx/configure.php
+src/ulxd
