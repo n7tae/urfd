@@ -50,7 +50,7 @@ CBmPeer::CBmPeer(const CCallsign &callsign, const CIp &ip, const char *modules, 
 
 bool CBmPeer::IsAlive(void) const
 {
-	return (m_LastKeepaliveTime.DurationSinceNow() < XLX_KEEPALIVE_TIMEOUT);
+	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

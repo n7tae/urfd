@@ -97,7 +97,7 @@ protected:
 
 protected:
 	// for keep alive
-	CTimePoint          m_LastKeepaliveTime;
+	CTimer m_LastKeepaliveTime;
 
 	// for queue header caches
 	std::array<CDmrplusStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;

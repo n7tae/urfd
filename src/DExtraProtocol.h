@@ -89,6 +89,6 @@ protected:
 
 protected:
 	// time
-	CTimePoint m_LastKeepaliveTime;
-	CTimePoint m_LastPeersLinkTime;
+	CTimer m_LastKeepaliveTime;
+	CTimer m_LastPeersLinkTime;
 };

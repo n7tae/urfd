@@ -21,7 +21,7 @@
 #include <cassert>
 #include <cstring>
 
-#include "CBPTC19696.h"
+#include "BPTC19696.h"
 
 #include "Hamming.h"
 #include "Utils.h"

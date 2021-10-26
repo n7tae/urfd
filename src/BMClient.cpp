@@ -43,5 +43,5 @@ CBmClient::CBmClient(const CBmClient &client)
 
 bool CBmClient::IsAlive(void) const
 {
-	return (m_LastKeepaliveTime.DurationSinceNow() < XLX_KEEPALIVE_TIMEOUT);
+	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
 }

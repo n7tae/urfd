@@ -111,7 +111,7 @@ protected:
 
 protected:
 	// for keep alive
-	CTimePoint          m_LastKeepaliveTime;
+	 CTimer         m_LastKeepaliveTime;
 
 	// for stream id
 	uint16_t              m_uiStreamId;

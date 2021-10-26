@@ -23,7 +23,7 @@
 #include "Reflector.h"
 #include "GateKeeper.h"
 #include "DMRIdDir.h"
-#include "CBPTC19696.h"
+#include "BPTC19696.h"
 #include "RS129.h"
 #include "Golay2087.h"
 #include "QR1676.h"
@@ -47,7 +47,7 @@ bool CDmrplusProtocol::Initialize(const char *type, const int ptype, const uint1
 		return false;
 
 	// update time
-	m_LastKeepaliveTime.Now();
+	m_LastKeepaliveTime.start();
 
 	// random number generator
 	time_t t;
@@ -165,13 +165,13 @@ void CDmrplusProtocol::Task(void)
 
 
 	// keep client alive
-	if ( m_LastKeepaliveTime.DurationSinceNow() > DMRPLUS_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > DMRPLUS_KEEPALIVE_PERIOD )
 	{
 		//
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 	}
 }
 

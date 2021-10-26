@@ -35,8 +35,8 @@ bool CDextraProtocol::Initialize(const char *type, int ptype, const uint16_t por
 		return false;
 
 	// update time
-	m_LastKeepaliveTime.Now();
-	m_LastPeersLinkTime.Now();
+	m_LastKeepaliveTime.start();
+	m_LastPeersLinkTime.start();
 
 	// done
 	return true;
@@ -194,23 +194,23 @@ void CDextraProtocol::Task(void)
 	HandleQueue();
 
 	// keep alive
-	if ( m_LastKeepaliveTime.DurationSinceNow() > DEXTRA_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > DEXTRA_KEEPALIVE_PERIOD )
 	{
 		// handle keep alives
 		HandleKeepalives();
 
 		// update time
-		m_LastKeepaliveTime.Now();
+		m_LastKeepaliveTime.start();
 	}
 
 	// peer connections
-	if ( m_LastPeersLinkTime.DurationSinceNow() > DEXTRA_RECONNECT_PERIOD )
+	if ( m_LastPeersLinkTime.time() > DEXTRA_RECONNECT_PERIOD )
 	{
 		// handle remote peers connections
 		HandlePeerLinks();
 
 		// update time
-		m_LastPeersLinkTime.Now();
+		m_LastPeersLinkTime.start();
 	}
 }
 
