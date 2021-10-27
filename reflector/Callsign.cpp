@@ -32,9 +32,7 @@ CCallsign::CCallsign()
 	::memset(m_Callsign, ' ', sizeof(m_Callsign));
 	::memset(m_Suffix, ' ', sizeof(m_Suffix));
 	m_Module = ' ';
-#ifndef NO_XLX
 	m_uiDmrid = 0;
-#endif
 }
 
 CCallsign::CCallsign(const char *sz, uint32_t dmrid)
@@ -43,9 +41,7 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 	::memset(m_Callsign, ' ', sizeof(m_Callsign));
 	::memset(m_Suffix, ' ', sizeof(m_Suffix));
 	m_Module = ' ';
-#ifndef NO_XLX
 	m_uiDmrid = dmrid;
-#endif
 
 	// and populate
 	if ( ::strlen(sz) > 0 )
@@ -56,7 +52,6 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 		{
 			m_Module = sz[sizeof(m_Callsign)-1];
 		}
-#ifndef NO_XLX
 		// dmrid ok ?
 		if ( m_uiDmrid == 0 )
 		{
@@ -78,7 +73,6 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 			}
 		}
 		g_DmridDir.Unlock();
-#endif
 	}
 }
 
@@ -149,7 +143,6 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 	{
 		m_Module = sz[sizeof(m_Callsign)-1];
 	}
-#ifndef NO_XLX
 	// and update dmrid
 	if ( UpdateDmrid )
 	{
@@ -159,7 +152,6 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 		}
 		g_DmridDir.Unlock();
 	}
-#endif
 }
 
 void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
@@ -179,7 +171,6 @@ void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 	{
 		m_Module = (char)buffer[sizeof(m_Callsign)-1];
 	}
-#ifndef NO_XLX
 	if ( UpdateDmrid )
 	{
 		g_DmridDir.Lock();
@@ -188,10 +179,8 @@ void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 		}
 		g_DmridDir.Unlock();
 	}
-#endif
 }
 
-#ifndef NO_XLX
 void CCallsign::SetDmrid(uint32_t dmrid, bool UpdateCallsign)
 {
 	m_uiDmrid = dmrid;
@@ -216,7 +205,6 @@ void CCallsign::SetDmrid(const uint8_t *buffer, bool UpdateCallsign)
 	sz[8] = 0;
 	SetDmrid((uint32_t)::strtol(sz, nullptr, 16), UpdateCallsign);
 }
-#endif
 
 void CCallsign::SetModule(char c)
 {
@@ -317,9 +305,7 @@ bool CCallsign::operator ==(const CCallsign &callsign) const
 {
 	return ((::memcmp(callsign.m_Callsign, m_Callsign, sizeof(m_Callsign)) == 0) && (m_Module == callsign.m_Module)
 			&& (::memcmp(callsign.m_Suffix, m_Suffix, sizeof(m_Suffix)) == 0)
-#ifndef NO_XLX
 			&& (m_uiDmrid == callsign.m_uiDmrid)
-#endif
 		   );
 }
 

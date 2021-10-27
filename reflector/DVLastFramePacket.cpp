@@ -34,7 +34,6 @@ CDvLastFramePacket::CDvLastFramePacket(const struct dstar_dvframe *DvFrame, uint
 {
 }
 
-#ifndef NO_XLX
 // dmr constructor
 
 CDvLastFramePacket::CDvLastFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid)
@@ -58,9 +57,6 @@ CDvLastFramePacket::CDvLastFramePacket(const uint8_t *ambe, uint16_t sid, uint8_
 	: CDvFramePacket(ambe, sid, pid, spid, fid)
 {
 }
-#endif
-
-
 // copy constructor
 
 CDvLastFramePacket::CDvLastFramePacket(const CDvLastFramePacket &DvFrame)

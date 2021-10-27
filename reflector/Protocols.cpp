@@ -20,12 +20,10 @@
 #include "DExtraProtocol.h"
 #include "DPlusProtocol.h"
 #include "DCSProtocol.h"
-#ifndef NO_XLX
 #include "ULXProtocol.h"
 #include "DMRPlusProtocol.h"
 #include "DMRMMDVMProtocol.h"
 #include "YSFProtocol.h"
-#endif
 #ifndef NO_G3
 #include "G3Protocol.h"
 #endif
@@ -58,7 +56,6 @@ bool CProtocols::Init(void)
 		if (! m_Protocols.back()->Initialize("DCS", PROTOCOL_DCS, DCS_PORT, DSTAR_IPV4, DSTAR_IPV6))
 			return false;
 
-#ifndef NO_XLX
 		m_Protocols.emplace_back(std::unique_ptr<CDmrmmdvmProtocol>(new CDmrmmdvmProtocol));
 		if (! m_Protocols.back()->Initialize(nullptr, PROTOCOL_DMRMMDVM, DMRMMDVM_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
@@ -74,7 +71,6 @@ bool CProtocols::Init(void)
 		m_Protocols.emplace_back(std::unique_ptr<CUlxProtocol>(new CUlxProtocol));
 		if (! m_Protocols.back()->Initialize("XLX", PROTOCOL_XLX, XLX_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
-#endif
 
 #ifndef NO_G3
 		m_Protocols.emplace_back(std::unique_ptr<CG3Protocol>(new CG3Protocol));

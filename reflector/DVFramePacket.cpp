@@ -28,10 +28,8 @@ CDvFramePacket::CDvFramePacket()
 {
 	::memset(m_uiAmbe, 0, sizeof(m_uiAmbe));
 	::memset(m_uiDvData, 0, sizeof(m_uiDvData));
-#ifndef NO_XLX
 	::memset(m_uiAmbePlus, 0, sizeof(m_uiAmbePlus));
 	::memset(m_uiDvSync, 0, sizeof(m_uiDvSync));
-#endif
 };
 
 // dstar constructor
@@ -41,13 +39,10 @@ CDvFramePacket::CDvFramePacket(const struct dstar_dvframe *dvframe, uint16_t sid
 {
 	::memcpy(m_uiAmbe, dvframe->AMBE, sizeof(m_uiAmbe));
 	::memcpy(m_uiDvData, dvframe->DVDATA, sizeof(m_uiDvData));
-#ifndef NO_XLX
 	::memset(m_uiAmbePlus, 0, sizeof(m_uiAmbePlus));
 	::memset(m_uiDvSync, 0, sizeof(m_uiDvSync));
-#endif
 }
 
-#ifndef NO_XLX
 // dmr constructor
 
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid)
@@ -83,7 +78,6 @@ CDvFramePacket::CDvFramePacket
 	::memcpy(m_uiAmbePlus, dmrambe, sizeof(m_uiAmbePlus));
 	::memcpy(m_uiDvSync, dmrsync, sizeof(m_uiDvSync));
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // virtual duplication
@@ -102,10 +96,8 @@ const uint8_t *CDvFramePacket::GetAmbe(uint8_t uiCodec) const
 	{
 	case CODEC_AMBEPLUS:
 		return m_uiAmbe;
-#ifndef NO_XLX
 	case CODEC_AMBE2PLUS:
 		return m_uiAmbePlus;
-#endif
 	default:
 		return nullptr;
 	}
@@ -126,11 +118,9 @@ void CDvFramePacket::SetAmbe(uint8_t uiCodec, uint8_t *Ambe)
 	case CODEC_AMBEPLUS:
 		::memcpy(m_uiAmbe, Ambe, sizeof(m_uiAmbe));
 		break;
-#ifndef NO_XLX
 	case CODEC_AMBE2PLUS:
 		::memcpy(m_uiAmbePlus, Ambe, sizeof(m_uiAmbe));
 		break;
-#endif
 	}
 }
 
@@ -142,9 +132,7 @@ bool CDvFramePacket::operator ==(const CDvFramePacket &DvFrame) const
 {
 	return ( (::memcmp(m_uiAmbe, DvFrame.m_uiAmbe, sizeof(m_uiAmbe)) == 0)
 			 && (::memcmp(m_uiDvData, DvFrame.m_uiDvData, sizeof(m_uiDvData)) == 0)
-#ifndef NO_XLX
 			 && (::memcmp(m_uiAmbePlus, DvFrame.m_uiAmbePlus, sizeof(m_uiAmbePlus)) == 0)
 			 && (::memcmp(m_uiDvSync, DvFrame.m_uiDvSync, sizeof(m_uiDvSync)) == 0)
-#endif
 		   );
 }

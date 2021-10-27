@@ -26,11 +26,9 @@ public:
 	// constructor
 	CDvLastFramePacket();
 	CDvLastFramePacket(const struct dstar_dvframe *, uint16_t, uint8_t);
-#ifndef NO_XLX
 	CDvLastFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
 	CDvLastFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
 	CDvLastFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *);
-#endif
 	CDvLastFramePacket(const CDvLastFramePacket &);
 
 	// virtual duplication

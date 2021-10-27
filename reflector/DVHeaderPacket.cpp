@@ -49,7 +49,6 @@ CDvHeaderPacket::CDvHeaderPacket(const struct dstar_header *buffer, uint16_t sid
 	m_uiCrc = buffer->Crc;
 }
 
-#ifndef NO_XLX
 // dmr constructor
 
 CDvHeaderPacket::CDvHeaderPacket(uint32_t my, const CCallsign &ur, const CCallsign &rpt1, const CCallsign &rpt2, uint16_t sid, uint8_t pid, uint8_t spid)
@@ -79,7 +78,6 @@ CDvHeaderPacket::CDvHeaderPacket(const CCallsign &my, const CCallsign &ur, const
 	m_csRPT2 = rpt2;
 	m_csMY = my;
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // virtual duplication

@@ -76,12 +76,10 @@
 #define PROTOCOL_DEXTRA                 1
 #define PROTOCOL_DPLUS                  2
 #define PROTOCOL_DCS                    3
-#ifndef NO_XLX
 #define PROTOCOL_XLX                    4
 #define PROTOCOL_DMRPLUS                5
 #define PROTOCOL_DMRMMDVM               6
 #define PROTOCOL_YSF                    7
-#endif
 #ifndef NO_G3
 #define PROTOCOL_G3                     8
 #endif
@@ -102,7 +100,6 @@
 #define DCS_KEEPALIVE_PERIOD            1                                   // in seconds
 #define DCS_KEEPALIVE_TIMEOUT           (DCS_KEEPALIVE_PERIOD*30)           // in seconds
 
-#ifndef NO_XLX
 // XLX
 #define XLX_PORT                        10002                               // UDP port
 #define XLX_KEEPALIVE_PERIOD            1                                   // in seconds
@@ -132,7 +129,6 @@
 // the following two defines are now in configure.h
 // #define YSF_AUTOLINK_ENABLE             0                                   // 1 = enable, 0 = disable auto-link
 // #define YSF_AUTOLINK_MODULE             'B'                                 // module for client to auto-link to
-#endif
 
 #ifndef NO_G3
 // G3 Terminal
@@ -156,7 +152,6 @@
 
 #define CODEC_NONE                      0
 #define CODEC_AMBEPLUS                  1                                   // DStar
-#ifndef NO_XLX
 #define CODEC_AMBE2PLUS                 2                                   // DMR
 
 
@@ -171,7 +166,6 @@
 #define YSFNODEDB_USE_RLX_SERVER        1                                   // 1 = use http, 0 = use local file
 #define YSFNODEDB_PATH                  "/usr/local/etc/ysfnode.dat"        // local file path
 #define YSFNODEDB_REFRESH_RATE          180                                 // in minutes
-#endif
 
 // xml & json reporting -----------------------------------------
 
@@ -183,15 +177,6 @@
 #endif
 
 // system paths -------------------------------------------------
-#ifdef NO_XLX
-#define XML_PATH                        "/var/log/xrfd.xml"
-#define WHITELIST_PATH                  "/usr/local/etc/xrfd.whitelist"
-#define BLACKLIST_PATH                  "/usr/local/etc/xrfd.blacklist"
-#define INTERLINKLIST_PATH              "/usr/local/etc/xrfd.interlink"
-#define TERMINALOPTIONS_PATH            "/usr/local/etc/xrfd.terminal"
-#define DEBUGDUMP_PATH                  "/var/log/xrfd.debug"
-#define PIDFILE_PATH                    "/var/run/xrfd.pid"
-#else
 #define XML_PATH                        "/var/log/xlxd.xml"
 #define WHITELIST_PATH                  "/usr/local/etc/xlxd.whitelist"
 #define BLACKLIST_PATH                  "/usr/local/etc/xlxd.blacklist"
@@ -199,7 +184,6 @@
 #define TERMINALOPTIONS_PATH            "/usr/local/etc/xlxd.terminal"
 #define DEBUGDUMP_PATH                  "/var/log/xlxd.debug"
 #define PIDFILE_PATH                    "/var/run/xlxd.pid"
-#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +207,6 @@ extern CReflector  g_Reflector;
 class CGateKeeper;
 extern CGateKeeper g_GateKeeper;
 
-#ifndef NO_XLX
 #if (DMRIDDB_USE_RLX_SERVER == 1)
 class CDmridDirHttp;
 extern CDmridDirHttp   g_DmridDir;
@@ -242,4 +225,3 @@ extern CYsfNodeDirFile   g_YsfNodeDir;
 
 class CTranscoder;
 extern CTranscoder g_Transcoder;
-#endif

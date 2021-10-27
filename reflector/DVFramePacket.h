@@ -47,28 +47,22 @@ public:
 	// constructor
 	CDvFramePacket();
 	CDvFramePacket(const struct dstar_dvframe *, uint16_t, uint8_t);
-#ifndef NO_XLX
 	CDvFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
 	CDvFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
 	CDvFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *);
-#endif
 
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;
 
 	// identity
 	bool IsDvFrame(void) const              { return true; }
-#ifndef NO_XLX
 	bool HasTranscodableAmbe(void) const   { return true; }
-#endif
 
 	// get
 	const uint8_t *GetAmbe(uint8_t) const;
 	const uint8_t *GetAmbe(void) const        { return m_uiAmbe; }
-#ifndef NO_XLX
 	const uint8_t *GetAmbePlus(void) const    { return m_uiAmbePlus; }
 	const uint8_t *GetDvSync(void) const      { return m_uiDvSync; }
-#endif
 	const uint8_t *GetDvData(void) const      { return m_uiDvData; }
 
 	// set
@@ -81,17 +75,13 @@ public:
 protected:
 	// get
 	uint8_t *GetAmbeData(void)                { return m_uiAmbe; }
-#ifndef NO_XLX
 	uint8_t *GetAmbePlusData(void)            { return m_uiAmbePlus; }
-#endif
 
 protected:
 	// data (dstar)
 	uint8_t       m_uiAmbe[AMBE_SIZE];
 	uint8_t       m_uiDvData[DVDATA_SIZE];
-#ifndef NO_XLX
 	// data (dmr)
 	uint8_t       m_uiAmbePlus[AMBEPLUS_SIZE];
 	uint8_t       m_uiDvSync[DVSYNC_SIZE];
-#endif
 };

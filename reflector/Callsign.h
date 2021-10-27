@@ -43,10 +43,8 @@ public:
 	// set
 	void SetCallsign(const char *, bool = true);
 	void SetCallsign(const uint8_t *, int, bool = true);
-#ifndef NO_XLX
 	void SetDmrid(uint32_t, bool = true);
 	void SetDmrid(const uint8_t *, bool = true);
-#endif
 	void SetModule(char);
 	void SetSuffix(const char *);
 	void SetSuffix(const uint8_t *, int);
@@ -57,9 +55,7 @@ public:
 	// get
 	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
-#ifndef NO_XLX
 	uint32_t GetDmrid(void) const             { return m_uiDmrid; }
-#endif
 	void GetSuffix(uint8_t *) const;
 	char GetModule(void) const              { return m_Module; }
 
@@ -85,7 +81,5 @@ protected:
 	char    m_Suffix[CALLSUFFIX_LEN];
 	char    m_Module;
 	mutable char	m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
-#ifndef NO_XLX
 	uint32_t  m_uiDmrid;
-#endif
 };

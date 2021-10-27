@@ -55,10 +55,8 @@ public:
 	// constructor
 	CDvHeaderPacket();
 	CDvHeaderPacket(const struct dstar_header *, uint16_t, uint8_t);
-#ifndef NO_XLX
 	CDvHeaderPacket(uint32_t, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t, uint8_t);
 	CDvHeaderPacket(const CCallsign &, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t);
-#endif
 
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;
