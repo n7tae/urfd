@@ -56,7 +56,7 @@ public:
 	void SetReflectorModule(char c)                     { m_ReflectorModule = c; }
 
 	// identity
-	virtual int GetProtocol(void) const                 { return PROTOCOL_NONE; }
+	virtual EProtocol GetProtocol(void) const           { return EProtocol::none; }
 	virtual int GetProtocolRevision(void) const         { return 0; }
 	virtual int GetCodec(void) const                    { return CODEC_NONE; }
 	virtual const char *GetProtocolName(void) const     { return "none"; }

@@ -34,8 +34,8 @@ public:
 	bool IsAlive(void) const;
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_DEXTRA; }
-	const char *GetProtocolName(void) const     { return "DExtra"; }
+	EProtocol GetProtocol(void) const        { return EProtocol::dextra; }
+	const char *GetProtocolName(void) const  { return "DExtra"; }
 
 	// revision helper
 	static int GetProtocolRevision(const CVersion &);

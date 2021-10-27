@@ -75,21 +75,21 @@ void CGateKeeper::Close(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // authorisations
 
-bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, int protocol, char *modules) const
+bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol protocol, char *modules) const
 {
 	bool ok = true;
 
 	switch (protocol)
 	{
 	// repeaters
-	case PROTOCOL_DEXTRA:
-	case PROTOCOL_DPLUS:
-	case PROTOCOL_DCS:
-	case PROTOCOL_DMRPLUS:
-	case PROTOCOL_DMRMMDVM:
-	case PROTOCOL_YSF:
+	case EProtocol::dextra:
+	case EProtocol::dplus:
+	case EProtocol::dcs:
+	case EProtocol::dmrplus:
+	case EProtocol::dmrmmdvm:
+	case EProtocol::ysf:
 #ifndef NO_G3
-	case PROTOCOL_G3:
+	case EProtocol::g3:
 #endif
 		// first check is IP & callsigned listed OK
 		ok &= IsNodeListedOk(callsign, ip);
@@ -97,12 +97,12 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, int protocol
 		break;
 
 	// XLX interlinks
-	case PROTOCOL_XLX:
+	case EProtocol::ulx:
 		ok &= IsPeerListedOk(callsign, ip, modules);
 		break;
 
 	// unsupported
-	case PROTOCOL_NONE:
+	case EProtocol::none:
 	default:
 		ok = false;
 		break;
@@ -111,29 +111,29 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, int protocol
 	// report
 	if ( !ok )
 	{
-		std::cout << "Gatekeeper blocking linking of " << callsign << " @ " << ip << " using protocol " << protocol << std::endl;
+		std::cout << "Gatekeeper blocking linking of " << callsign << " @ " << ip << " using protocol " << ProtocolName(protocol) << std::endl;
 	}
 
 	// done
 	return ok;
 }
 
-bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, int protocol, char module) const
+bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EProtocol protocol, char module) const
 {
 	bool ok = true;
 
 	switch (protocol)
 	{
 	// repeaters, protocol specific
-	case PROTOCOL_ANY:
-	case PROTOCOL_DEXTRA:
-	case PROTOCOL_DPLUS:
-	case PROTOCOL_DCS:
-	case PROTOCOL_DMRPLUS:
-	case PROTOCOL_DMRMMDVM:
-	case PROTOCOL_YSF:
+	case EProtocol::any:
+	case EProtocol::dextra:
+	case EProtocol::dplus:
+	case EProtocol::dcs:
+	case EProtocol::dmrplus:
+	case EProtocol::dmrmmdvm:
+	case EProtocol::ysf:
 #ifndef NO_G3
-	case PROTOCOL_G3:
+	case EProtocol::g3:
 #endif
 		// first check is IP & callsigned listed OK
 		ok = ok && IsNodeListedOk(callsign, ip, module);
@@ -141,12 +141,12 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, int prot
 		break;
 
 	// XLX interlinks
-	case PROTOCOL_XLX:
+	case EProtocol::ulx:
 		ok = ok && IsPeerListedOk(callsign, ip, module);
 		break;
 
 	// unsupported
-	case PROTOCOL_NONE:
+	case EProtocol::none:
 	default:
 		ok = false;
 		break;
@@ -155,7 +155,7 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, int prot
 	// report
 	if ( !ok )
 	{
-		std::cout << "Gatekeeper blocking transmitting of " << callsign << " @ " << ip << " using protocol " << protocol << std::endl;
+		std::cout << "Gatekeeper blocking transmitting of " << callsign << " @ " << ip << " using protocol " << ProtocolName(protocol) << std::endl;
 	}
 
 	// done
@@ -263,4 +263,30 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 
 	// done
 	return ok;
+}
+
+const std::string CGateKeeper::ProtocolName(const EProtocol p) const
+{
+	switch (p) {
+		case EProtocol::any:
+			return "ANY";
+		case EProtocol::dcs:
+			return "DCS";
+		case EProtocol::dextra:
+			return "DExtra";
+		case EProtocol::dmrmmdvm:
+			return "MMDVM DMR";
+		case EProtocol::dmrplus:
+			return "DMR+";
+		case EProtocol::ulx:
+			return "ULX";
+		case EProtocol::ysf:
+			return "YSF";
+#ifndef NO_G3
+		case EProtocol::g3:
+			return "Icom G3";
+#endif
+		default:
+			return "NONE";
+	}
 }

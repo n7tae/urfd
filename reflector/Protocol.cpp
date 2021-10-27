@@ -49,7 +49,7 @@ CProtocol::~CProtocol()
 ////////////////////////////////////////////////////////////////////////////////////////
 // initialization
 
-bool CProtocol::Initialize(const char *type, int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// init reflector apparent callsign
 	m_ReflectorCallsign = g_Reflector.GetCallsign();
@@ -65,8 +65,7 @@ bool CProtocol::Initialize(const char *type, int ptype, const uint16_t port, con
 #ifdef LISTEN_IPV4
 	if (has_ipv4)
 	{
-		const auto s = g_Reflector.m_Address.GetV4Address(ptype);
-		CIp ip4(AF_INET, port, s.c_str());
+		CIp ip4(AF_INET, port, LISTEN_IPV4);
 		if ( ip4.IsSet() )
 		{
 			if (! m_Socket4.Open(ip4))
@@ -79,7 +78,7 @@ bool CProtocol::Initialize(const char *type, int ptype, const uint16_t port, con
 #ifdef LISTEN_IPV6
 	if (has_ipv6)
 	{
-		CIp ip6(AF_INET6, port, g_Reflector.m_Address.GetV6Address(ptype).c_str());
+		CIp ip6(AF_INET6, port, LISTEN_IPV6);
 		if ( ip6.IsSet() )
 		{
 			if (! m_Socket6.Open(ip6))

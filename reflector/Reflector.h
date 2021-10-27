@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "ProtoAddress.h"
 #include "Users.h"
 #include "Clients.h"
 #include "Peers.h"
@@ -77,9 +76,6 @@ public:
 	// users
 	CUsers  *GetUsers(void)                         { m_Users.Lock(); return &m_Users; }
 	void    ReleaseUsers(void)                      { m_Users.Unlock(); }
-
-	// IP Addresses
-	CProtoAddress m_Address;
 
 	// get
 	bool IsValidModule(char c) const                { return (GetModuleIndex(c) >= 0); }

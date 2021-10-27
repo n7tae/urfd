@@ -42,8 +42,8 @@ public:
 	void Close(void);
 
 	// authorizations
-	bool MayLink(const CCallsign &, const CIp &, int, char * = nullptr) const;
-	bool MayTransmit(const CCallsign &, const CIp &, int = PROTOCOL_ANY, char = ' ') const;
+	bool MayLink(const CCallsign &, const CIp &, const EProtocol, char * = nullptr) const;
+	bool MayTransmit(const CCallsign &, const CIp &, EProtocol = EProtocol::any, char = ' ') const;
 
 	// peer list handeling
 	CPeerCallsignList *GetPeerList(void)    { m_PeerList.Lock(); return &m_PeerList; }
@@ -57,6 +57,7 @@ protected:
 	bool IsNodeListedOk(const CCallsign &, const CIp &, char = ' ') const;
 	bool IsPeerListedOk(const CCallsign &, const CIp &, char) const;
 	bool IsPeerListedOk(const CCallsign &, const CIp &, char *) const;
+	const std::string ProtocolName(EProtocol) const;
 
 protected:
 	// data

@@ -33,9 +33,9 @@ public:
 	virtual ~CBmClient() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_XLX; }
+	EProtocol GetProtocol(void) const           { return EProtocol::ulx; }
 	int GetProtocolRevision(void) const         { return XLX_PROTOCOL_REVISION_2; }
-	const char *GetProtocolName(void) const     { return "XLX"; }
+	const char *GetProtocolName(void) const     { return "ULX"; }
 	int GetCodec(void) const                    { return CODEC_AMBE2PLUS; }
 	bool IsPeer(void) const                     { return true; }
 

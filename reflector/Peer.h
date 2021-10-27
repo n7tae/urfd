@@ -46,9 +46,9 @@ public:
 	// set
 
 	// identity
-	virtual int GetProtocol(void) const                 { return PROTOCOL_NONE; }
+	virtual EProtocol GetProtocol(void) const           { return EProtocol::none; }
 	virtual int GetProtocolRevision(void) const         { return 0; }
-	virtual const char *GetProtocolName(void) const     { return "none"; }
+	virtual const char *GetProtocolName(void) const     { return "NONE"; }
 
 	// status
 	virtual bool IsAMaster(void) const;

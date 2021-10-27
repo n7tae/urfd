@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CG3Protocol::Initialize(const char */*type*/, const int /*type*/, const uint16_t /*port*/, const bool /*has_ipv4*/, const bool /*has_ipv6*/)
+bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, const uint16_t /*port*/, const bool /*has_ipv4*/, const bool /*has_ipv6*/)
 // everything is hard coded until ICOM gets their act together and start supporting IPv6
 {
 	ReadOptions();
@@ -46,8 +46,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const int /*type*/, const uin
 	//m_ReflectorCallsign.PatchCallsign(0, (const uint8_t *)"XLX", 3);
 
 	// create our sockets
-	auto s = g_Reflector.m_Address.GetV4Address(PROTOCOL_G3);
-	CIp ip(AF_INET, G3_DV_PORT, s.c_str());
+	CIp ip(AF_INET, G3_DV_PORT, LISTEN_IPV4);
 	if ( ip.IsSet() )
 	{
 		if (! m_Socket4.Open(ip))
@@ -181,7 +180,7 @@ void CG3Protocol::PresenceTask(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>extant = nullptr;
-			while ( (extant = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+			while ( (extant = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 			{
 				CIp ClIp = extant->GetIp();
 				if (ClIp.GetAddr() == Ip.GetAddr())
@@ -195,7 +194,7 @@ void CG3Protocol::PresenceTask(void)
 				it = clients->begin();
 
 				// do we already have a client with the same call (IP changed)?
-				while ( (extant = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+				while ( (extant = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 				{
 					if (extant->GetCallsign().HasSameCallsign(Terminal))
 					{
@@ -347,7 +346,7 @@ void CG3Protocol::IcmpTask(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 			{
 				CIp ClientIp = client->GetIp();
 				if (ClientIp.GetAddr() == Ip.GetAddr())
@@ -383,7 +382,7 @@ void CG3Protocol::Task(void)
 		CClients *clients = g_Reflector.GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
-		while ( (client = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+		while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 		{
 			ClIp = client->GetIp();
 			if (ClIp.GetAddr() == Ip.GetAddr())
@@ -408,7 +407,7 @@ void CG3Protocol::Task(void)
 			else if ( IsValidDvHeaderPacket(Buffer, Header) )
 			{
 				// callsign muted?
-				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, PROTOCOL_G3, Header->GetRpt2Module()) )
+				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::g3, Header->GetRpt2Module()) )
 				{
 					// handle it
 					OnDvHeaderPacketIn(Header, *BaseIp);
@@ -464,7 +463,7 @@ void CG3Protocol::HandleQueue(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 			{
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
@@ -497,7 +496,7 @@ void CG3Protocol::HandleKeepalives(void)
 	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
-	while ( (client = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+	while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 	{
 		if (!client->IsAlive())
 		{
@@ -537,7 +536,7 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 		CClients *clients = g_Reflector.GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
-		while ( (client = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+		while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 		{
 			CIp ClIp = client->GetIp();
 			if (ClIp.GetAddr() == Ip.GetAddr())
@@ -705,7 +704,7 @@ void CG3Protocol::NeedReload(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_G3, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 			{
 				char module = client->GetReflectorModule();
 				if (!strchr(m_Modules.c_str(), module) && !strchr(m_Modules.c_str(), '*'))

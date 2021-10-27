@@ -47,7 +47,7 @@ static uint8_t g_DmrSyncMSData[]     = { 0x0D,0x5D,0x7F,0x77,0xFD,0x75,0x70 };
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDmrmmdvmProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CDmrmmdvmProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -105,7 +105,7 @@ void CDmrmmdvmProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Buffer, Header, &Cmd, &CallType) )
 		{
 			// callsign muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, PROTOCOL_DMRMMDVM) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dmrmmdvm) )
 			{
 				// handle it
 				OnDvHeaderPacketIn(Header, Ip, Cmd, CallType);
@@ -120,7 +120,7 @@ void CDmrmmdvmProtocol::Task(void)
 			std::cout << "DMRmmdvm connect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_DMRMMDVM) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dmrmmdvm) )
 			{
 				// acknowledge the request
 				EncodeConnectAckPacket(&Buffer, Callsign, m_uiAuthSeed);
@@ -139,7 +139,7 @@ void CDmrmmdvmProtocol::Task(void)
 			std::cout << "DMRmmdvm authentication packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_DMRMMDVM) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dmrmmdvm) )
 			{
 				// acknowledge the request
 				EncodeAckPacket(&Buffer, Callsign);
@@ -147,7 +147,7 @@ void CDmrmmdvmProtocol::Task(void)
 
 				// add client if needed
 				CClients *clients = g_Reflector.GetClients();
-				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, PROTOCOL_DMRMMDVM);
+				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::dmrmmdvm);
 				// client already connected ?
 				if ( client == nullptr )
 				{
@@ -177,7 +177,7 @@ void CDmrmmdvmProtocol::Task(void)
 
 			// find client & remove it
 			CClients *clients = g_Reflector.GetClients();
-			std::shared_ptr<CClient>client = clients->FindClient(Ip, PROTOCOL_DMRMMDVM);
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dmrmmdvm);
 			if ( client != nullptr )
 			{
 				clients->RemoveClient(client);
@@ -200,7 +200,7 @@ void CDmrmmdvmProtocol::Task(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(Callsign, Ip, PROTOCOL_DMRMMDVM, it)) != nullptr )
+			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::dmrmmdvm, it)) != nullptr )
 			{
 				// acknowledge
 				EncodeKeepAlivePacket(&Buffer, client);
@@ -273,7 +273,7 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 		CCallsign rpt2(Header->GetRpt2Callsign());
 		// no stream open yet, open a new one
 		// firstfind this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, PROTOCOL_DMRMMDVM);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dmrmmdvm);
 		if ( client )
 		{
 			// process cmd if any
@@ -413,7 +413,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_DMRMMDVM, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::dmrmmdvm, it)) != nullptr )
 			{
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
@@ -442,7 +442,7 @@ void CDmrmmdvmProtocol::HandleKeepalives(void)
 	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
-	while ( (client = clients->FindNextClient(PROTOCOL_DMRMMDVM, it)) != nullptr )
+	while ( (client = clients->FindNextClient(EProtocol::dmrmmdvm, it)) != nullptr )
 	{
 		// is this client busy ?
 		if ( client->IsAMaster() )

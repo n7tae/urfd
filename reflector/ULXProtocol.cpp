@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CUlxProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CUlxProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
@@ -88,7 +88,7 @@ void CUlxProtocol::Task(void)
 			std::cout << "XLX (" << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision() << ") connect packet for modules " << Modules << " from " << Callsign <<  " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_XLX, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::ulx, Modules) )
 			{
 				// acknowledge connecting request
 				// following is version dependent
@@ -98,7 +98,7 @@ void CUlxProtocol::Task(void)
 				{
 					// already connected ?
 					CPeers *peers = g_Reflector.GetPeers();
-					if ( peers->FindPeer(Callsign, Ip, PROTOCOL_XLX) == nullptr )
+					if ( peers->FindPeer(Callsign, Ip, EProtocol::ulx) == nullptr )
 					{
 						// acknowledge the request
 						EncodeConnectAckPacket(&Buffer, Modules);
@@ -129,11 +129,11 @@ void CUlxProtocol::Task(void)
 			std::cout << "XLX ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_XLX, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::ulx, Modules) )
 			{
 				// already connected ?
 				CPeers *peers = g_Reflector.GetPeers();
-				if ( peers->FindPeer(Callsign, Ip, PROTOCOL_XLX) == nullptr )
+				if ( peers->FindPeer(Callsign, Ip, EProtocol::ulx) == nullptr )
 				{
 					// create the new peer
 					// this also create one client per module
@@ -152,7 +152,7 @@ void CUlxProtocol::Task(void)
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, PROTOCOL_XLX);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::ulx);
 			if ( peer != nullptr )
 			{
 				// remove it from reflector peer list
@@ -172,7 +172,7 @@ void CUlxProtocol::Task(void)
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, PROTOCOL_XLX);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::ulx);
 			if ( peer != nullptr )
 			{
 				// keep it alive
@@ -247,7 +247,7 @@ void CUlxProtocol::HandleQueue(void)
 				CClients *clients = g_Reflector.GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
-				while ( (client = clients->FindNextClient(PROTOCOL_XLX, it)) != nullptr )
+				while ( (client = clients->FindNextClient(EProtocol::ulx, it)) != nullptr )
 				{
 					// is this client busy ?
 					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
@@ -298,7 +298,7 @@ void CUlxProtocol::HandleKeepalives(void)
 	CPeers *peers = g_Reflector.GetPeers();
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(PROTOCOL_XLX, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::ulx, pit)) != nullptr )
 	{
 		// send keepalive
 		Send(keepalive, peer->GetIp());
@@ -340,7 +340,7 @@ void CUlxProtocol::HandlePeerLinks(void)
 	// if not, disconnect
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(PROTOCOL_XLX, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::ulx, pit)) != nullptr )
 	{
 		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
 		{
@@ -359,7 +359,7 @@ void CUlxProtocol::HandlePeerLinks(void)
 	{
 		if ( (*it).GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
 			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), PROTOCOL_XLX) == nullptr )
+		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::ulx) == nullptr )
 		{
 			// resolve again peer's IP in case it's a dynamic IP
 			(*it).ResolveIp();
@@ -404,7 +404,7 @@ void CUlxProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 		// no stream open yet, open a new one
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, PROTOCOL_XLX, Header->GetRpt2Module());
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::ulx, Header->GetRpt2Module());
 		if ( client )
 		{
 			// and try to open the stream

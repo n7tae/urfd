@@ -149,7 +149,7 @@ void CWiresxCmdHandler::Task(void)
 		// find our client and the module it's currentlink linked to
 		cModule = ' ';
 		CClients *clients = g_Reflector.GetClients();
-		std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), PROTOCOL_YSF);
+		std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 		if ( client )
 		{
 			cModule = client->GetReflectorModule();
@@ -179,7 +179,7 @@ void CWiresxCmdHandler::Task(void)
 				ReplyToWiresxConnReqPacket(Cmd.GetIp(), Info, cModule);
 				// change client's module
 				CClients *clients = g_Reflector.GetClients();
-				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), PROTOCOL_YSF);
+				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 				if ( client )
 				{
 					client->SetReflectorModule(cModule);
@@ -198,7 +198,7 @@ void CWiresxCmdHandler::Task(void)
 			// change client's module
 			{
 				CClients *clients = g_Reflector.GetClients();
-				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), PROTOCOL_YSF);
+				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 				if ( client != nullptr )
 				{
 					client->SetReflectorModule(' ');

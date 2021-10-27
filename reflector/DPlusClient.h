@@ -32,7 +32,7 @@ public:
 	virtual ~CDplusClient() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_DPLUS; }
+	EProtocol GetProtocol(void) const           { return EProtocol::dplus; }
 	const char *GetProtocolName(void) const     { return "DPlus"; }
 	int GetCodec(void) const                    { return CODEC_AMBEPLUS; }
 	bool IsNode(void) const                     { return true; }

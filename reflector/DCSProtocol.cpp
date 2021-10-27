@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDcsProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CDcsProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -68,7 +68,7 @@ void CDcsProtocol::Task(void)
 		if ( IsValidDvPacket(Buffer, Header, Frame) )
 		{
 			// callsign muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, PROTOCOL_DCS, Header->GetRpt2Module()) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dcs, Header->GetRpt2Module()) )
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
@@ -89,7 +89,7 @@ void CDcsProtocol::Task(void)
 			std::cout << "DCS connect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_DCS) && g_Reflector.IsValidModule(ToLinkModule) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dcs) && g_Reflector.IsValidModule(ToLinkModule) )
 			{
 				// valid module ?
 				if ( g_Reflector.IsValidModule(ToLinkModule) )
@@ -125,7 +125,7 @@ void CDcsProtocol::Task(void)
 
 			// find client
 			CClients *clients = g_Reflector.GetClients();
-			std::shared_ptr<CClient>client = clients->FindClient(Ip, PROTOCOL_DCS);
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dcs);
 			if ( client != nullptr )
 			{
 				// remove it
@@ -144,7 +144,7 @@ void CDcsProtocol::Task(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(Callsign, Ip, PROTOCOL_DCS, it)) != nullptr )
+			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::dcs, it)) != nullptr )
 			{
 				client->Alive();
 			}
@@ -202,7 +202,7 @@ void CDcsProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, PROTOCOL_DCS);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dcs);
 		if ( client )
 		{
 			// get client callsign
@@ -273,7 +273,7 @@ void CDcsProtocol::HandleQueue(void)
 				CClients *clients = g_Reflector.GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
-				while ( (client = clients->FindNextClient(PROTOCOL_DCS, it)) != nullptr )
+				while ( (client = clients->FindNextClient(EProtocol::dcs, it)) != nullptr )
 				{
 					// is this client busy ?
 					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
@@ -305,7 +305,7 @@ void CDcsProtocol::HandleKeepalives(void)
 	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
-	while ( (client = clients->FindNextClient(PROTOCOL_DCS, it)) != nullptr )
+	while ( (client = clients->FindNextClient(EProtocol::dcs, it)) != nullptr )
 	{
 		// encode client's specific keepalive packet
 		CBuffer keepalive2;

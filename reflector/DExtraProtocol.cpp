@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDextraProtocol::Initialize(const char *type, int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CDextraProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -75,7 +75,7 @@ void CDextraProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Buffer, Header) )
 		{
 			// callsign muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, PROTOCOL_DEXTRA, Header->GetRpt2Module()) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dextra, Header->GetRpt2Module()) )
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 			}
@@ -89,7 +89,7 @@ void CDextraProtocol::Task(void)
 			std::cout << "DExtra connect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << " rev " << ProtRev << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_DEXTRA) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dextra) )
 			{
 				// valid module ?
 				if ( g_Reflector.IsValidModule(ToLinkModule) )
@@ -103,7 +103,7 @@ void CDextraProtocol::Task(void)
 
 						// already connected ?
 						CPeers *peers = g_Reflector.GetPeers();
-						if ( peers->FindPeer(Callsign, Ip, PROTOCOL_DEXTRA) == nullptr )
+						if ( peers->FindPeer(Callsign, Ip, EProtocol::dextra) == nullptr )
 						{
 							// create the new peer
 							// this also create one client per module
@@ -147,7 +147,7 @@ void CDextraProtocol::Task(void)
 
 			// find client & remove it
 			CClients *clients = g_Reflector.GetClients();
-			std::shared_ptr<CClient>client = clients->FindClient(Ip, PROTOCOL_DEXTRA);
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dextra);
 			if ( client != nullptr )
 			{
 				// ack disconnect packet
@@ -173,7 +173,7 @@ void CDextraProtocol::Task(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(Callsign, Ip, PROTOCOL_DEXTRA, it)) != nullptr )
+			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::dextra, it)) != nullptr )
 			{
 				client->Alive();
 			}
@@ -234,7 +234,7 @@ void CDextraProtocol::HandleQueue(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_DEXTRA, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::dextra, it)) != nullptr )
 			{
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
@@ -268,7 +268,7 @@ void CDextraProtocol::HandleKeepalives(void)
 	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
-	while ( (client = clients->FindNextClient(PROTOCOL_DEXTRA, it)) != nullptr )
+	while ( (client = clients->FindNextClient(EProtocol::dextra, it)) != nullptr )
 	{
 		// send keepalive
 		Send(keepalive, client->GetIp());
@@ -283,7 +283,7 @@ void CDextraProtocol::HandleKeepalives(void)
 		else if ( !client->IsAlive() )
 		{
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(client->GetCallsign(), client->GetIp(), PROTOCOL_DEXTRA);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(client->GetCallsign(), client->GetIp(), EProtocol::dextra);
 			if ( peer != nullptr && peer->GetReflectorModules()[0] == client->GetReflectorModule() )
 			{
 				// no, but this is a peer client, so it will be handled below
@@ -309,7 +309,7 @@ void CDextraProtocol::HandleKeepalives(void)
 	CPeers *peers = g_Reflector.GetPeers();
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(PROTOCOL_DEXTRA, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::dextra, pit)) != nullptr )
 	{
 		// keepalives are sent between clients
 
@@ -349,7 +349,7 @@ void CDextraProtocol::HandlePeerLinks(void)
 	// if not, disconnect
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(PROTOCOL_DEXTRA, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::dextra, pit)) != nullptr )
 	{
 		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
 		{
@@ -370,7 +370,7 @@ void CDextraProtocol::HandlePeerLinks(void)
 			continue;
 		if ( strlen((*it).GetModules()) != 2 )
 			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), PROTOCOL_DEXTRA) == nullptr )
+		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::dextra) == nullptr )
 		{
 			// resolve again peer's IP in case it's a dynamic IP
 			(*it).ResolveIp();
@@ -407,7 +407,7 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, PROTOCOL_DEXTRA);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dextra);
 		if ( client )
 		{
 			// get client callsign

@@ -125,7 +125,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip)
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip, int Protocol)
+std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip, const EProtocol Protocol)
 {
 	// find client
 	for ( auto it=begin(); it!=end(); it++ )
@@ -140,7 +140,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip, int Protocol)
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip, int Protocol, char ReflectorModule)
+std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip, const EProtocol Protocol, const char ReflectorModule)
 {
 	// find client
 	for ( auto it=begin(); it!=end(); it++ )
@@ -155,7 +155,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CIp &Ip, int Protocol, char 
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, const CIp &Ip, int Protocol)
+std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, const CIp &Ip, const EProtocol Protocol)
 {
 	// find client
 	for ( auto it=begin(); it!=end(); it++ )
@@ -169,7 +169,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, const C
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, char module, const CIp &Ip, int Protocol)
+std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, char module, const CIp &Ip, const EProtocol Protocol)
 {
 	// find client
 	for ( auto it=begin(); it!=end(); it++ )
@@ -183,7 +183,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, char mo
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, int Protocol)
+std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, const EProtocol Protocol)
 {
 	// find client
 	for ( auto it=begin(); it!=end(); it++ )
@@ -200,7 +200,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, int Pro
 ////////////////////////////////////////////////////////////////////////////////////////
 // iterate on clients
 
-std::shared_ptr<CClient> CClients::FindNextClient(int Protocol, std::list<std::shared_ptr<CClient>>::iterator &it)
+std::shared_ptr<CClient> CClients::FindNextClient(const EProtocol Protocol, std::list<std::shared_ptr<CClient>>::iterator &it)
 {
 	while ( it != end() )
 	{
@@ -213,7 +213,7 @@ std::shared_ptr<CClient> CClients::FindNextClient(int Protocol, std::list<std::s
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindNextClient(const CIp &Ip, int Protocol, std::list<std::shared_ptr<CClient>>::iterator &it)
+std::shared_ptr<CClient> CClients::FindNextClient(const CIp &Ip, const EProtocol Protocol, std::list<std::shared_ptr<CClient>>::iterator &it)
 {
 	while ( it != end() )
 	{
@@ -226,7 +226,7 @@ std::shared_ptr<CClient> CClients::FindNextClient(const CIp &Ip, int Protocol, s
 	return nullptr;
 }
 
-std::shared_ptr<CClient> CClients::FindNextClient(const CCallsign &Callsign, const CIp &Ip, int Protocol, std::list<std::shared_ptr<CClient>>::iterator &it)
+std::shared_ptr<CClient> CClients::FindNextClient(const CCallsign &Callsign, const CIp &Ip, const EProtocol Protocol, std::list<std::shared_ptr<CClient>>::iterator &it)
 {
 	while ( it != end() )
 	{

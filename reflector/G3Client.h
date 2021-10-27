@@ -32,7 +32,7 @@ public:
 	virtual ~CG3Client() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_G3; }
+	EProtocol GetProtocol(void) const           { return EProtocol::g3; }
 	const char *GetProtocolName(void) const     { return "Terminal/AP"; }
 	int GetCodec(void) const                    { return CODEC_AMBEPLUS; }
 	bool IsNode(void) const                     { return true; }

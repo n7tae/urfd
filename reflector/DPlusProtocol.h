@@ -39,7 +39,7 @@ class CDplusProtocol : public CProtocol
 {
 public:
 	// initialization
-	bool Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
+	bool Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 
 	// task
 	void Task(void);

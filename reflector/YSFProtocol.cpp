@@ -38,7 +38,7 @@ CYsfProtocol::CYsfProtocol()
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CYsfProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CYsfProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -119,7 +119,7 @@ void CYsfProtocol::Task(void)
 			else if ( IsValidDvHeaderPacket(Ip, Fich, Buffer, Header, Frames) )
 			{
 				// node linked and callsign muted?
-				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, PROTOCOL_YSF, Header->GetRpt2Module())  )
+				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::ysf, Header->GetRpt2Module())  )
 				{
 					// handle it
 					OnDvHeaderPacketIn(Header, Ip);
@@ -138,7 +138,7 @@ void CYsfProtocol::Task(void)
 			//std::cout << "YSF keepalive/connect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_YSF) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::ysf) )
 			{
 				// acknowledge the request
 				EncodeConnectAckPacket(&Buffer);
@@ -146,7 +146,7 @@ void CYsfProtocol::Task(void)
 
 				// add client if needed
 				CClients *clients = g_Reflector.GetClients();
-				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, PROTOCOL_YSF);
+				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::ysf);
 				// client already connected ?
 				if ( client == nullptr )
 				{
@@ -240,7 +240,7 @@ void CYsfProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, PROTOCOL_YSF);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::ysf);
 		if ( client )
 		{
 			// get client callsign
@@ -328,7 +328,7 @@ void CYsfProtocol::HandleQueue(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_YSF, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::ysf, it)) != nullptr )
 			{
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
@@ -357,7 +357,7 @@ void CYsfProtocol::HandleKeepalives(void)
 	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
-	while ( (client = clients->FindNextClient(PROTOCOL_YSF, it)) != nullptr )
+	while ( (client = clients->FindNextClient(EProtocol::ysf, it)) != nullptr )
 	{
 		// is this client busy ?
 		if ( client->IsAMaster() )

@@ -50,7 +50,7 @@ class CDmrplusProtocol : public CProtocol
 {
 public:
 	// initialization
-	bool Initialize(const char *type, const int pytpe, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
+	bool Initialize(const char *type, const EProtocol pytpe, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 
 	// task
 	void Task(void);

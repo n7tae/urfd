@@ -76,14 +76,14 @@ bool CTranscoder::Init(void)
 	// now open the transcoder port
 #ifdef LISTEN_IPV4
 #ifdef LISTEN_IPV6
-	const auto paddr = (AF_INET == m_Ip.GetFamily()) ? g_Reflector.m_Address.GetV4Address(PROTOCOL_ANY) : g_Reflector.m_Address.GetV6Address(PROTOCOL_ANY);
+	auto paddr = (AF_INET == m_Ip.GetFamily()) ? LISTEN_IPV4 : LISTEN_IPV6;
 #else
-	const auto paddr = g_Reflector.m_Address.GetV4Address(PROTOCOL_ANY);
+	auto paddr = LISTEN_IPV4;
 #endif
 #else
-	const auto paddr = g_Reflector.m_address.GetV6Address(PROTOCOL_ANY);
+	auto paddr = LISTEN_IPV6;
 #endif
-	CIp tc(m_Ip.GetFamily(), TRANSCODER_PORT, paddr.c_str());
+	CIp tc(m_Ip.GetFamily(), TRANSCODER_PORT, paddr);
 
 	// create our socket
 	if (tc.IsSet())

@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CDplusProtocol::Initialize(const char *type, const int ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CDplusProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -73,7 +73,7 @@ void CDplusProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Buffer, Header) )
 		{
 			// is muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, PROTOCOL_DPLUS, Header->GetRpt2Module()) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dplus, Header->GetRpt2Module()) )
 			{
 				// handle it
 				OnDvHeaderPacketIn(Header, Ip);
@@ -95,7 +95,7 @@ void CDplusProtocol::Task(void)
 			std::cout << "DPlus login packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, PROTOCOL_DPLUS) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dplus) )
 			{
 				// acknowledge the request
 				EncodeLoginAckPacket(&Buffer);
@@ -119,7 +119,7 @@ void CDplusProtocol::Task(void)
 
 			// find client
 			CClients *clients = g_Reflector.GetClients();
-			std::shared_ptr<CClient>client = clients->FindClient(Ip, PROTOCOL_DPLUS);
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dplus);
 			if ( client != nullptr )
 			{
 				// remove it
@@ -138,7 +138,7 @@ void CDplusProtocol::Task(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(Ip, PROTOCOL_DPLUS, it)) != nullptr )
+			while ( (client = clients->FindNextClient(Ip, EProtocol::dplus, it)) != nullptr )
 			{
 				client->Alive();
 			}
@@ -193,7 +193,7 @@ void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header
 		if ( g_Reflector.IsValidModule(rpt2.GetModule()) )
 		{
 			// find this client
-			std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, PROTOCOL_DPLUS);
+			std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dplus);
 			if ( client )
 			{
 				// now we know if it's a dextra dongle or a genuine dplus node
@@ -262,7 +262,7 @@ void CDplusProtocol::HandleQueue(void)
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(PROTOCOL_DPLUS, it)) != nullptr )
+			while ( (client = clients->FindNextClient(EProtocol::dplus, it)) != nullptr )
 			{
 				// is this client busy ?
 				if ( !client->IsAMaster() )
@@ -352,7 +352,7 @@ void CDplusProtocol::HandleKeepalives(void)
 	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
-	while ( (client = clients->FindNextClient(PROTOCOL_DPLUS, it)) != nullptr )
+	while ( (client = clients->FindNextClient(EProtocol::dplus, it)) != nullptr )
 	{
 		// send keepalive
 		//std::cout << "Sending DPlus packet @ " << client->GetIp() << std::endl;

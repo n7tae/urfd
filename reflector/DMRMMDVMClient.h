@@ -32,7 +32,7 @@ public:
 	virtual ~CDmrmmdvmClient() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_DMRMMDVM; }
+	EProtocol GetProtocol(void) const           { return EProtocol::dmrmmdvm; }
 	const char *GetProtocolName(void) const     { return "DMRMmdvm"; }
 	int GetCodec(void) const                    { return CODEC_AMBE2PLUS; }
 	bool IsNode(void) const                     { return true; }

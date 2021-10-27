@@ -36,7 +36,7 @@ public:
 	virtual ~CUlxClient() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_XLX; }
+	EProtocol GetProtocol(void) const           { return EProtocol::ulx; }
 	int GetProtocolRevision(void) const         { return m_ProtRev; }
 	const char *GetProtocolName(void) const     { return "XLX"; }
 	int GetCodec(void) const;

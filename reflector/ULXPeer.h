@@ -33,8 +33,8 @@ public:
 	bool IsAlive(void) const;
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_XLX; }
-	const char *GetProtocolName(void) const     { return "XLX"; }
+	EProtocol GetProtocol(void) const       { return EProtocol::ulx; }
+	const char *GetProtocolName(void) const { return "ULX"; }
 
 	// revision helper
 	static int GetProtocolRevision(const CVersion &);

@@ -39,7 +39,7 @@ public:
 	virtual ~CDextraClient() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_DEXTRA; }
+	EProtocol GetProtocol(void) const           { return EProtocol::dextra; }
 	int GetProtocolRevision(void) const         { return m_ProtRev; }
 	const char *GetProtocolName(void) const     { return "DExtra"; }
 	int GetCodec(void) const                    { return CODEC_AMBEPLUS; }

@@ -71,17 +71,10 @@
 
 // protocols ---------------------------------------------------
 
-#define PROTOCOL_ANY                    -1
-#define PROTOCOL_NONE                   0
-#define PROTOCOL_DEXTRA                 1
-#define PROTOCOL_DPLUS                  2
-#define PROTOCOL_DCS                    3
-#define PROTOCOL_XLX                    4
-#define PROTOCOL_DMRPLUS                5
-#define PROTOCOL_DMRMMDVM               6
-#define PROTOCOL_YSF                    7
 #ifndef NO_G3
-#define PROTOCOL_G3                     8
+enum class EProtocol { any, none, dextra, dplus, dcs, ulx, dmrplus, dmrmmdvm, ysf, g3 };
+#else
+enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ysf };
 #endif
 
 // DExtra

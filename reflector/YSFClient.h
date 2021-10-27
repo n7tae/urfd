@@ -31,7 +31,7 @@ public:
 	virtual ~CYsfClient() {};
 
 	// identity
-	int GetProtocol(void) const                 { return PROTOCOL_YSF; }
+	EProtocol GetProtocol(void) const           { return EProtocol::ysf; }
 	const char *GetProtocolName(void) const     { return "YSF"; }
 	int GetCodec(void) const                    { return CODEC_AMBE2PLUS; }
 	bool IsNode(void) const                     { return true; }
