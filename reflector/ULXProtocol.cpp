@@ -224,8 +224,7 @@ void CUlxProtocol::HandleQueue(void)
 	while ( !m_Queue.empty() )
 	{
 		// get the packet
-		auto packet = m_Queue.front();
-		m_Queue.pop();
+		auto packet = m_Queue.pop();
 
 		// check if origin of packet is local
 		// if not, do not stream it out as it will cause

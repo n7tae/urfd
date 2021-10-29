@@ -452,8 +452,7 @@ void CG3Protocol::HandleQueue(void)
 		m_LastKeepaliveTime.start();
 
 		// get the packet
-		auto packet = m_Queue.front();
-		m_Queue.pop();
+		auto packet = m_Queue.pop();
 
 		// encode it
 		CBuffer buffer;

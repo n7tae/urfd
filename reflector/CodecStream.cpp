@@ -181,9 +181,8 @@ void CCodecStream::Task(void)
 			// pop the original packet
 			if ( !m_LocalQueue.empty() )
 			{
-				auto Packet = m_LocalQueue.front();
+				auto Packet = m_LocalQueue.pop();
 				auto Frame = (CDvFramePacket *)Packet.get();
-				m_LocalQueue.pop();
 				// todo: check the PID
 				// update content with transcoded ambe
 				Frame->SetAmbe(m_uiCodecOut, Ambe);
@@ -208,9 +207,8 @@ void CCodecStream::Task(void)
 	while ( !empty() )
 	{
 		// yes, pop it from queue
-		auto Packet = front();
+		auto Packet = pop();
 		auto Frame = (CDvFramePacket *)Packet.get();
-		pop();
 
 		// yes, send to ambed
 		// this assume that thread pushing the Packet

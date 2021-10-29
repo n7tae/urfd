@@ -283,8 +283,7 @@ void CReflector::RouterThread(CPacketStream *streamIn)
 		if ( !streamIn->empty() )
 		{
 			// get the packet
-			packet = streamIn->front();
-			streamIn->pop();
+			packet = streamIn->pop();
 		}
 		else
 		{

@@ -223,8 +223,7 @@ void CDextraProtocol::HandleQueue(void)
 	while ( !m_Queue.empty() )
 	{
 		// get the packet
-		auto packet = m_Queue.front();
-		m_Queue.pop();
+		auto packet = m_Queue.pop();
 
 		// encode it
 		CBuffer buffer;

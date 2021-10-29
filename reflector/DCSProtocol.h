@@ -37,7 +37,7 @@ public:
 	~CDcsStreamCacheItem()    {}
 
 	CDvHeaderPacket m_dvHeader;
-	uint32_t          m_iSeqCounter;
+	uint32_t        m_iSeqCounter;
 };
 
 class CDcsProtocol : public CProtocol

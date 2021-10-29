@@ -351,8 +351,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 	while ( !m_Queue.empty() )
 	{
 		// get the packet
-		auto packet = m_Queue.front();
-		m_Queue.pop();
+		auto packet = m_Queue.pop();
 
 		// get our sender's id
 		int iModId = g_Reflector.GetModuleIndex(packet->GetModuleId());

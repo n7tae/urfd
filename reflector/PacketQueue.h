@@ -39,15 +39,14 @@ public:
 	void Unlock() { m_Mutex.unlock(); }
 
 	// pass thru
-	void pop()                                  { queue.pop(); }
+	std::unique_ptr<CPacket> pop()              { auto pack = std::move(queue.front()); queue.pop(); return std::move(pack); }
 	bool empty() const                          { return queue.empty(); }
-	std::unique_ptr<CPacket> front()            { return std::move(queue.front()); }
 	void push(std::unique_ptr<CPacket> &packet) { queue.push(std::move(packet)); }
 
 protected:
 	// status
 	bool        m_bOpen;
-	uint16_t      m_uiStreamId;
+	uint16_t    m_uiStreamId;
 	std::mutex  m_Mutex;
 
 	// owner
