@@ -236,7 +236,7 @@ void CDextraProtocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::dextra, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
 				{
 					// no, send the packet
 					int n = packet->IsDvHeader() ? 5 : 1;
@@ -391,7 +391,7 @@ void CDextraProtocol::HandlePeerLinks(void)
 void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open

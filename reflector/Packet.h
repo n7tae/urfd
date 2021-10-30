@@ -52,20 +52,20 @@ public:
 
 	// get
 	virtual bool IsValid(void) const                { return true; }
-	uint16_t GetStreamId(void) const                  { return m_uiStreamId; }
-	uint8_t  GetPacketId(void) const                  { return m_uiDstarPacketId; }
-	uint8_t  GetDstarPacketId(void) const             { return m_uiDstarPacketId; }
-	uint8_t  GetDmrPacketId(void) const               { return m_uiDmrPacketId; }
-	uint8_t  GetDmrPacketSubid(void) const            { return m_uiDmrPacketSubid; }
-	uint8_t  GetYsfPacketId(void) const               { return m_uiYsfPacketId; }
-	uint8_t  GetYsfPacketSubId(void) const            { return m_uiYsfPacketSubId; }
-	uint8_t  GetYsfPacketFrameId(void) const          { return m_uiYsfPacketFrameId; }
-	uint8_t  GetModuleId(void) const                  { return m_uiModuleId; }
-	bool   IsLocalOrigin(void) const                { return (m_uiOriginId == ORIGIN_LOCAL); }
+	uint16_t GetStreamId(void) const                { return m_uiStreamId; }
+	uint8_t  GetPacketId(void) const                { return m_uiDstarPacketId; }
+	uint8_t  GetDstarPacketId(void) const           { return m_uiDstarPacketId; }
+	uint8_t  GetDmrPacketId(void) const             { return m_uiDmrPacketId; }
+	uint8_t  GetDmrPacketSubid(void) const          { return m_uiDmrPacketSubid; }
+	uint8_t  GetYsfPacketId(void) const             { return m_uiYsfPacketId; }
+	uint8_t  GetYsfPacketSubId(void) const          { return m_uiYsfPacketSubId; }
+	uint8_t  GetYsfPacketFrameId(void) const        { return m_uiYsfPacketFrameId; }
+	char     GetModule(void) const                  { return m_cModule; }
+	bool     IsLocalOrigin(void) const              { return (m_uiOriginId == ORIGIN_LOCAL); }
 
 	// set
 	void UpdatePids(uint32_t);
-	void SetModuleId(uint8_t uiId)                    { m_uiModuleId = uiId; }
+	void SetModule(char c)                          { m_cModule = c; }
 	void SetLocalOrigin(void)                       { m_uiOriginId = ORIGIN_LOCAL; }
 	void SetRemotePeerOrigin(void)                  { m_uiOriginId = ORIGIN_PEER; }
 
@@ -78,6 +78,6 @@ protected:
 	uint8_t   m_uiYsfPacketId;
 	uint8_t   m_uiYsfPacketSubId;
 	uint8_t   m_uiYsfPacketFrameId;
-	uint8_t   m_uiModuleId;
+	char      m_cModule;
 	uint8_t   m_uiOriginId;
 };

@@ -141,6 +141,7 @@ void CWiresxCmdHandler::Task(void)
 	// handle it
 	if ( bCmd )
 	{
+		const char *modules = ACTIVE_MODULES;
 		// fill our info object
 		Info = m_ReflectorWiresxInfo;
 		g_YsfNodeDir.FindFrequencies(Cmd.GetCallsign(), &uiNodeTxFreq, &uiNodeRxFreq);
@@ -171,9 +172,9 @@ void CWiresxCmdHandler::Task(void)
 			ReplyToWiresxAllReqPacket(Cmd.GetIp(), Info, Cmd.GetArg());
 			break;
 		case WIRESX_CMD_CONN_REQ:
-			if ( (Cmd.GetArg() >= 1) && (Cmd.GetArg() <= NB_OF_MODULES) )
+			cModule = 'A' + (char)(Cmd.GetArg() - 1);
+			if (::strchr(modules, cModule))
 			{
-				cModule = 'A' + (char)(Cmd.GetArg() - 1);
 				std::cout << "Wires-X CONN_REQ command to link on module " << cModule << " from " << Cmd.GetCallsign() << " at " << Cmd.GetIp() << std::endl;
 				// acknowledge
 				ReplyToWiresxConnReqPacket(Cmd.GetIp(), Info, cModule);
@@ -336,6 +337,8 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	::memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
 
 	// number of entries
+	const char *modules = ACTIVE_MODULES;
+	uint NB_OF_MODULES = ::strlen(modules);
 	uint total = NB_OF_MODULES;
 	uint n = NB_OF_MODULES - Start;
 	if (n > 20U)
@@ -349,7 +352,8 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	{
 		char item[16U];
 		// module A == 0
-		int RoomId = i + Start;
+		char RoomMod = modules[i + Start];
+		int RoomId = RoomMod - 'A';
 
 		// prepare
 		::memset(data + offset, ' ', 50U);
@@ -361,7 +365,7 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 		// refl->name
 		::memset(item, ' ', 16U);
 		::memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
-		item[7] = 'A' + RoomId;
+		item[7] = RoomMod;
 		::memcpy(data + offset + 6U, item, 16U);
 		// refl->count
 		::sprintf(item, "%03d", RoomId + 1);

@@ -100,5 +100,5 @@ protected:
 	CTimer m_LastKeepaliveTime;
 
 	// for queue header caches
-	std::array<CDmrplusStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;
+	std::unordered_map<char, CDmrplusStreamCacheItem> m_StreamsCache;
 };

@@ -249,7 +249,7 @@ void CUlxProtocol::HandleQueue(void)
 				while ( (client = clients->FindNextClient(EProtocol::ulx, it)) != nullptr )
 				{
 					// is this client busy ?
-					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
+					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
 					{
 						// no, send the packet
 						// this is protocol revision dependent
@@ -389,7 +389,7 @@ void CUlxProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 	Header->SetRemotePeerOrigin();
 
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open

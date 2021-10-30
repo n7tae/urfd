@@ -187,7 +187,7 @@ void CDcsProtocol::Task(void)
 void CDcsProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open
@@ -235,14 +235,15 @@ void CDcsProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		int iModId = g_Reflector.GetModuleIndex(packet->GetModuleId());
+		const auto module = packet->GetModule();
 
 		// check if it's header and update cache
 		if ( packet->IsDvHeader() )
 		{
 			// this relies on queue feeder setting valid module id
-			m_StreamsCache[iModId].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet);
-			m_StreamsCache[iModId].m_iSeqCounter = 0;
+			// m_StreamsCache[module] will be created if it doesn't exist
+			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
+			m_StreamsCache[module].m_iSeqCounter = 0;
 		}
 		else
 		{
@@ -251,17 +252,17 @@ void CDcsProtocol::HandleQueue(void)
 			if ( packet->IsLastPacket() )
 			{
 				EncodeDvLastPacket(
-					m_StreamsCache[iModId].m_dvHeader,
-					(const CDvFramePacket &)*packet,
-					m_StreamsCache[iModId].m_iSeqCounter++,
+					m_StreamsCache[module].m_dvHeader,
+					(const CDvFramePacket &)*packet.get(),
+					m_StreamsCache[module].m_iSeqCounter++,
 					&buffer);
 			}
 			else if ( packet->IsDvFrame() )
 			{
 				EncodeDvPacket(
-					m_StreamsCache[iModId].m_dvHeader,
-					(const CDvFramePacket &)*packet,
-					m_StreamsCache[iModId].m_iSeqCounter++,
+					m_StreamsCache[module].m_dvHeader,
+					(const CDvFramePacket &)*packet.get(),
+					m_StreamsCache[module].m_iSeqCounter++,
 					&buffer);
 			}
 
@@ -275,7 +276,7 @@ void CDcsProtocol::HandleQueue(void)
 				while ( (client = clients->FindNextClient(EProtocol::dcs, it)) != nullptr )
 				{
 					// is this client busy ?
-					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
+					if ( !client->IsAMaster() && (client->GetReflectorModule() == module) )
 					{
 						// no, send the packet
 						Send(buffer, client->GetIp());

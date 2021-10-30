@@ -47,9 +47,6 @@ int main()
 	// splash
 	std::cout << "Starting " << cs << " " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_REVISION << std::endl << std::endl;
 
-	// initialize reflector
-	g_Reflector.SetCallsign(cs.c_str());
-
 #ifdef TRANSCODER_IP
 	g_Reflector.SetTranscoderIp(TRANSCODER_IP, INET6_ADDRSTRLEN);
 #endif

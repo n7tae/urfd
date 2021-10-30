@@ -225,7 +225,7 @@ void CYsfProtocol::Task(void)
 void CYsfProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open
@@ -282,7 +282,7 @@ void CYsfProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		int iModId = g_Reflector.GetModuleIndex(packet->GetModuleId());
+		const auto mod = packet->GetModule();
 
 		// encode
 		CBuffer buffer;
@@ -292,7 +292,7 @@ void CYsfProtocol::HandleQueue(void)
 		{
 			// update local stream cache
 			// this relies on queue feeder setting valid module id
-			m_StreamsCache[iModId].m_dvHeader = CDvHeaderPacket((CDvHeaderPacket &)*packet);
+			m_StreamsCache[mod].m_dvHeader = CDvHeaderPacket((CDvHeaderPacket &)*packet.get());
 
 			// encode it
 			EncodeDvHeaderPacket((CDvHeaderPacket &)*packet.get(), &buffer);
@@ -301,7 +301,7 @@ void CYsfProtocol::HandleQueue(void)
 		else if ( packet->IsLastPacket() )
 		{
 			// encode it
-			EncodeDvLastPacket(m_StreamsCache[iModId].m_dvHeader, &buffer);
+			EncodeDvLastPacket(m_StreamsCache[mod].m_dvHeader, &buffer);
 		}
 		// otherwise, just a regular DV frame
 		else
@@ -311,11 +311,11 @@ void CYsfProtocol::HandleQueue(void)
 			if (sid <= 4)
 			{
 				//std::cout << (int)sid;
-				m_StreamsCache[iModId].m_dvFrames[sid] = CDvFramePacket((CDvFramePacket &)*packet);
+				m_StreamsCache[mod].m_dvFrames[sid] = CDvFramePacket((CDvFramePacket &)*packet.get());
 				if ( sid == 4 )
 				{
 
-					EncodeDvPacket(m_StreamsCache[iModId].m_dvHeader, m_StreamsCache[iModId].m_dvFrames, &buffer);
+					EncodeDvPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_dvFrames, &buffer);
 				}
 			}
 		}
@@ -330,7 +330,7 @@ void CYsfProtocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::ysf, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
 				{
 					// no, send the packet
 					Send(buffer, client->GetIp());

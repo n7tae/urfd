@@ -29,22 +29,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CReflector::CReflector()
+CReflector::CReflector() : m_Callsign(CALLSIGN), m_Modules(ACTIVE_MODULES), keep_running(true)
 {
-	keep_running = true;
-#ifdef DEBUG_DUMPFILE
-	m_DebugFile.open("/Users/jeanluc/Desktop/xlxdebug.txt");
-#endif
 }
 
-CReflector::CReflector(const CCallsign &callsign)
-{
-#ifdef DEBUG_DUMPFILE
-	m_DebugFile.close();
-#endif
-	keep_running = true;
-	m_Callsign = callsign;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // destructor
@@ -62,13 +50,13 @@ CReflector::~CReflector()
 		m_JsonReportFuture.get();
 	}
 #endif
-	for ( int i = 0; i < NB_OF_MODULES; i++ )
+	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
-		if ( m_RouterFuture[i].valid() )
-		{
-			m_RouterFuture[i].get();
-		}
+		if (m_RouterFuture[*it].valid())
+			m_RouterFuture[*it].get();
 	}
+	m_RouterFuture.clear();
+	m_Stream.clear();
 }
 
 
@@ -103,9 +91,10 @@ bool CReflector::Start(void)
 	}
 
 	// start one thread per reflector module
-	for ( int i = 0; i < NB_OF_MODULES; i++ )
+	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
-		m_RouterFuture[i] = std::async(std::launch::async, &CReflector::RouterThread, this, &(m_Stream[i]));
+		m_Stream[*it] = std::make_shared<CPacketStream>();
+		m_RouterFuture[*it] = std::async(std::launch::async, &CReflector::RouterThread, this, m_Stream[*it]);
 	}
 
 	// start the reporting threads
@@ -135,12 +124,10 @@ void CReflector::Stop(void)
 #endif
 
 	// stop & delete all router thread
-	for ( int i = 0; i < NB_OF_MODULES; i++ )
+	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
-		if ( m_RouterFuture[i].valid() )
-		{
-			m_RouterFuture[i].get();
-		}
+		if (m_RouterFuture[*it].valid())
+			m_RouterFuture[*it].get();
 	}
 
 	// close protocols
@@ -168,7 +155,7 @@ bool CReflector::IsStreaming(char module)
 }
 
 // clients MUST have bee locked by the caller so we can freely access it within the fuction
-CPacketStream *CReflector::OpenStream(std::unique_ptr<CDvHeaderPacket> &DvHeader, std::shared_ptr<CClient>client)
+std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderPacket> &DvHeader, std::shared_ptr<CClient>client)
 {
 	// check sid is not zero
 	if ( 0U == DvHeader->GetStreamId() )
@@ -188,7 +175,7 @@ CPacketStream *CReflector::OpenStream(std::unique_ptr<CDvHeaderPacket> &DvHeader
 
 	// get the module's queue
 	char module = DvHeader->GetRpt2Module();
-	CPacketStream *stream = GetStream(module);
+	auto stream = GetStream(module);
 	if ( stream == nullptr )
 		return nullptr;
 
@@ -217,7 +204,7 @@ CPacketStream *CReflector::OpenStream(std::unique_ptr<CDvHeaderPacket> &DvHeader
 	return stream;
 }
 
-void CReflector::CloseStream(CPacketStream *stream)
+void CReflector::CloseStream(std::shared_ptr<CPacketStream> stream)
 {
 	if ( stream != nullptr )
 	{
@@ -268,10 +255,10 @@ void CReflector::CloseStream(CPacketStream *stream)
 ////////////////////////////////////////////////////////////////////////////////////////
 // router threads
 
-void CReflector::RouterThread(CPacketStream *streamIn)
+void CReflector::RouterThread(std::shared_ptr<CPacketStream> streamIn)
 {
 	// get our module
-	uint8_t uiModuleId = GetStreamModule(streamIn);
+	const auto module = GetStreamModule(streamIn);
 
 	// get on input queue
 	std::unique_ptr<CPacket> packet;
@@ -295,7 +282,7 @@ void CReflector::RouterThread(CPacketStream *streamIn)
 		if ( packet != nullptr )
 		{
 			// set origin
-			packet->SetModuleId(uiModuleId);
+			packet->SetModule(module);
 
 			// iterate on all protocols
 			m_Protocols.Lock();
@@ -503,42 +490,31 @@ void CReflector::OnStreamClose(const CCallsign &callsign)
 ////////////////////////////////////////////////////////////////////////////////////////
 // modules & queues
 
-int CReflector::GetModuleIndex(char module) const
+std::shared_ptr<CPacketStream> CReflector::GetStream(char module)
 {
-	int i = (int)module - (int)'A';
-	if ( (i < 0) || (i >= NB_OF_MODULES) )
-	{
-		i = -1;
-	}
-	return i;
-}
+	auto it=m_Stream.find(module);
+	if (it!=m_Stream.end())
+		return it->second;
 
-CPacketStream *CReflector::GetStream(char module)
-{
-	int i = GetModuleIndex(module);
-	if ( i >= 0 )
-	{
-		return &(m_Stream[i]);
-	}
 	return nullptr;
 }
 
 bool CReflector::IsStreamOpen(const std::unique_ptr<CDvHeaderPacket> &DvHeader)
 {
-	for ( unsigned i = 0; i < m_Stream.size(); i++  )
+	for (auto it=m_Stream.begin(); it!=m_Stream.end(); it++)
 	{
-		if ( (m_Stream[i].GetStreamId() == DvHeader->GetStreamId()) && (m_Stream[i].IsOpen()) )
+		if ( (it->second->GetStreamId() == DvHeader->GetStreamId()) && (it->second->IsOpen()) )
 			return true;
 	}
 	return false;
 }
 
-char CReflector::GetStreamModule(CPacketStream *stream)
+char CReflector::GetStreamModule(std::shared_ptr<CPacketStream> stream)
 {
-	for ( unsigned i = 0; i < m_Stream.size(); i++ )
+	for (auto it=m_Stream.begin(); it!=m_Stream.end(); it++)
 	{
-		if ( &(m_Stream[i]) == stream )
-			return GetModuleLetter(i);
+		if ( it->second == stream )
+			return it->first;
 	}
 	return ' ';
 }

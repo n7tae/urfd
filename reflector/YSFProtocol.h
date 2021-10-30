@@ -121,7 +121,7 @@ protected:
 	CTimer m_LastKeepaliveTime;
 
 	// for queue header caches
-	std::array<CYsfStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;
+	std::unordered_map<char, CYsfStreamCacheItem> m_StreamsCache;
 
 	// for wires-x
 	CWiresxCmdHandler   m_WiresxCmdHandler;

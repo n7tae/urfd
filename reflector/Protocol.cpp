@@ -149,7 +149,7 @@ bool CProtocol::EncodeDvPacket(const CPacket &packet, CBuffer *buffer) const
 void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const CIp *Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Frame->GetStreamId(), Ip);
+	auto stream = GetStream(Frame->GetStreamId(), Ip);
 	if ( stream )
 	{
 		//std::cout << "DV frame" << "from "  << *Ip << std::endl;
@@ -167,7 +167,7 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 void CProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &Frame, const CIp *Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Frame->GetStreamId(), Ip);
+	auto stream = GetStream(Frame->GetStreamId(), Ip);
 	if ( stream )
 	{
 		// push
@@ -191,7 +191,7 @@ void CProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &Frame
 ////////////////////////////////////////////////////////////////////////////////////////
 // stream handle helpers
 
-CPacketStream *CProtocol::GetStream(uint16_t uiStreamId, const CIp *Ip)
+std::shared_ptr<CPacketStream> CProtocol::GetStream(uint16_t uiStreamId, const CIp *Ip)
 {
 	for ( auto it=m_Streams.begin(); it!=m_Streams.end(); it++ )
 	{

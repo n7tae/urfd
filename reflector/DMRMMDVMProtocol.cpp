@@ -259,7 +259,7 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 	bool lastheard = false;
 
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open
@@ -354,7 +354,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		int iModId = g_Reflector.GetModuleIndex(packet->GetModuleId());
+		const auto mod = packet->GetModule();
 
 		// encode
 		CBuffer buffer;
@@ -364,19 +364,19 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 		{
 			// update local stream cache
 			// this relies on queue feeder setting valid module id
-			m_StreamsCache[iModId].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet);
-			m_StreamsCache[iModId].m_uiSeqId = 0;
+			m_StreamsCache[mod].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
+			m_StreamsCache[mod].m_uiSeqId = 0;
 
 			// encode it
-			EncodeDvHeaderPacket((CDvHeaderPacket &)*packet, m_StreamsCache[iModId].m_uiSeqId, &buffer);
-			m_StreamsCache[iModId].m_uiSeqId = 1;
+			EncodeDvHeaderPacket((CDvHeaderPacket &)*packet.get(), m_StreamsCache[mod].m_uiSeqId, &buffer);
+			m_StreamsCache[mod].m_uiSeqId = 1;
 		}
 		// check if it's a last frame
 		else if ( packet->IsLastPacket() )
 		{
 			// encode it
-			EncodeDvLastPacket(m_StreamsCache[iModId].m_dvHeader, m_StreamsCache[iModId].m_uiSeqId, &buffer);
-			m_StreamsCache[iModId].m_uiSeqId = (m_StreamsCache[iModId].m_uiSeqId + 1) & 0xFF;
+			EncodeDvLastPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_uiSeqId, &buffer);
+			m_StreamsCache[mod].m_uiSeqId = (m_StreamsCache[mod].m_uiSeqId + 1) & 0xFF;
 		}
 		// otherwise, just a regular DV frame
 		else
@@ -385,20 +385,20 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 			switch ( packet->GetDmrPacketSubid() )
 			{
 			case 1:
-				m_StreamsCache[iModId].m_dvFrame0 = CDvFramePacket((const CDvFramePacket &)*packet);
+				m_StreamsCache[mod].m_dvFrame0 = CDvFramePacket((const CDvFramePacket &)*packet.get());
 				break;
 			case 2:
-				m_StreamsCache[iModId].m_dvFrame1 = CDvFramePacket((const CDvFramePacket &)*packet);
+				m_StreamsCache[mod].m_dvFrame1 = CDvFramePacket((const CDvFramePacket &)*packet.get());
 				break;
 			case 3:
 				EncodeDvPacket(
-					m_StreamsCache[iModId].m_dvHeader,
-					m_StreamsCache[iModId].m_dvFrame0,
-					m_StreamsCache[iModId].m_dvFrame1,
-					(const CDvFramePacket &)*packet,
-					m_StreamsCache[iModId].m_uiSeqId,
+					m_StreamsCache[mod].m_dvHeader,
+					m_StreamsCache[mod].m_dvFrame0,
+					m_StreamsCache[mod].m_dvFrame1,
+					(const CDvFramePacket &)*packet.get(),
+					m_StreamsCache[mod].m_uiSeqId,
 					&buffer);
-				m_StreamsCache[iModId].m_uiSeqId = (m_StreamsCache[iModId].m_uiSeqId + 1) & 0xFF;
+				m_StreamsCache[mod].m_uiSeqId = (m_StreamsCache[mod].m_uiSeqId + 1) & 0xFF;
 				break;
 			default:
 				break;
@@ -415,7 +415,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::dmrmmdvm, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
 				{
 					// no, send the packet
 					Send(buffer, client->GetIp());
@@ -972,9 +972,13 @@ void CDmrmmdvmProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Packet, uint8_
 char CDmrmmdvmProtocol::DmrDstIdToModule(uint32_t tg) const
 {
 	// is it a 4xxx ?
-	if ( (tg >= 4001) && (tg <= (4000 + NB_OF_MODULES)) )
+	if (tg > 4000 && tg < 4027)
 	{
-		return ((char)(tg - 4001) + 'A');
+		const char mod = 'A' + (tg - 4001U);
+		if (strchr(ACTIVE_MODULES, mod))
+		{
+			return mod;
+		}
 	}
 	return ' ';
 }

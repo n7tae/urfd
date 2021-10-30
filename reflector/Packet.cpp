@@ -28,7 +28,7 @@ CPacket::CPacket()
 	m_uiYsfPacketId = 0;
 	m_uiYsfPacketSubId = 0;
 	m_uiYsfPacketFrameId = 0;
-	m_uiModuleId = ' ';
+	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 };
 
@@ -43,7 +43,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 	m_uiYsfPacketId = 0xFF;
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
-	m_uiModuleId = ' ';
+	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 };
 
@@ -58,7 +58,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid)
 	m_uiYsfPacketId = 0xFF;
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
-	m_uiModuleId = ' ';
+	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 };
 
@@ -73,7 +73,7 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_uiDstarPacketId = 0xFF;
 	m_uiDmrPacketId = 0xFF;
 	m_uiDmrPacketSubid = 0xFF;
-	m_uiModuleId = ' ';
+	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 }
 
@@ -88,7 +88,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 	m_uiYsfPacketId = ysfpid;
 	m_uiYsfPacketSubId = ysfsubpid;
 	m_uiYsfPacketFrameId = ysffrid;
-	m_uiModuleId = ' ';
+	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 }
 

@@ -45,9 +45,6 @@
 class CDmrmmdvmStreamCacheItem
 {
 public:
-	CDmrmmdvmStreamCacheItem()     {}
-	~CDmrmmdvmStreamCacheItem()    {}
-
 	CDvHeaderPacket m_dvHeader;
 	CDvFramePacket  m_dvFrame0;
 	CDvFramePacket  m_dvFrame1;
@@ -117,7 +114,7 @@ protected:
 	uint16_t              m_uiStreamId;
 
 	// for queue header caches
-	std::array<CDmrmmdvmStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;
+	std::unordered_map<char, CDmrmmdvmStreamCacheItem> m_StreamsCache;
 
 	// for authentication
 	uint32_t              m_uiAuthSeed;

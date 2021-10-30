@@ -33,8 +33,7 @@
 class CDcsStreamCacheItem
 {
 public:
-	CDcsStreamCacheItem()     { m_iSeqCounter = 0; }
-	~CDcsStreamCacheItem()    {}
+	CDcsStreamCacheItem() : m_iSeqCounter(0) {}
 
 	CDvHeaderPacket m_dvHeader;
 	uint32_t        m_iSeqCounter;
@@ -80,5 +79,5 @@ protected:
 	CTimer          m_LastKeepaliveTime;
 
 	// for queue header caches
-	std::array<CDcsStreamCacheItem, NB_OF_MODULES>    m_StreamsCache;
+	std::unordered_map<char, CDcsStreamCacheItem> m_StreamsCache;
 };

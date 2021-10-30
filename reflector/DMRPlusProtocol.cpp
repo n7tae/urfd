@@ -181,7 +181,7 @@ void CDmrplusProtocol::Task(void)
 void CDmrplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open
@@ -227,7 +227,7 @@ void CDmrplusProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		int iModId = g_Reflector.GetModuleIndex(packet->GetModuleId());
+		const auto mod = packet->GetModule();
 
 		// encode
 		CBuffer buffer;
@@ -237,11 +237,11 @@ void CDmrplusProtocol::HandleQueue(void)
 		{
 			// update local stream cache
 			// this relies on queue feeder setting valid module id
-			m_StreamsCache[iModId].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet);
-			m_StreamsCache[iModId].m_uiSeqId = 4;
+			m_StreamsCache[mod].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
+			m_StreamsCache[mod].m_uiSeqId = 4;
 
 			// encode it
-			EncodeDvHeaderPacket((const CDvHeaderPacket &)*packet, &buffer);
+			EncodeDvHeaderPacket((const CDvHeaderPacket &)*packet.get(), &buffer);
 		}
 		else
 		{
@@ -249,20 +249,20 @@ void CDmrplusProtocol::HandleQueue(void)
 			switch ( packet->GetDmrPacketSubid() )
 			{
 			case 1:
-				m_StreamsCache[iModId].m_dvFrame0 = CDvFramePacket((const CDvFramePacket &)*packet);
+				m_StreamsCache[mod].m_dvFrame0 = CDvFramePacket((const CDvFramePacket &)*packet.get());
 				break;
 			case 2:
-				m_StreamsCache[iModId].m_dvFrame1 = CDvFramePacket((const CDvFramePacket &)*packet);
+				m_StreamsCache[mod].m_dvFrame1 = CDvFramePacket((const CDvFramePacket &)*packet.get());
 				break;
 			case 3:
 				EncodeDvPacket(
-					m_StreamsCache[iModId].m_dvHeader,
-					m_StreamsCache[iModId].m_dvFrame0,
-					m_StreamsCache[iModId].m_dvFrame1,
-					(const CDvFramePacket &)*packet,
-					m_StreamsCache[iModId].m_uiSeqId,
+					m_StreamsCache[mod].m_dvHeader,
+					m_StreamsCache[mod].m_dvFrame0,
+					m_StreamsCache[mod].m_dvFrame1,
+					(const CDvFramePacket &)*packet.get(),
+					m_StreamsCache[mod].m_uiSeqId,
 					&buffer);
-				m_StreamsCache[iModId].m_uiSeqId = GetNextSeqId(m_StreamsCache[iModId].m_uiSeqId);
+				m_StreamsCache[mod].m_uiSeqId = GetNextSeqId(m_StreamsCache[mod].m_uiSeqId);
 				break;
 			default:
 				break;
@@ -280,7 +280,7 @@ void CDmrplusProtocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::dmrplus, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModuleId()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
 				{
 					// no, send the packet
 					Send(buffer, client->GetIp());
@@ -651,9 +651,12 @@ uint8_t CDmrplusProtocol::GetNextSeqId(uint8_t uiSeqId) const
 char CDmrplusProtocol::DmrDstIdToModule(uint32_t tg) const
 {
 	// is it a 4xxx ?
-	if ( (tg >= 4001) && (tg <= (4000 + NB_OF_MODULES)) )
-	{
-		return ((char)(tg - 4001) + 'A');
+	if (tg > 4000 && tg < 4027) {
+		char mod = 'A' + (tg - 4001U);
+		if (strchr(ACTIVE_MODULES, mod))
+		{
+			return mod;
+		}
 	}
 	return ' ';
 }

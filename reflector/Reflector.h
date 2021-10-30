@@ -42,13 +42,11 @@ class CReflector
 public:
 	// constructor
 	CReflector();
-	CReflector(const CCallsign &);
 
 	// destructor
 	virtual ~CReflector();
 
-	// settings
-	void SetCallsign(const CCallsign &callsign)      { m_Callsign = callsign; }
+	//
 	const CCallsign &GetCallsign(void) const         { return m_Callsign; }
 
 #ifdef TRANSCODER_IP
@@ -61,7 +59,7 @@ public:
 	void Stop(void);
 
 	// clients
-	CClients  *GetClients(void)                     { m_Clients.Lock(); return &m_Clients; }
+	CClients *GetClients(void)                      { m_Clients.Lock(); return &m_Clients; }
 	void      ReleaseClients(void)                  { m_Clients.Unlock(); }
 
 	// peers
@@ -69,18 +67,16 @@ public:
 	void      ReleasePeers(void)                    { m_Peers.Unlock(); }
 
 	// stream opening & closing
-	CPacketStream *OpenStream(std::unique_ptr<CDvHeaderPacket> &, std::shared_ptr<CClient>);
+	std::shared_ptr<CPacketStream> OpenStream(std::unique_ptr<CDvHeaderPacket> &, std::shared_ptr<CClient>);
 	bool IsStreaming(char);
-	void CloseStream(CPacketStream *);
+	void CloseStream(std::shared_ptr<CPacketStream>);
 
 	// users
 	CUsers  *GetUsers(void)                         { m_Users.Lock(); return &m_Users; }
 	void    ReleaseUsers(void)                      { m_Users.Unlock(); }
 
-	// get
-	bool IsValidModule(char c) const                { return (GetModuleIndex(c) >= 0); }
-	int  GetModuleIndex(char) const;
-	char GetModuleLetter(int i) const               { return 'A' + (char)i; }
+	// check
+	bool IsValidModule(char c) const                { return m_Modules.npos!=m_Modules.find(c); }
 
 	// notifications
 	void OnPeersChanged(void);
@@ -91,16 +87,16 @@ public:
 
 protected:
 	// threads
-	void RouterThread(CPacketStream *);
+	void RouterThread(std::shared_ptr<CPacketStream>);
 	void XmlReportThread(void);
 #ifdef JSON_MONITOR
 	void JsonReportThread(void);
 #endif
 
 	// streams
-	CPacketStream *GetStream(char);
-	bool           IsStreamOpen(const std::unique_ptr<CDvHeaderPacket> &);
-	char           GetStreamModule(CPacketStream *);
+	std::shared_ptr<CPacketStream> GetStream(char);
+	bool IsStreamOpen(const std::unique_ptr<CDvHeaderPacket> &);
+	char GetStreamModule(std::shared_ptr<CPacketStream>);
 
 	// xml helpers
 	void WriteXmlFile(std::ofstream &);
@@ -116,24 +112,25 @@ protected:
 
 protected:
 	// identity
-	CCallsign m_Callsign;
+	const CCallsign   m_Callsign;
+	const std::string m_Modules;
 #ifdef TRANSCODER_IP
-	char      m_AmbedIp[INET6_ADDRSTRLEN];
+	char  m_AmbedIp[INET6_ADDRSTRLEN];
 #endif
 
 	// objects
-	CUsers          m_Users;            // sorted list of lastheard stations
-	CClients        m_Clients;          // list of linked repeaters/nodes/peers's modules
-	CPeers          m_Peers;            // list of linked peers
-	CProtocols      m_Protocols;        // list of supported protocol handlers
+	CUsers     m_Users;            // sorted list of lastheard stations
+	CClients   m_Clients;          // list of linked repeaters/nodes/peers's modules
+	CPeers     m_Peers;            // list of linked peers
+	CProtocols m_Protocols;        // list of supported protocol handlers
 
 	// queues
-	std::array<CPacketStream, NB_OF_MODULES> m_Stream;
+	std::unordered_map<char, std::shared_ptr<CPacketStream>> m_Stream;
 
 	// threads
 	std::atomic<bool> keep_running;
-	std::array<std::future<void>, NB_OF_MODULES> m_RouterFuture;
-	std::future<void> m_XmlReportFuture, m_JsonReportFuture;
+	std::unordered_map<char, std::future<void>> m_RouterFuture;
+	std::future<void> m_XmlReportFuture /*, m_JsonReportFuture*/;
 
 	// notifications
 	CNotificationQueue  m_Notifications;

@@ -175,7 +175,7 @@ void CDplusProtocol::Task(void)
 void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	// find the stream
-	CPacketStream *stream = GetStream(Header->GetStreamId());
+	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
 	{
 		// stream already open
@@ -241,14 +241,14 @@ void CDplusProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		int iModId = g_Reflector.GetModuleIndex(packet->GetModuleId());
+		const auto mod = packet->GetModule();
 
 		// check if it's header and update cache
 		if ( packet->IsDvHeader() )
 		{
 			// this relies on queue feeder setting valid module id
-			m_StreamsCache[iModId].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet);
-			m_StreamsCache[iModId].m_iSeqCounter = 0;
+			m_StreamsCache[mod].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
+			m_StreamsCache[mod].m_iSeqCounter = 0;
 		}
 
 		// encode it
@@ -280,10 +280,10 @@ void CDplusProtocol::HandleQueue(void)
 						Send(buffer, client->GetIp());
 
 						// is it time to insert a DVheader copy ?
-						if ( (m_StreamsCache[iModId].m_iSeqCounter++ % 21) == 20 )
+						if ( (m_StreamsCache[mod].m_iSeqCounter++ % 21) == 20 )
 						{
 							// yes, clone it
-							CDvHeaderPacket packet2(m_StreamsCache[iModId].m_dvHeader);
+							CDvHeaderPacket packet2(m_StreamsCache[mod].m_dvHeader);
 							// and send it
 							SendDvHeader(&packet2, (CDplusClient *)client.get());
 						}

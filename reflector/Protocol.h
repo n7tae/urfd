@@ -96,7 +96,7 @@ protected:
 	virtual void OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &, const CIp * = nullptr);
 
 	// stream handle helpers
-	CPacketStream *GetStream(uint16_t, const CIp * = nullptr);
+	std::shared_ptr<CPacketStream> GetStream(uint16_t, const CIp * = nullptr);
 	void CheckStreamsTimeout(void);
 
 	// queue helper
@@ -128,7 +128,7 @@ protected:
 	CUdpSocket m_Socket6;
 
 	// streams
-	std::list<CPacketStream *> m_Streams;
+	std::list<std::shared_ptr<CPacketStream>> m_Streams;
 
 	// queue
 	CPacketQueue    m_Queue;
