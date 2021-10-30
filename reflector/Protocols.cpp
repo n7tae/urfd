@@ -20,7 +20,7 @@
 #include "DExtraProtocol.h"
 #include "DPlusProtocol.h"
 #include "DCSProtocol.h"
-#include "ULXProtocol.h"
+#include "URFProtocol.h"
 #include "DMRPlusProtocol.h"
 #include "DMRMMDVMProtocol.h"
 #include "YSFProtocol.h"
@@ -68,7 +68,7 @@ bool CProtocols::Init(void)
 		if (! m_Protocols.back()->Initialize("YSF", EProtocol::ysf, YSF_PORT, YSF_IPV4, YSF_IPV6))
 			return false;
 
-		m_Protocols.emplace_back(std::unique_ptr<CUlxProtocol>(new CUlxProtocol));
+		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));
 		if (! m_Protocols.back()->Initialize("XLX", EProtocol::ulx, XLX_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
 

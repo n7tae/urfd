@@ -19,19 +19,19 @@
 #include "Main.h"
 #include <string.h>
 #include "Reflector.h"
-#include "ULXPeer.h"
-#include "ULXClient.h"
+#include "URFPeer.h"
+#include "URFClient.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
 
-CUlxPeer::CUlxPeer()
+CURFPeer::CURFPeer()
 {
 }
 
-CUlxPeer::CUlxPeer(const CCallsign &callsign, const CIp &ip, const char *modules, const CVersion &version)
+CURFPeer::CURFPeer(const CCallsign &callsign, const CIp &ip, const char *modules, const CVersion &version)
 	: CPeer(callsign, ip, modules, version)
 {
 	// get protocol revision
@@ -42,14 +42,14 @@ CUlxPeer::CUlxPeer(const CCallsign &callsign, const CIp &ip, const char *modules
 	for ( unsigned i = 0; i < ::strlen(modules); i++ )
 	{
 		// create and append to vector
-		m_Clients.push_back(std::make_shared<CUlxClient>(callsign, ip, modules[i], protrev));
+		m_Clients.push_back(std::make_shared<CURFClient>(callsign, ip, modules[i], protrev));
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // status
 
-bool CUlxPeer::IsAlive(void) const
+bool CURFPeer::IsAlive(void) const
 {
 	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
 }
@@ -57,7 +57,7 @@ bool CUlxPeer::IsAlive(void) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // revision helper
 
-int CUlxPeer::GetProtocolRevision(const CVersion &version)
+int CURFPeer::GetProtocolRevision(const CVersion &version)
 {
 	int protrev = XLX_PROTOCOL_REVISION_0;
 

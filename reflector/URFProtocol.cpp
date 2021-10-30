@@ -18,9 +18,9 @@
 
 #include "Main.h"
 #include <string.h>
-#include "ULXPeer.h"
+#include "URFPeer.h"
 #include "BMPeer.h"
-#include "ULXProtocol.h"
+#include "URFProtocol.h"
 #include "Reflector.h"
 #include "GateKeeper.h"
 
@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CUlxProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CURFProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
@@ -44,7 +44,7 @@ bool CUlxProtocol::Initialize(const char *type, const EProtocol ptype, const uin
 ////////////////////////////////////////////////////////////////////////////////////////
 // task
 
-void CUlxProtocol::Task(void)
+void CURFProtocol::Task(void)
 {
 	CBuffer   Buffer;
 	CIp       Ip;
@@ -218,7 +218,7 @@ void CUlxProtocol::Task(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // queue helper
 
-void CUlxProtocol::HandleQueue(void)
+void CURFProtocol::HandleQueue(void)
 {
 	m_Queue.Lock();
 	while ( !m_Queue.empty() )
@@ -285,7 +285,7 @@ void CUlxProtocol::HandleQueue(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // keepalive helpers
 
-void CUlxProtocol::HandleKeepalives(void)
+void CURFProtocol::HandleKeepalives(void)
 {
 	// DExtra protocol sends and monitors keepalives packets
 	// event if the client is currently streaming
@@ -327,7 +327,7 @@ void CUlxProtocol::HandleKeepalives(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // Peers helpers
 
-void CUlxProtocol::HandlePeerLinks(void)
+void CURFProtocol::HandlePeerLinks(void)
 {
 	CBuffer buffer;
 
@@ -378,7 +378,7 @@ void CUlxProtocol::HandlePeerLinks(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // streams helpers
 
-void CUlxProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
+void CURFProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	CCallsign peer;
 
@@ -423,7 +423,7 @@ void CUlxProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 	}
 }
 
-void CUlxProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, const CIp *Ip)
+void CURFProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, const CIp *Ip)
 {
 	// tag packet as remote peer origin
 	DvFrame->SetRemotePeerOrigin();
@@ -432,7 +432,7 @@ void CUlxProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, c
 	CDextraProtocol::OnDvFramePacketIn(DvFrame, Ip);
 }
 
-void CUlxProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &DvFrame, const CIp *Ip)
+void CURFProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &DvFrame, const CIp *Ip)
 {
 	// tag packet as remote peer origin
 	DvFrame->SetRemotePeerOrigin();
@@ -445,7 +445,7 @@ void CUlxProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &Dv
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet decoding helpers
 
-bool CUlxProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CURFProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
 	if (Buffer.size() == 9)
@@ -457,7 +457,7 @@ bool CUlxProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *call
 }
 
 
-bool CUlxProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
+bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
 	bool valid = false;
 	if ((Buffer.size() == 39) && (Buffer.data()[0] == 'L') && (Buffer.data()[38] == 0))
@@ -474,7 +474,7 @@ bool CUlxProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 	return valid;
 }
 
-bool CUlxProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CURFProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
 	if ((Buffer.size() == 10) && (Buffer.data()[0] == 'U') && (Buffer.data()[9] == 0))
@@ -485,7 +485,7 @@ bool CUlxProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *cal
 	return valid;
 }
 
-bool CUlxProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
+bool CURFProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
 	bool valid = false;
 	if ((Buffer.size() == 39) && (Buffer.data()[0] == 'A') && (Buffer.data()[38] == 0))
@@ -502,7 +502,7 @@ bool CUlxProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, 
 	return valid;
 }
 
-bool CUlxProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CURFProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
 	if ((Buffer.size() == 10) && (Buffer.data()[0] == 'N') && (Buffer.data()[9] == 0))
@@ -513,7 +513,7 @@ bool CUlxProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
 	return valid;
 }
 
-bool CUlxProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
+bool CURFProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
 	// base class first (protocol revision 1 and lower)
 	if (CDextraProtocol::IsValidDvFramePacket(Buffer, dvframe))
@@ -538,7 +538,7 @@ bool CUlxProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<C
 	return false;
 }
 
-bool CUlxProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
+bool CURFProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
 {
 	// base class first (protocol revision 1 and lower)
 	if (CDextraProtocol::IsValidDvLastFramePacket(Buffer, dvframe))
@@ -566,12 +566,12 @@ bool CUlxProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_p
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet encoding helpers
 
-void CUlxProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
+void CURFProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
 {
 	Buffer->Set(GetReflectorCallsign());
 }
 
-void CUlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
+void CURFProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 {
 	uint8_t tag[] = { 'L' };
 
@@ -589,7 +589,7 @@ void CUlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->resize(39);
 }
 
-void CUlxProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
+void CURFProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 {
 	uint8_t tag[] = { 'U' };
 
@@ -601,7 +601,7 @@ void CUlxProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 	Buffer->Append((uint8_t)0);
 }
 
-void CUlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
+void CURFProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 {
 	uint8_t tag[] = { 'A' };
 
@@ -619,7 +619,7 @@ void CUlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->resize(39);
 }
 
-void CUlxProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
+void CURFProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 {
 	uint8_t tag[] = { 'N' };
 
@@ -631,7 +631,7 @@ void CUlxProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 	Buffer->Append((uint8_t)0);
 }
 
-bool CUlxProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CURFProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
@@ -650,7 +650,7 @@ bool CUlxProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Bu
 
 }
 
-bool CUlxProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
+bool CURFProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
 {
 	uint8_t tag[]         = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	uint8_t dstarambe[]   = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00 };
@@ -674,7 +674,7 @@ bool CUlxProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBu
 ////////////////////////////////////////////////////////////////////////////////////////
 // protocol revision helper
 
-int CUlxProtocol::GetConnectingPeerProtocolRevision(const CCallsign &Callsign, const CVersion &Version)
+int CURFProtocol::GetConnectingPeerProtocolRevision(const CCallsign &Callsign, const CVersion &Version)
 {
 	int protrev;
 
@@ -686,14 +686,14 @@ int CUlxProtocol::GetConnectingPeerProtocolRevision(const CCallsign &Callsign, c
 	// otherwise, assume native xlx
 	else
 	{
-		protrev = CUlxPeer::GetProtocolRevision(Version);
+		protrev = CURFPeer::GetProtocolRevision(Version);
 	}
 
 	// done
 	return protrev;
 }
 
-std::shared_ptr<CPeer> CUlxProtocol::CreateNewPeer(const CCallsign &Callsign, const CIp &Ip, char *Modules, const CVersion &Version)
+std::shared_ptr<CPeer> CURFProtocol::CreateNewPeer(const CCallsign &Callsign, const CIp &Ip, char *Modules, const CVersion &Version)
 {
 	// BM ?
 	if ( Callsign.HasSameCallsignWithWildcard(CCallsign("BM*")) )
@@ -702,6 +702,6 @@ std::shared_ptr<CPeer> CUlxProtocol::CreateNewPeer(const CCallsign &Callsign, co
 	}
 	else
 	{
-		return std::make_shared<CUlxPeer>(Callsign, Ip, Modules, Version);
+		return std::make_shared<CURFPeer>(Callsign, Ip, Modules, Version);
 	}
 }

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Client.h"
-#include "ULXClient.h"
+#include "URFClient.h"
 
 class CBmClient : public CClient
 {

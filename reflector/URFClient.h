@@ -24,16 +24,16 @@
 #define XLX_PROTOCOL_REVISION_1      1       // AMBE only, revised connect mechanism
 #define XLX_PROTOCOL_REVISION_2      2       // Transcoded AMBE+AMBE2 interlink
 
-class CUlxClient : public CClient
+class CURFClient : public CClient
 {
 public:
 	// constructors
-	CUlxClient();
-	CUlxClient(const CCallsign &, const CIp &, char = ' ', int = XLX_PROTOCOL_REVISION_0);
-	CUlxClient(const CUlxClient &);
+	CURFClient();
+	CURFClient(const CCallsign &, const CIp &, char = ' ', int = XLX_PROTOCOL_REVISION_0);
+	CURFClient(const CURFClient &);
 
 	// destructor
-	virtual ~CUlxClient() {};
+	virtual ~CURFClient() {};
 
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::ulx; }

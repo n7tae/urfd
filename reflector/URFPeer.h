@@ -19,15 +19,15 @@
 #pragma once
 
 #include "Peer.h"
-#include "ULXClient.h"
+#include "URFClient.h"
 
-class CUlxPeer : public CPeer
+class CURFPeer : public CPeer
 {
 public:
 	// constructors
-	CUlxPeer();
-	CUlxPeer(const CCallsign &, const CIp &, const char *, const CVersion &);
-	CUlxPeer(const CUlxPeer &) = delete;
+	CURFPeer();
+	CURFPeer(const CCallsign &, const CIp &, const char *, const CVersion &);
+	CURFPeer(const CURFPeer &) = delete;
 
 	// status
 	bool IsAlive(void) const;

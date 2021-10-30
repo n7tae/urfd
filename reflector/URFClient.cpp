@@ -18,24 +18,24 @@
 
 #include <string.h>
 #include "Main.h"
-#include "ULXClient.h"
+#include "URFClient.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructors
 
-CUlxClient::CUlxClient()
+CURFClient::CURFClient()
 {
 	m_ProtRev = XLX_PROTOCOL_REVISION_0;
 }
 
-CUlxClient::CUlxClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, int protRev)
+CURFClient::CURFClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, int protRev)
 	: CClient(callsign, ip, reflectorModule)
 {
 	m_ProtRev = protRev;
 }
 
-CUlxClient::CUlxClient(const CUlxClient &client)
+CURFClient::CURFClient(const CURFClient &client)
 	: CClient(client)
 {
 	m_ProtRev = client.m_ProtRev;
@@ -44,7 +44,7 @@ CUlxClient::CUlxClient(const CUlxClient &client)
 ////////////////////////////////////////////////////////////////////////////////////////
 // identity
 
-int CUlxClient::GetCodec(void) const
+int CURFClient::GetCodec(void) const
 {
 	int codec;
 
@@ -65,7 +65,7 @@ int CUlxClient::GetCodec(void) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // status
 
-bool CUlxClient::IsAlive(void) const
+bool CURFClient::IsAlive(void) const
 {
 	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
 }

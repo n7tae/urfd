@@ -30,7 +30,7 @@ class CPeer;
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CUlxProtocol : public CDextraProtocol
+class CURFProtocol : public CDextraProtocol
 {
 public:
 	// initialization
