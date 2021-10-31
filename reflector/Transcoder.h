@@ -74,8 +74,8 @@ protected:
 	// sync objects for Openstream
 	CSemaphore      m_SemaphoreOpenStream;
 	bool            m_bStreamOpened;
-	uint16_t          m_StreamidOpenStream;
-	uint16_t          m_PortOpenStream;
+	uint16_t        m_StreamidOpenStream;
+	uint16_t        m_PortOpenStream;
 
 	// thread
 	std::atomic<bool> keep_running;

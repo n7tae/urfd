@@ -69,7 +69,7 @@ $(EXE) : $(OBJS)
 	g++ $(CFLAGS) $< -o $@
 
 clean :
-	$(RM) *.o *.d ulxd xrfd
+	$(RM) *.o *.d urfd
 
 -include $(DEPS)
 

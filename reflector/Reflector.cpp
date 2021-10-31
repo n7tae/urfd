@@ -94,7 +94,7 @@ bool CReflector::Start(void)
 	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
 		m_Stream[*it] = std::make_shared<CPacketStream>();
-		m_RouterFuture[*it] = std::async(std::launch::async, &CReflector::RouterThread, this, m_Stream[*it]);
+		m_RouterFuture[*it] = std::async(std::launch::async, &CReflector::RouterThread, this, *it);
 	}
 
 	// start the reporting threads
@@ -255,16 +255,12 @@ void CReflector::CloseStream(std::shared_ptr<CPacketStream> stream)
 ////////////////////////////////////////////////////////////////////////////////////////
 // router threads
 
-void CReflector::RouterThread(std::shared_ptr<CPacketStream> streamIn)
+void CReflector::RouterThread(const char ThisModule)
 {
-	// get our module
-	const auto module = GetStreamModule(streamIn);
-
-	// get on input queue
-	std::unique_ptr<CPacket> packet;
-
 	while (keep_running)
 	{
+		std::unique_ptr<CPacket> packet;
+		auto streamIn = m_Stream[ThisModule];
 		// any packet in our input queue ?
 		streamIn->Lock();
 		if ( !streamIn->empty() )
@@ -282,7 +278,7 @@ void CReflector::RouterThread(std::shared_ptr<CPacketStream> streamIn)
 		if ( packet != nullptr )
 		{
 			// set origin
-			packet->SetModule(module);
+			packet->SetModule(ThisModule);
 
 			// iterate on all protocols
 			m_Protocols.Lock();
@@ -296,7 +292,7 @@ void CReflector::RouterThread(std::shared_ptr<CPacketStream> streamIn)
 				{
 					// get our callsign
 					CCallsign csRPT = (*it)->GetReflectorCallsign();
-					csRPT.SetModule(GetStreamModule(streamIn));
+					csRPT.SetModule(ThisModule);
 					(dynamic_cast<CDvHeaderPacket *>(packetClone.get()))->SetRpt2Callsign(csRPT);
 				}
 

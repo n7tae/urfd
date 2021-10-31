@@ -23,11 +23,6 @@
 #include "Reflector.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// define
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
 CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t uiId, uint8_t uiCodecIn, uint8_t uiCodecOut)
@@ -198,7 +193,7 @@ void CCodecStream::Task(void)
 			}
 			else
 			{
-				std::cout << "Unexpected transcoded packet received from ambed" << std::endl;
+				std::cout << "Unexpected transcoded packet received from transcoder" << std::endl;
 			}
 		}
 	}

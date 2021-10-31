@@ -87,7 +87,7 @@ public:
 
 protected:
 	// threads
-	void RouterThread(std::shared_ptr<CPacketStream>);
+	void RouterThread(const char);
 	void XmlReportThread(void);
 #ifdef JSON_MONITOR
 	void JsonReportThread(void);
@@ -130,7 +130,10 @@ protected:
 	// threads
 	std::atomic<bool> keep_running;
 	std::unordered_map<char, std::future<void>> m_RouterFuture;
-	std::future<void> m_XmlReportFuture /*, m_JsonReportFuture*/;
+	std::future<void> m_XmlReportFuture;
+#ifdef JSON_MONITOR
+	std::future<void> m_JsonReportFuture;
+#endif
 
 	// notifications
 	CNotificationQueue  m_Notifications;
