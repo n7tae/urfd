@@ -238,16 +238,16 @@ bool CWiresxCmdHandler::ReplyToWiresxDxReqPacket(const CIp &Ip, const CWiresxInf
 	RoomId = (uint8_t)(Module - 'A');
 
 	// fill data buffer
-	::memset(data, 0x00U, 150U);
-	::memset(data, ' ', 128U);
+	memset(data, 0x00U, 150U);
+	memset(data, ' ', 128U);
 	// seq no
 	data[0U] = m_seqNo;
 	// command
-	::memcpy(data +  1U, DX_RESP, 4U);
+	memcpy(data +  1U, DX_RESP, 4U);
 	// node info
-	::memcpy(data +  5U, WiresxInfo.GetId(), 5U);
-	::memcpy(data + 10U, WiresxInfo.GetNode(), 10U);
-	::memcpy(data + 20U, WiresxInfo.GetName(), 14U);
+	memcpy(data +  5U, WiresxInfo.GetId(), 5U);
+	memcpy(data + 10U, WiresxInfo.GetNode(), 10U);
+	memcpy(data + 20U, WiresxInfo.GetName(), 14U);
 	// linked room
 	if (!IsLinked)
 	{
@@ -266,19 +266,19 @@ bool CWiresxCmdHandler::ReplyToWiresxDxReqPacket(const CIp &Ip, const CWiresxInf
 		char item[16U];
 		// refl->m_id
 		::sprintf(item, "%05d", 4001U + RoomId);
-		::memcpy(data + 36U, item, 5U);
+		memcpy(data + 36U, item, 5U);
 		// refl->name
-		::memset(item, ' ', 16U);
-		::memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
+		memset(item, ' ', 16U);
+		memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
 		item[7] = 'A' + RoomId;
-		::memcpy(data + 41U, item, 16U);
+		memcpy(data + 41U, item, 16U);
 		// refl->count
 		::sprintf(item, "%03d", RoomId + 1);
-		::memcpy(data + 57U, item, 3U);
+		memcpy(data + 57U, item, 3U);
 		// other
-		::memset(data + 60U, ' ', 10U);
+		memset(data + 60U, ' ', 10U);
 		// refl->m_desc
-		::memcpy(data + 70U, "Description   ", 14U);
+		memcpy(data + 70U, "Description   ", 14U);
 	}
 
 	// frequencies
@@ -301,7 +301,7 @@ bool CWiresxCmdHandler::ReplyToWiresxDxReqPacket(const CIp &Ip, const CWiresxInf
 		char freq[30U];
 		::sprintf(freq, "%05u.%06u%c%03u.%06u", WiresxInfo.GetTxFrequency() / 1000000U, freqHz, sign, offset / 1000000U, offset % 1000000U);
 
-		::memcpy(data + 84U, freq, 23U);
+		memcpy(data + 84U, freq, 23U);
 	}
 
 	// EOD & CRC
@@ -325,16 +325,16 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	uint8_t data[1100U];
 
 	// fill data buffer
-	::memset(data, 0x00U, 1100U);
+	memset(data, 0x00U, 1100U);
 	// seq no
 	data[0U] = m_seqNo;
 	// command
-	::memcpy(data + 1U, ALL_RESP, 4U);
+	memcpy(data + 1U, ALL_RESP, 4U);
 	data[5U] = '2';
 	data[6U] = '1';
 	// node info
-	::memcpy(data +  7U, WiresxInfo.GetId(), 5U);
-	::memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
+	memcpy(data +  7U, WiresxInfo.GetId(), 5U);
+	memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
 
 	// number of entries
 	const char *modules = ACTIVE_MODULES;
@@ -356,24 +356,24 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 		int RoomId = RoomMod - 'A';
 
 		// prepare
-		::memset(data + offset, ' ', 50U);
+		memset(data + offset, ' ', 50U);
 		data[offset + 0U] = '5';
 
 		// refl->m_id
 		::sprintf(item, "%05d", 4001U + RoomId);
-		::memcpy(data + offset + 1U, item, 5U);
+		memcpy(data + offset + 1U, item, 5U);
 		// refl->name
-		::memset(item, ' ', 16U);
-		::memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
+		memset(item, ' ', 16U);
+		memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
 		item[7] = RoomMod;
-		::memcpy(data + offset + 6U, item, 16U);
+		memcpy(data + offset + 6U, item, 16U);
 		// refl->count
 		::sprintf(item, "%03d", RoomId + 1);
-		::memcpy(data + offset + 22U, item, 3U);
+		memcpy(data + offset + 22U, item, 3U);
 		// other
-		::memset(data + offset + 25U, ' ', 10U);
+		memset(data + offset + 25U, ' ', 10U);
 		// refl->m_desc
-		::memcpy(data + offset + 35U, "Description   ", 14U);
+		memcpy(data + offset + 35U, "Description   ", 14U);
 		data[offset + 49U] = 0x0DU;
 		// next
 		offset += 50U;
@@ -388,7 +388,7 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 		uint offset2 = offset;
 		// patch the remaining
 		uint k = 1029U - offset2;
-		::memset(data+offset2, ' ', k);
+		memset(data+offset2, ' ', k);
 		offset2 += k;
 
 		// EOD + CRC
@@ -412,7 +412,7 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 
 		// patch the remaining
 		//uint k = 1031U - offset;
-		//::memset(data+offset, ' ', k);
+		//memset(data+offset, ' ', k);
 		//offset += k;
 
 		// and encode the reply
@@ -439,17 +439,17 @@ bool CWiresxCmdHandler::ReplyToWiresxConnReqPacket(const CIp &Ip, const CWiresxI
 	RoomId = (uint8_t)(Module - 'A');
 
 	// prepare buffer
-	::memset(data, 0x00U, 110U);
-	::memset(data, ' ', 90U);
+	memset(data, 0x00U, 110U);
+	memset(data, ' ', 90U);
 
 	// seq no
 	data[0U] = m_seqNo;
 	// command
-	::memcpy(data + 1U, CONN_RESP, 4U);
+	memcpy(data + 1U, CONN_RESP, 4U);
 	// node info
-	::memcpy(data +  5U, WiresxInfo.GetId(), 5U);
-	::memcpy(data + 10U, WiresxInfo.GetNode(), 10U);
-	::memcpy(data + 20U, WiresxInfo.GetName(), 14U);
+	memcpy(data +  5U, WiresxInfo.GetId(), 5U);
+	memcpy(data + 10U, WiresxInfo.GetNode(), 10U);
+	memcpy(data + 20U, WiresxInfo.GetName(), 14U);
 	data[34U] = '1';
 	data[35U] = '5';
 	// entry info
@@ -458,17 +458,17 @@ bool CWiresxCmdHandler::ReplyToWiresxConnReqPacket(const CIp &Ip, const CWiresxI
 
 		// refl->m_id
 		::sprintf(item, "%05d", 4001U + RoomId);
-		::memcpy(data + 36U, item, 5U);
+		memcpy(data + 36U, item, 5U);
 		// refl->name
-		::memset(item, ' ', 16U);
-		::memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
+		memset(item, ' ', 16U);
+		memcpy(item, "MODULE", 6U); // K2IE fix for U/C only radios
 		item[7] = 'A' + RoomId;
-		::memcpy(data + 41U, item, 16U);
+		memcpy(data + 41U, item, 16U);
 		// refl->count
 		::sprintf(item, "%03d", RoomId + 1);
-		::memcpy(data + 57U, item, 3U);
+		memcpy(data + 57U, item, 3U);
 		// refl->m_desc
-		::memcpy(data + 70U, "Description   ", 14U);
+		memcpy(data + 70U, "Description   ", 14U);
 	}
 	data[84U] = '0';
 	data[85U] = '0';
@@ -497,17 +497,17 @@ bool CWiresxCmdHandler::ReplyToWiresxDiscReqPacket(const CIp &Ip, const CWiresxI
 	uint8_t data[110U];
 
 	// prepare buffer
-	::memset(data, 0x00U, 110U);
-	::memset(data, ' ', 90U);
+	memset(data, 0x00U, 110U);
+	memset(data, ' ', 90U);
 
 	// seq no
 	data[0U] = m_seqNo;
 	// command
-	::memcpy(data + 1U, DISC_RESP, 4U);
+	memcpy(data + 1U, DISC_RESP, 4U);
 	// node info
-	::memcpy(data +  5U, WiresxInfo.GetId(), 5U);
-	::memcpy(data + 10U, WiresxInfo.GetNode(), 10U);
-	::memcpy(data + 20U, WiresxInfo.GetName(), 14U);
+	memcpy(data +  5U, WiresxInfo.GetId(), 5U);
+	memcpy(data + 10U, WiresxInfo.GetNode(), 10U);
+	memcpy(data + 20U, WiresxInfo.GetName(), 14U);
 	// data
 	data[34U] = '1';
 	data[35U] = '2';
@@ -580,11 +580,11 @@ bool CWiresxCmdHandler::EncodeAndSendWiresxPacket(const CIp &Ip, const CBuffer &
 	// Write the header
 	{
 		//header
-		::memcpy(buffer, NET_HEADER, 34U);
-		::memcpy(buffer + 4U, WiresxInfo.GetCallsign(), 10U);
-		::memcpy(buffer + 14U, WiresxInfo.GetNode(), 10U);
+		memcpy(buffer, NET_HEADER, 34U);
+		memcpy(buffer + 4U, WiresxInfo.GetCallsign(), 10U);
+		memcpy(buffer + 14U, WiresxInfo.GetNode(), 10U);
 		// sync
-		::memcpy(buffer + 35U, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
+		memcpy(buffer + 35U, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
 		// Fich
 		fich.load(DEFAULT_FICH);
 		fich.setFI(YSF_FI_HEADER);
@@ -637,7 +637,7 @@ bool CWiresxCmdHandler::EncodeAndSendWiresxPacket(const CIp &Ip, const CBuffer &
 				{
 					uint8_t temp[20U];
 					temp[0U] = 0x00U;
-					::memcpy(temp + 1U, Data.data() + offset, 19U);
+					memcpy(temp + 1U, Data.data() + offset, 19U);
 					payload.writeDataFRModeData2(temp, buffer + 35U);
 					offset += 19U;
 				}
@@ -734,7 +734,7 @@ bool CWiresxCmdHandler::DebugTestDecodePacket(const CBuffer &Buffer)
 			{
 			case YSF_FI_HEADER:
 				len = 0;
-				::memset(command, 0x00, sizeof(command));
+				memset(command, 0x00, sizeof(command));
 				std::cout << "Header" << std::endl;
 				break;
 			case YSF_FI_TERMINATOR:

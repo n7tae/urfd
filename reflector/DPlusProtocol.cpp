@@ -393,7 +393,7 @@ bool CDplusProtocol::IsValidLoginPacket(const CBuffer &Buffer, CCallsign *Callsi
 	uint8_t Tag[] = { 0x1C,0xC0,0x04,0x00 };
 	bool valid = false;
 
-	if ( (Buffer.size() == 28) &&(::memcmp(Buffer.data(), Tag, sizeof(Tag)) == 0) )
+	if ( (Buffer.size() == 28) &&(memcmp(Buffer.data(), Tag, sizeof(Tag)) == 0) )
 	{
 		Callsign->SetCallsign(&(Buffer.data()[4]), 8);
 		valid = Callsign->IsValid();
@@ -503,8 +503,8 @@ bool CDplusProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
 	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
-	Buffer->Append((uint8_t *)Packet.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8_t *)Packet.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
+	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
 
 	return true;
 

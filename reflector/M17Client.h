@@ -1,7 +1,5 @@
 #pragma once
 
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-//
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -18,31 +16,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "DVFramePacket.h"
+#include "Client.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// defines
+// define
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CDvLastFramePacket : public CDvFramePacket
+class CM17Client : public CClient
 {
 public:
-	// constructor
-	CDvLastFramePacket();
-	CDvLastFramePacket(const struct dstar_dvframe *, uint16_t, uint8_t);
-	CDvLastFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
-	CDvLastFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
-	CDvLastFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *, ECodecType, const uint8_t *);
-	CDvLastFramePacket(const CM17Packet &);
-	CDvLastFramePacket(const CDvLastFramePacket &);
+	// constructors
+	CM17Client();
+	CM17Client(const CCallsign &, const CIp &, char);
+	CM17Client(const CM17Client &);
 
-	// virtual duplication
-	std::unique_ptr<CPacket> Duplicate(void) const;
+	// destructor
+	virtual ~CM17Client() {};
 
 	// identity
-	bool IsLastPacket(void) const           { return true; }
-	bool HasTranscodableAmbe(void) const   { return false; }
+	const char *GetProtocolName(void) const     { return "M17"; }
+	bool IsNode(void) const                     { return true; }
+
+	// status
+	bool IsAlive(void) const;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////

@@ -47,8 +47,8 @@ ifeq ($(ysf_db), true)
 LDFLAGS += `mysql_config --libs`
 endif
 
-ifdef tc_ip
-SRCS += Transcoder.cpp CodecStream.cpp
+ifdef need_tc
+SRCS += CodecStream.cpp
 endif
 
 ifeq ($(use_g3), true)

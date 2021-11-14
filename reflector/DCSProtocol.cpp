@@ -490,8 +490,8 @@ void CDcsProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFrameP
 	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header) - sizeof(uint16_t));
 	Buffer->Append(DvFrame.GetStreamId());
 	Buffer->Append((uint8_t)(DvFrame.GetPacketId() % 21));
-	Buffer->Append((uint8_t *)DvFrame.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8_t *)DvFrame.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t *)DvFrame.GetCodecData(ECodecType::dstar), 9);
+	Buffer->Append((uint8_t *)DvFrame.GetDvData(), 3);
 	Buffer->Append((uint8_t)((iSeq >> 0) & 0xFF));
 	Buffer->Append((uint8_t)((iSeq >> 8) & 0xFF));
 	Buffer->Append((uint8_t)((iSeq >> 16) & 0xFF));

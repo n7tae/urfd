@@ -19,6 +19,11 @@
 #include "Main.h"
 #include "Packet.h"
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// constructor
+
 CPacket::CPacket()
 {
 	m_uiStreamId = 0;
@@ -28,8 +33,10 @@ CPacket::CPacket()
 	m_uiYsfPacketId = 0;
 	m_uiYsfPacketSubId = 0;
 	m_uiYsfPacketFrameId = 0;
+	m_uiM17FrameNumber = 0;
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
+	m_eCodecIn = ECodecType::none;
 };
 
 // dstar contrsuctor
@@ -43,8 +50,10 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 	m_uiYsfPacketId = 0xFF;
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
+	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
+	m_eCodecIn = ECodecType::dstar;
 };
 
 // dmr constructor
@@ -58,8 +67,10 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid)
 	m_uiYsfPacketId = 0xFF;
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
+	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
+	m_eCodecIn = ECodecType::dmr;
 };
 
 // ysf constructor
@@ -73,13 +84,15 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_uiDstarPacketId = 0xFF;
 	m_uiDmrPacketId = 0xFF;
 	m_uiDmrPacketSubid = 0xFF;
+	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
+	m_eCodecIn = ECodecType::dmr;
 }
 
 // xlx  constructor
 
-CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid)
+CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, ECodecType codecIn)
 {
 	m_uiStreamId = sid;
 	m_uiDstarPacketId = dstarpid;
@@ -88,8 +101,25 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 	m_uiYsfPacketId = ysfpid;
 	m_uiYsfPacketSubId = ysfsubpid;
 	m_uiYsfPacketFrameId = ysffrid;
+	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
+	m_eCodecIn = codecIn;
+}
+
+// m17 constructor
+
+CPacket::CPacket(const CM17Packet &m17) : CPacket()
+{
+	m_uiStreamId = m17.GetStreamId();
+	m_uiDstarPacketId = 0xFF;
+	m_uiDmrPacketId = 0xFF;
+	m_uiDmrPacketSubid  = 0xFF;
+	m_uiYsfPacketId = 0xFF;
+	m_uiYsfPacketSubId = 0xFF;
+	m_uiYsfPacketFrameId = 0xFF;
+	m_eCodecIn = (0x6U == (0x6U & m17.GetFrameType())) ? ECodecType::c2_1600 : ECodecType::c2_3200;
+	m_uiM17FrameNumber = 0x7FFFU & m17.GetFrameNumber();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -97,9 +127,9 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 
 void CPacket::UpdatePids(uint32_t pid)
 {
-	// called while phusing this packet in a stream queue
+	// called while pushing this packet in a stream queue
 	// so now packet sequence number is known and undefined pids can be updated
-	// this is needed as dtsar & dmt pids are different and cannot be
+	// this is needed as dtsar & dmr pids are different and cannot be
 	// derived from each other
 
 	// dstar pid needs update ?
@@ -119,5 +149,10 @@ void CPacket::UpdatePids(uint32_t pid)
 		m_uiYsfPacketId = ((pid / 5) % 8);
 		m_uiYsfPacketSubId = pid % 5;
 		m_uiYsfPacketFrameId = ((pid / 5) & 0x7FU) << 1;
+	}
+	// m17 needs update?
+	if (m_uiM17FrameNumber == 0x8000U)
+	{
+		m_uiM17FrameNumber = pid % 0x7FFFU;
 	}
 }

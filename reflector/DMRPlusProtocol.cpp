@@ -367,12 +367,12 @@ bool CDmrplusProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *ca
 	if ( Buffer.size() == 31 )
 	{
 		char sz[9];
-		::memcpy(sz, Buffer.data(), 8);
+		memcpy(sz, Buffer.data(), 8);
 		sz[8] = 0;
 		uint32_t dmrid = atoi(sz);
 		callsign->SetDmrid(dmrid, true);
 		callsign->SetModule(DMRPLUS_MODULE_ID);
-		::memcpy(sz, &Buffer.data()[8], 4);
+		memcpy(sz, &Buffer.data()[8], 4);
 		sz[4] = 0;
 		*reflectormodule = DmrDstIdToModule(atoi(sz));
 		valid = (callsign->IsValid() && (std::isupper(*reflectormodule) || (*reflectormodule == ' ')) );
@@ -390,7 +390,7 @@ bool CDmrplusProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign 
 	if ( Buffer.size() == 32 )
 	{
 		char sz[9];
-		::memcpy(sz, Buffer.data(), 8);
+		memcpy(sz, Buffer.data(), 8);
 		sz[8] = 0;
 		uint32_t dmrid = atoi(sz);
 		callsign->SetDmrid(dmrid, true);
@@ -468,7 +468,7 @@ bool CDmrplusProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer
 			memcpy(&dmr3ambe[14], &dmrframe[20], 13);
 			// extract sync
 			dmrsync[0] = dmrframe[13] & 0x0F;
-			::memcpy(&dmrsync[1], &dmrframe[14], 5);
+			memcpy(&dmrsync[1], &dmrframe[14], 5);
 			dmrsync[6] = dmrframe[19] & 0xF0;
 
 			// and create 3 dv frames
@@ -597,15 +597,15 @@ void CDmrplusProtocol::EncodeDvPacket
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid()  & 0x00FFFFFF;
 	uint32_t uiDstId = ModuleToDmrDestId(Header.GetRpt2Module()) & 0x00FFFFFF;
 	// frame0
-	Buffer->ReplaceAt(26, DvFrame0.GetAmbePlus(), 9);
+	Buffer->ReplaceAt(26, DvFrame0.GetCodecData(ECodecType::dmr), 9);
 	// 1/2 frame1
-	Buffer->ReplaceAt(35, DvFrame1.GetAmbePlus(), 5);
+	Buffer->ReplaceAt(35, DvFrame1.GetCodecData(ECodecType::dmr), 5);
 	Buffer->ReplaceAt(39, (uint8_t)(Buffer->at(39) & 0xF0));
 	// 1/2 frame1
-	Buffer->ReplaceAt(45, DvFrame1.GetAmbePlus()+4, 5);
+	Buffer->ReplaceAt(45, DvFrame1.GetCodecData(ECodecType::dmr)+4, 5);
 	Buffer->ReplaceAt(45, (uint8_t)(Buffer->at(45) & 0x0F));
 	// frame2
-	Buffer->ReplaceAt(50, DvFrame2.GetAmbePlus(), 9);
+	Buffer->ReplaceAt(50, DvFrame2.GetCodecData(ECodecType::dmr), 9);
 
 	// sync or embedded signaling
 	ReplaceEMBInBuffer(Buffer, DvFrame0.GetDmrPacketId());
@@ -675,11 +675,11 @@ void CDmrplusProtocol::AppendVoiceLCToBuffer(CBuffer *buffer, uint32_t uiSrcId) 
 
 	// fill payload
 	CBPTC19696 bptc;
-	::memset(payload, 0, sizeof(payload));
+	memset(payload, 0, sizeof(payload));
 	// LC data
 	uint8_t lc[12];
 	{
-		::memset(lc, 0, sizeof(lc));
+		memset(lc, 0, sizeof(lc));
 		// uiDstId = TG9
 		lc[5] = 9;
 		// uiSrcId
@@ -694,12 +694,12 @@ void CDmrplusProtocol::AppendVoiceLCToBuffer(CBuffer *buffer, uint32_t uiSrcId) 
 		lc[11] = parity[0] ^ DMR_VOICE_LC_HEADER_CRC_MASK;
 	}
 	// sync
-	::memcpy(payload+13, g_DmrSyncBSData, sizeof(g_DmrSyncBSData));
+	memcpy(payload+13, g_DmrSyncBSData, sizeof(g_DmrSyncBSData));
 	// slot type
 	{
 		// slot type
 		uint8_t slottype[3];
-		::memset(slottype, 0, sizeof(slottype));
+		memset(slottype, 0, sizeof(slottype));
 		slottype[0]  = (DMRPLUS_REFLECTOR_COLOUR << 4) & 0xF0;
 		slottype[0] |= (DMR_DT_VOICE_LC_HEADER  << 0) & 0x0FU;
 		CGolay2087::encode(slottype);

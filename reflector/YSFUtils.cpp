@@ -562,7 +562,7 @@ void CYsfUtils::DecodeVD2Vchs(uint8_t *data, uint8_t **ambe)
 			WRITE_BIT(v_dmr, cPos, dat_c & MASK);
 		}
 
-		::memcpy(ambe[frame++], v_dmr, 9);
+		memcpy(ambe[frame++], v_dmr, 9);
 	}
 }
 
@@ -602,8 +602,8 @@ void CYsfUtils::EncodeVD2Vch(uint8_t *ambe, uint8_t *data)
 	// and to vch
 	unsigned char vch[13U];
 	unsigned char ysfFrame[13U];
-	::memset(vch, 0U, 13U);
-	::memset(ysfFrame, 0, 13U);
+	memset(vch, 0U, 13U);
+	memset(ysfFrame, 0, 13U);
 
 	unsigned int dat_a = a >> 12;
 
@@ -656,5 +656,5 @@ void CYsfUtils::EncodeVD2Vch(uint8_t *ambe, uint8_t *data)
 		WRITE_BIT(ysfFrame, n, s);
 	}
 
-	::memcpy(data, ysfFrame, 13U);
+	memcpy(data, ysfFrame, 13U);
 }

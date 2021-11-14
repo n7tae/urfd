@@ -59,7 +59,7 @@ const unsigned int INTERLEAVE_TABLE[] =
 
 CYSFFICH::CYSFFICH()
 {
-	::memset(m_fich, 0U, 6U);
+	memset(m_fich, 0U, 6U);
 }
 
 bool CYSFFICH::decode(const unsigned char* bytes)
@@ -300,5 +300,5 @@ void CYSFFICH::load(const unsigned char* fich)
 {
 	assert(fich != nullptr);
 
-	::memcpy(m_fich, fich, 4U);
+	memcpy(m_fich, fich, 4U);
 }

@@ -638,13 +638,13 @@ bool CURFProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Bu
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
 	Buffer->Append((uint8_t)(Packet.GetDstarPacketId() % 21));
-	Buffer->Append((uint8_t *)Packet.GetAmbe(), AMBE_SIZE);
-	Buffer->Append((uint8_t *)Packet.GetDvData(), DVDATA_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetAmbe(), 9);
+	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
 
 	Buffer->Append((uint8_t)Packet.GetDmrPacketId());
 	Buffer->Append((uint8_t)Packet.GetDmrPacketSubid());
-	Buffer->Append((uint8_t *)Packet.GetAmbePlus(), AMBEPLUS_SIZE);
-	Buffer->Append((uint8_t *)Packet.GetDvSync(), DVSYNC_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetAmbePlus(), 9);
+	Buffer->Append((uint8_t *)Packet.GetDvSync(), 7);
 
 	return true;
 
@@ -665,8 +665,8 @@ bool CURFProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBu
 
 	Buffer->Append((uint8_t)Packet.GetDmrPacketId());
 	Buffer->Append((uint8_t)Packet.GetDmrPacketSubid());
-	Buffer->Append((uint8_t *)Packet.GetAmbePlus(), AMBEPLUS_SIZE);
-	Buffer->Append((uint8_t *)Packet.GetDvSync(), DVSYNC_SIZE);
+	Buffer->Append((uint8_t *)Packet.GetAmbePlus(), 9);
+	Buffer->Append((uint8_t *)Packet.GetDvSync(), 7);
 
 	return true;
 }

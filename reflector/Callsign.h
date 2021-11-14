@@ -55,6 +55,7 @@ public:
 	// get
 	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
+	const std::string GetCS(unsigned len = 9) const;
 	uint32_t GetDmrid(void) const             { return m_uiDmrid; }
 	void GetSuffix(uint8_t *) const;
 	char GetModule(void) const              { return m_Module; }
@@ -69,7 +70,13 @@ public:
 	bool operator ==(const CCallsign &) const;
 	operator const char *() const;
 
+	// M17
+	void CodeIn(const uint8_t *code);
+	void CodeOut(uint8_t *out) const;
+
 protected:
+	// M17
+	void CSIn();
 	// helper
 	bool IsNumber(char) const;
 	bool IsLetter(char) const;
@@ -77,9 +84,10 @@ protected:
 
 protected:
 	// data
-	char    m_Callsign[CALLSIGN_LEN];
-	char    m_Suffix[CALLSUFFIX_LEN];
-	char    m_Module;
-	mutable char	m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
-	uint32_t  m_uiDmrid;
+	char         m_Callsign[CALLSIGN_LEN];
+	char         m_Suffix[CALLSUFFIX_LEN];
+	char         m_Module;
+	mutable char m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
+	uint32_t     m_uiDmrid;
+	uint64_t     m_coded; // M17 encoded callsign
 };

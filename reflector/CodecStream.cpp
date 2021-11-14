@@ -144,7 +144,7 @@ void CCodecStream::Task(void)
 {
 	CBuffer Buffer;
 	CIp     Ip;
-	uint8_t   Ambe[AMBE_SIZE];
+	uint8_t   Ambe[9];
 	uint8_t   DStarSync[] = { 0x55,0x2D,0x16 };
 
 	// any packet from transcoder
@@ -235,7 +235,7 @@ bool CCodecStream::IsValidAmbePacket(const CBuffer &Buffer, uint8_t *Ambe)
 
 	if ( (Buffer.size() == 11) && (Buffer.data()[0] == m_uiCodecOut) )
 	{
-		::memcpy(Ambe, &(Buffer.data()[2]), 9);
+		memcpy(Ambe, &(Buffer.data()[2]), 9);
 		valid = true;
 	}
 	return valid;

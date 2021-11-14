@@ -1,5 +1,7 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+#pragma once
 
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -16,17 +18,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-////////////////////////////////////////////////////////////////////////////////////////
-
 // Origin Id
+
+enum class ECodecType { none, dstar, dmr, c2_1600, c2_3200 };
 
 #define ORIGIN_LOCAL    0
 #define ORIGIN_PEER     1
 
-////////////////////////////////////////////////////////////////////////////////////////
-// class
+#include "M17Packet.h"
 
 class CPacket
 {
@@ -36,7 +35,8 @@ public:
 	CPacket(uint16_t sid, uint8_t dstarpid);
 	CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrsubpid);
 	CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax);
-	CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax);
+	CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax, ECodecType);
+	CPacket(const CM17Packet &);
 
 	// destructor
 	virtual ~CPacket() {}
@@ -51,33 +51,37 @@ public:
 	virtual bool HasTranscodableAmbe(void) const    { return false; }
 
 	// get
-	virtual bool IsValid(void) const                { return true; }
-	uint16_t GetStreamId(void) const                { return m_uiStreamId; }
-	uint8_t  GetPacketId(void) const                { return m_uiDstarPacketId; }
-	uint8_t  GetDstarPacketId(void) const           { return m_uiDstarPacketId; }
-	uint8_t  GetDmrPacketId(void) const             { return m_uiDmrPacketId; }
-	uint8_t  GetDmrPacketSubid(void) const          { return m_uiDmrPacketSubid; }
-	uint8_t  GetYsfPacketId(void) const             { return m_uiYsfPacketId; }
-	uint8_t  GetYsfPacketSubId(void) const          { return m_uiYsfPacketSubId; }
-	uint8_t  GetYsfPacketFrameId(void) const        { return m_uiYsfPacketFrameId; }
-	char     GetModule(void) const                  { return m_cModule; }
-	bool     IsLocalOrigin(void) const              { return (m_uiOriginId == ORIGIN_LOCAL); }
+	virtual bool IsValid(void) const             { return true; }
+	uint16_t     GetStreamId(void) const         { return m_uiStreamId; }
+	uint16_t     M17FrameNumber(void) const      { return m_uiM17FrameNumber; }
+	uint8_t      GetPacketId(void) const         { return m_uiDstarPacketId; }
+	uint8_t      GetDstarPacketId(void) const    { return m_uiDstarPacketId; }
+	uint8_t      GetDmrPacketId(void) const      { return m_uiDmrPacketId; }
+	uint8_t      GetDmrPacketSubid(void) const   { return m_uiDmrPacketSubid; }
+	uint8_t      GetYsfPacketId(void) const      { return m_uiYsfPacketId; }
+	uint8_t      GetYsfPacketSubId(void) const   { return m_uiYsfPacketSubId; }
+	uint8_t      GetYsfPacketFrameId(void) const { return m_uiYsfPacketFrameId; }
+	char         GetModule(void) const           { return m_cModule; }
+	bool         IsLocalOrigin(void) const       { return (m_uiOriginId == ORIGIN_LOCAL); }
+	ECodecType   GetCodecIn(void) const          { return m_eCodecIn; }
 
 	// set
 	void UpdatePids(uint32_t);
-	void SetModule(char c)                          { m_cModule = c; }
-	void SetLocalOrigin(void)                       { m_uiOriginId = ORIGIN_LOCAL; }
-	void SetRemotePeerOrigin(void)                  { m_uiOriginId = ORIGIN_PEER; }
+	void SetModule(char cMod)      { m_cModule = cMod; }
+	void SetLocalOrigin(void)      { m_uiOriginId = ORIGIN_LOCAL; }
+	void SetRemotePeerOrigin(void) { m_uiOriginId = ORIGIN_PEER; }
 
 protected:
 	// data
-	uint16_t  m_uiStreamId;
-	uint8_t   m_uiDstarPacketId;
-	uint8_t   m_uiDmrPacketId;
-	uint8_t   m_uiDmrPacketSubid;
-	uint8_t   m_uiYsfPacketId;
-	uint8_t   m_uiYsfPacketSubId;
-	uint8_t   m_uiYsfPacketFrameId;
-	char      m_cModule;
-	uint8_t   m_uiOriginId;
+	uint16_t   m_uiStreamId;
+	uint16_t   m_uiM17FrameNumber;
+	uint8_t    m_uiDstarPacketId;
+	uint8_t    m_uiDmrPacketId;
+	uint8_t    m_uiDmrPacketSubid;
+	uint8_t    m_uiYsfPacketId;
+	uint8_t    m_uiYsfPacketSubId;
+	uint8_t    m_uiYsfPacketFrameId;
+	char       m_cModule;
+	uint8_t    m_uiOriginId;
+	ECodecType m_eCodecIn;
 };

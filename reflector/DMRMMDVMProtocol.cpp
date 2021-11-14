@@ -608,11 +608,11 @@ bool CDmrmmdvmProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique
 			// extract sync
 			uint8_t dmrsync[7];
 			dmrsync[0] = Buffer.data()[33] & 0x0F;
-			::memcpy(&dmrsync[1], &Buffer.data()[34], 5);
+			memcpy(&dmrsync[1], &Buffer.data()[34], 5);
 			dmrsync[6] = Buffer.data()[39] & 0xF0;
 			// and check
-			if ( (::memcmp(dmrsync, g_DmrSyncMSData, sizeof(dmrsync)) == 0) ||
-					(::memcmp(dmrsync, g_DmrSyncBSData, sizeof(dmrsync)) == 0))
+			if ( (memcmp(dmrsync, g_DmrSyncMSData, sizeof(dmrsync)) == 0) ||
+					(memcmp(dmrsync, g_DmrSyncBSData, sizeof(dmrsync)) == 0))
 			{
 				// get payload
 				//CBPTC19696 bptc;
@@ -696,7 +696,7 @@ bool CDmrmmdvmProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::array<s
 			memcpy(&dmr3ambe[14], &dmrframe[20], 13);
 			// extract sync
 			dmrsync[0] = dmrframe[13] & 0x0F;
-			::memcpy(&dmrsync[1], &dmrframe[14], 5);
+			memcpy(&dmrsync[1], &dmrframe[14], 5);
 			dmrsync[6] = dmrframe[19] & 0xF0;
 
 			// debug
@@ -744,11 +744,11 @@ bool CDmrmmdvmProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::uni
 			// extract sync
 			uint8_t dmrsync[7];
 			dmrsync[0] = Buffer.data()[33] & 0x0F;
-			::memcpy(&dmrsync[1], &Buffer.data()[34], 5);
+			memcpy(&dmrsync[1], &Buffer.data()[34], 5);
 			dmrsync[6] = Buffer.data()[39] & 0xF0;
 			// and check
-			if ( (::memcmp(dmrsync, g_DmrSyncMSData, sizeof(dmrsync)) == 0) ||
-					(::memcmp(dmrsync, g_DmrSyncBSData, sizeof(dmrsync)) == 0))
+			if ( (memcmp(dmrsync, g_DmrSyncMSData, sizeof(dmrsync)) == 0) ||
+					(memcmp(dmrsync, g_DmrSyncBSData, sizeof(dmrsync)) == 0))
 			{
 				// get payload
 				//CBPTC19696 bptc;
@@ -765,7 +765,7 @@ bool CDmrmmdvmProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::uni
 
 				// dummy ambe
 				uint8_t ambe[9];
-				::memset(ambe, 0, sizeof(ambe));
+				memset(ambe, 0, sizeof(ambe));
 
 
 				// and packet
@@ -901,15 +901,15 @@ void CDmrmmdvmProtocol::EncodeDvPacket(
 
 	// Payload
 	// frame0
-	Buffer->ReplaceAt(20, DvFrame0.GetAmbePlus(), 9);
+	Buffer->ReplaceAt(20, DvFrame0.GetCodecData(ECodecType::dmr), 9);
 	// 1/2 frame1
-	Buffer->ReplaceAt(29, DvFrame1.GetAmbePlus(), 5);
+	Buffer->ReplaceAt(29, DvFrame1.GetCodecData(ECodecType::dmr), 5);
 	Buffer->ReplaceAt(33, (uint8_t)(Buffer->at(33) & 0xF0));
 	// 1/2 frame1
-	Buffer->ReplaceAt(39, DvFrame1.GetAmbePlus()+4, 5);
+	Buffer->ReplaceAt(39, DvFrame1.GetCodecData(ECodecType::dmr)+4, 5);
 	Buffer->ReplaceAt(39, (uint8_t)(Buffer->at(39) & 0x0F));
 	// frame2
-	Buffer->ReplaceAt(44, DvFrame2.GetAmbePlus(), 9);
+	Buffer->ReplaceAt(44, DvFrame2.GetCodecData(ECodecType::dmr), 9);
 
 	// sync or embedded signaling
 	ReplaceEMBInBuffer(Buffer, DvFrame0.GetDmrPacketId());
@@ -997,11 +997,11 @@ void CDmrmmdvmProtocol::AppendVoiceLCToBuffer(CBuffer *buffer, uint32_t uiSrcId)
 
 	// fill payload
 	CBPTC19696 bptc;
-	::memset(payload, 0, sizeof(payload));
+	memset(payload, 0, sizeof(payload));
 	// LC data
 	uint8_t lc[12];
 	{
-		::memset(lc, 0, sizeof(lc));
+		memset(lc, 0, sizeof(lc));
 		// uiDstId = TG9
 		lc[5] = 9;
 		// uiSrcId
@@ -1016,12 +1016,12 @@ void CDmrmmdvmProtocol::AppendVoiceLCToBuffer(CBuffer *buffer, uint32_t uiSrcId)
 		lc[11] = parity[0] ^ DMR_VOICE_LC_HEADER_CRC_MASK;
 	}
 	// sync
-	::memcpy(payload+13, g_DmrSyncBSData, sizeof(g_DmrSyncBSData));
+	memcpy(payload+13, g_DmrSyncBSData, sizeof(g_DmrSyncBSData));
 	// slot type
 	{
 		// slot type
 		uint8_t slottype[3];
-		::memset(slottype, 0, sizeof(slottype));
+		memset(slottype, 0, sizeof(slottype));
 		slottype[0]  = (DMRMMDVM_REFLECTOR_COLOUR << 4) & 0xF0;
 		slottype[0] |= (DMR_DT_VOICE_LC_HEADER  << 0) & 0x0FU;
 		CGolay2087::encode(slottype);
@@ -1044,11 +1044,11 @@ void CDmrmmdvmProtocol::AppendTerminatorLCToBuffer(CBuffer *buffer, uint32_t uiS
 
 	// fill payload
 	CBPTC19696 bptc;
-	::memset(payload, 0, sizeof(payload));
+	memset(payload, 0, sizeof(payload));
 	// LC data
 	uint8_t lc[12];
 	{
-		::memset(lc, 0, sizeof(lc));
+		memset(lc, 0, sizeof(lc));
 		// uiDstId = TG9
 		lc[5] = 9;
 		// uiSrcId
@@ -1063,12 +1063,12 @@ void CDmrmmdvmProtocol::AppendTerminatorLCToBuffer(CBuffer *buffer, uint32_t uiS
 		lc[11] = parity[0] ^ DMR_TERMINATOR_WITH_LC_CRC_MASK;
 	}
 	// sync
-	::memcpy(payload+13, g_DmrSyncBSData, sizeof(g_DmrSyncBSData));
+	memcpy(payload+13, g_DmrSyncBSData, sizeof(g_DmrSyncBSData));
 	// slot type
 	{
 		// slot type
 		uint8_t slottype[3];
-		::memset(slottype, 0, sizeof(slottype));
+		memset(slottype, 0, sizeof(slottype));
 		slottype[0]  = (DMRMMDVM_REFLECTOR_COLOUR << 4) & 0xF0;
 		slottype[0] |= (DMR_DT_TERMINATOR_WITH_LC  << 0) & 0x0FU;
 		CGolay2087::encode(slottype);

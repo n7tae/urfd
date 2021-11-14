@@ -102,11 +102,11 @@ bool CDmridDirHttp::HttpGet(const char *hostname, const char *filename, int port
 		// get hostname address
 		struct sockaddr_in servaddr;
 		struct hostent *hp;
-		::memset(&servaddr,0,sizeof(servaddr));
+		memset(&servaddr,0,sizeof(servaddr));
 		if( (hp = gethostbyname(hostname)) != nullptr )
 		{
 			// dns resolved
-			::memcpy((char *)&servaddr.sin_addr.s_addr, (char *)hp->h_addr, hp->h_length);
+			memcpy((char *)&servaddr.sin_addr.s_addr, (char *)hp->h_addr, hp->h_length);
 			servaddr.sin_port = htons(port);
 			servaddr.sin_family = AF_INET;
 

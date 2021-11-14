@@ -26,8 +26,8 @@
 // define
 
 // frame sizes
-#define AMBE_SIZE           9
-#define AMBEPLUS_SIZE       9
+#define 9           9
+#define 9       9
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

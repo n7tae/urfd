@@ -1,5 +1,5 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
+//
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -79,6 +79,17 @@ CDvHeaderPacket::CDvHeaderPacket(const CCallsign &my, const CCallsign &ur, const
 	m_csMY = my;
 }
 
+// M17
+
+CDvHeaderPacket::CDvHeaderPacket(const CM17Packet &m17) : CPacket(m17)
+{
+	m_uiFlag1 = m_uiFlag2 = m_uiFlag3 = 0;
+	m_uiCrc = 0;
+	m_csUR = CCallsign("CQCQCQ");
+	m_csMY = m_csRPT1 = m_csRPT2 = m17.GetSourceCallsign();
+	m_csRPT1.SetModule('G');
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // virtual duplication
 
@@ -92,7 +103,7 @@ std::unique_ptr<CPacket> CDvHeaderPacket::Duplicate(void) const
 
 void CDvHeaderPacket::ConvertToDstarStruct(struct dstar_header *buffer) const
 {
-	::memset(buffer, 0, sizeof(struct dstar_header));
+	memset(buffer, 0, sizeof(struct dstar_header));
 	buffer->Flag1 = m_uiFlag1;
 	buffer->Flag2 = m_uiFlag2;
 	buffer->Flag3 = m_uiFlag3;

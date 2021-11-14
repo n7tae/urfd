@@ -28,7 +28,7 @@
 CCallsignList::CCallsignList()
 {
 	m_Filename = nullptr;
-	::memset(&m_LastModTime, 0, sizeof(time_t));
+	memset(&m_LastModTime, 0, sizeof(time_t));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

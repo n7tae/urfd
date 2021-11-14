@@ -32,7 +32,7 @@ CYsfNodeDirFile   g_YsfNodeDir;
 
 CYsfNodeDirFile::CYsfNodeDirFile()
 {
-	::memset(&m_LastModTime, 0, sizeof(time_t));
+	memset(&m_LastModTime, 0, sizeof(time_t));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

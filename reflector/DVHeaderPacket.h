@@ -1,5 +1,7 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+#pragma once
 
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -15,8 +17,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-#pragma once
 
 #include "Callsign.h"
 #include "Packet.h"
@@ -57,6 +57,7 @@ public:
 	CDvHeaderPacket(const struct dstar_header *, uint16_t, uint8_t);
 	CDvHeaderPacket(uint32_t, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t, uint8_t);
 	CDvHeaderPacket(const CCallsign &, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t);
+	CDvHeaderPacket(const CM17Packet &);
 
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;

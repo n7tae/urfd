@@ -73,9 +73,9 @@
 // protocols ---------------------------------------------------
 
 #ifndef NO_G3
-enum class EProtocol { any, none, dextra, dplus, dcs, ulx, dmrplus, dmrmmdvm, ysf, g3 };
+enum class EProtocol { any, none, dextra, dplus, dcs, ulx, dmrplus, dmrmmdvm, ysf, m17, g3 };
 #else
-enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ysf };
+enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ysf, m17 };
 #endif
 
 // DExtra
@@ -124,6 +124,12 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ys
 // #define YSF_AUTOLINK_ENABLE             0                                   // 1 = enable, 0 = disable auto-link
 // #define YSF_AUTOLINK_MODULE             'B'                                 // module for client to auto-link to
 
+// M17
+#define M17_PORT                        17000
+#define M17_KEEPALIVE_PERIOD			3
+#define M17_KEEPALIVE_TIMEOUT           (M17_KEEPALIVE_PERIOD*10)
+#define M17_RECONNECT_PERIOD            5
+
 #ifndef NO_G3
 // G3 Terminal
 #define G3_PRESENCE_PORT                12346                               // UDP port
@@ -133,21 +139,14 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ys
 #define G3_KEEPALIVE_TIMEOUT            3600                                // in seconds, 1 hour
 #endif
 
-#ifdef TRANSCODER_IP
 // Transcoder server --------------------------------------------
 
+#ifdef TRANSCODER_IP
 #define TRANSCODER_PORT                 10100                               // UDP port
+#endif
 #define TRANSCODER_KEEPALIVE_PERIOD     5                                   // in seconds
 #define TRANSCODER_KEEPALIVE_TIMEOUT    30                                  // in seconds
 #define TRANSCODER_AMBEPACKET_TIMEOUT   400                                 // in ms
-#endif
-
-// codec --------------------------------------------------------
-
-#define CODEC_NONE                      0
-#define CODEC_AMBEPLUS                  1                                   // DStar
-#define CODEC_AMBE2PLUS                 2                                   // DMR
-
 
 // DMRid database -----------------------------------------------
 

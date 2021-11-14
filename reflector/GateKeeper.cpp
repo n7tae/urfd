@@ -88,6 +88,7 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 	case EProtocol::dmrplus:
 	case EProtocol::dmrmmdvm:
 	case EProtocol::ysf:
+	case EProtocol::m17:
 #ifndef NO_G3
 	case EProtocol::g3:
 #endif
@@ -132,6 +133,7 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EP
 	case EProtocol::dmrplus:
 	case EProtocol::dmrmmdvm:
 	case EProtocol::ysf:
+	case EProtocol::m17:
 #ifndef NO_G3
 	case EProtocol::g3:
 #endif

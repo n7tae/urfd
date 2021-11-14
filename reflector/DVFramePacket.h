@@ -1,5 +1,7 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+#pragma once
 
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//
 // ulxd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -15,8 +17,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-#pragma once
 
 #include "Packet.h"
 
@@ -49,39 +49,37 @@ public:
 	CDvFramePacket(const struct dstar_dvframe *, uint16_t, uint8_t);
 	CDvFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
 	CDvFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
-	CDvFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *);
+	CDvFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *, ECodecType, const uint8_t *, const uint8_t *);
+	CDvFramePacket(const CM17Packet &m17);
 
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;
 
 	// identity
-	bool IsDvFrame(void) const              { return true; }
-	bool HasTranscodableAmbe(void) const   { return true; }
+	bool IsDvFrame(void) const           { return true; }
+	bool HasTranscodableAmbe(void) const { return true; }
 
 	// get
-	const uint8_t *GetAmbe(uint8_t) const;
-	const uint8_t *GetAmbe(void) const        { return m_uiAmbe; }
-	const uint8_t *GetAmbePlus(void) const    { return m_uiAmbePlus; }
-	const uint8_t *GetDvSync(void) const      { return m_uiDvSync; }
-	const uint8_t *GetDvData(void) const      { return m_uiDvData; }
+	const uint8_t *GetCodecData(ECodecType) const;
+	const uint8_t *GetDvSync(void) const { return m_uiDvSync; }
+	const uint8_t *GetDvData(void) const { return m_uiDvData; }
+	const uint8_t *GetNonce(void)  const { return m_Nonce; }
 
 	// set
 	void SetDvData(uint8_t *);
-	void SetAmbe(uint8_t, uint8_t *);
+	void SetCodecData(ECodecType, uint8_t *);
 
 	// operators
 	bool operator ==(const CDvFramePacket &) const;
 
 protected:
-	// get
-	uint8_t *GetAmbeData(void)                { return m_uiAmbe; }
-	uint8_t *GetAmbePlusData(void)            { return m_uiAmbePlus; }
-
-protected:
 	// data (dstar)
-	uint8_t       m_uiAmbe[AMBE_SIZE];
-	uint8_t       m_uiDvData[DVDATA_SIZE];
+	uint8_t m_uiAmbe[AMBE_SIZE];
+	uint8_t m_uiDvData[DVDATA_SIZE];
 	// data (dmr)
-	uint8_t       m_uiAmbePlus[AMBEPLUS_SIZE];
-	uint8_t       m_uiDvSync[DVSYNC_SIZE];
+	uint8_t m_uiAmbePlus[AMBEPLUS_SIZE];
+	uint8_t m_uiDvSync[DVSYNC_SIZE];
+
+	uint8_t m_uiCodec2[16];
+	uint8_t m_Nonce[14];
 };

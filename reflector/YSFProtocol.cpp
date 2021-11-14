@@ -186,11 +186,11 @@ void CYsfProtocol::Task(void)
 			EncodeServerStatusPacket(&Buffer);
 			Send(Buffer, Ip);
 		}
-		else if ( Buffer.size() == 80 && 0 == ::memcmp(Buffer.data(), "YSFI", 4) )
+		else if ( Buffer.size() == 80 && 0 == memcmp(Buffer.data(), "YSFI", 4) )
 		{
 			// do nothing, it's unneeded information from BlueDV
 		}
-		else if ( Buffer.size() == 50 && 0 == ::memcmp(Buffer.data(), "YSFO", 4) )
+		else if ( Buffer.size() == 50 && 0 == memcmp(Buffer.data(), "YSFO", 4) )
 		{
 			// do nothing, it's unneeded options from BlueDV
 		}
@@ -425,10 +425,10 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 		{
 			// build DVHeader
 			char sz[YSF_CALLSIGN_LENGTH+1];
-			::memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
+			memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
 			sz[YSF_CALLSIGN_LENGTH] = 0;
 			CCallsign csMY = CCallsign((const char *)sz);
-			::memcpy(sz, &(Buffer.data()[4]), YSF_CALLSIGN_LENGTH);
+			memcpy(sz, &(Buffer.data()[4]), YSF_CALLSIGN_LENGTH);
 			sz[YSF_CALLSIGN_LENGTH] = 0;
 			CCallsign rpt1 = CCallsign((const char *)sz);
 			rpt1.SetModule(YSF_MODULE_ID);
@@ -443,8 +443,8 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 		}
 		// and 2 DV Frames
 		{
-			uint8_t  uiAmbe[AMBE_SIZE];
-			::memset(uiAmbe, 0x00, sizeof(uiAmbe));
+			uint8_t  uiAmbe[9];
+			memset(uiAmbe, 0x00, sizeof(uiAmbe));
 			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0));
 			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0));
 		}
@@ -466,11 +466,11 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 		uint32_t uiStreamId = IpToStreamId(Ip);
 
 		// get DV frames
-		uint8_t   ambe0[AMBEPLUS_SIZE];
-		uint8_t   ambe1[AMBEPLUS_SIZE];
-		uint8_t   ambe2[AMBEPLUS_SIZE];
-		uint8_t   ambe3[AMBEPLUS_SIZE];
-		uint8_t   ambe4[AMBEPLUS_SIZE];
+		uint8_t   ambe0[9];
+		uint8_t   ambe1[9];
+		uint8_t   ambe2[9];
+		uint8_t   ambe3[9];
+		uint8_t   ambe4[9];
 		uint8_t *ambes[5] = { ambe0, ambe1, ambe2, ambe3, ambe4 };
 		CYsfUtils::DecodeVD2Vchs((unsigned char *)&(Buffer.data()[35]), ambes);
 
@@ -499,8 +499,8 @@ bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich,
 
 		// get DV frames
 		{
-			uint8_t  uiAmbe[AMBE_SIZE];
-			::memset(uiAmbe, 0x00, sizeof(uiAmbe));
+			uint8_t  uiAmbe[9];
+			memset(uiAmbe, 0x00, sizeof(uiAmbe));
 			oneframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0));
 			lastframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0));
 		}
@@ -532,12 +532,12 @@ bool CYsfProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Header, CBuffer *
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// rpt1
-	::memset(sz, ' ', sizeof(sz));
+	memset(sz, ' ', sizeof(sz));
 	Header.GetRpt1Callsign().GetCallsignString(sz);
 	sz[::strlen(sz)] = ' ';
 	Buffer->Append((uint8_t *)sz, YSF_CALLSIGN_LENGTH);
 	// my
-	::memset(sz, ' ', sizeof(sz));
+	memset(sz, ' ', sizeof(sz));
 	Header.GetMyCallsign().GetCallsignString(sz);
 	sz[::strlen(sz)] = ' ';
 	Buffer->Append((uint8_t *)sz, YSF_CALLSIGN_LENGTH);
@@ -563,11 +563,11 @@ bool CYsfProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Header, CBuffer *
 	Buffer->Append(fichd, YSF_FICH_LENGTH_BYTES);
 	// payload
 	unsigned char csd1[20U], csd2[20U];
-	::memset(csd1, '*', YSF_CALLSIGN_LENGTH);
-	::memset(csd1 + YSF_CALLSIGN_LENGTH, ' ', YSF_CALLSIGN_LENGTH);
+	memset(csd1, '*', YSF_CALLSIGN_LENGTH);
+	memset(csd1 + YSF_CALLSIGN_LENGTH, ' ', YSF_CALLSIGN_LENGTH);
 	Header.GetMyCallsign().GetCallsignString(sz);
-	::memcpy(csd1 + YSF_CALLSIGN_LENGTH, sz, ::strlen(sz));
-	::memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
+	memcpy(csd1 + YSF_CALLSIGN_LENGTH, sz, ::strlen(sz));
+	memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 	CYSFPayload payload;
 	uint8_t temp[120];
 	payload.writeHeader(temp, csd1, csd2);
@@ -588,12 +588,12 @@ bool CYsfProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFrameP
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// rpt1
-	::memset(sz, ' ', sizeof(sz));
+	memset(sz, ' ', sizeof(sz));
 	Header.GetRpt1Callsign().GetCallsignString(sz);
 	sz[::strlen(sz)] = ' ';
 	Buffer->Append((uint8_t *)sz, YSF_CALLSIGN_LENGTH);
 	// my
-	::memset(sz, ' ', sizeof(sz));
+	memset(sz, ' ', sizeof(sz));
 	Header.GetMyCallsign().GetCallsignString(sz);
 	sz[::strlen(sz)] = ' ';
 	Buffer->Append((uint8_t *)sz, YSF_CALLSIGN_LENGTH);
@@ -619,11 +619,11 @@ bool CYsfProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFrameP
 	// payload
 	CYSFPayload payload;
 	uint8_t temp[120];
-	::memset(temp, 0x00, sizeof(temp));
+	memset(temp, 0x00, sizeof(temp));
 	// DV
 	for ( int i = 0; i < 5; i++ )
 	{
-		CYsfUtils::EncodeVD2Vch((unsigned char *)DvFrames[i].GetAmbePlus(), temp+35+(18*i));
+		CYsfUtils::EncodeVD2Vch((unsigned char *)DvFrames[i].GetCodecData(ECodecType::dmr), temp+35+(18*i));
 	}
 	// data
 	switch (DvFrames[0].GetYsfPacketId())
@@ -634,14 +634,14 @@ bool CYsfProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFrameP
 		break;
 	case 1:
 		// Src
-		::memset(sz, ' ', sizeof(sz));
+		memset(sz, ' ', sizeof(sz));
 		Header.GetMyCallsign().GetCallsignString(sz);
 		sz[::strlen(sz)] = ' ';
 		payload.writeVDMode2Data(temp, (const unsigned char*)sz);
 		break;
 	case 2:
 		// Down
-		::memset(sz, ' ', sizeof(sz));
+		memset(sz, ' ', sizeof(sz));
 		Header.GetRpt1Callsign().GetCallsignString(sz);
 		sz[::strlen(sz)] = ' ';
 		payload.writeVDMode2Data(temp, (const unsigned char*)sz);
@@ -679,12 +679,12 @@ bool CYsfProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Header, CBuffer *Bu
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// rpt1
-	::memset(sz, ' ', sizeof(sz));
+	memset(sz, ' ', sizeof(sz));
 	Header.GetRpt1Callsign().GetCallsignString(sz);
 	sz[::strlen(sz)] = ' ';
 	Buffer->Append((uint8_t *)sz, YSF_CALLSIGN_LENGTH);
 	// my
-	::memset(sz, ' ', sizeof(sz));
+	memset(sz, ' ', sizeof(sz));
 	Header.GetMyCallsign().GetCallsignString(sz);
 	sz[::strlen(sz)] = ' ';
 	Buffer->Append((uint8_t *)sz, YSF_CALLSIGN_LENGTH);
@@ -710,11 +710,11 @@ bool CYsfProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Header, CBuffer *Bu
 	Buffer->Append(fichd, YSF_FICH_LENGTH_BYTES);
 	// payload
 	unsigned char csd1[20U], csd2[20U];
-	::memset(csd1, '*', YSF_CALLSIGN_LENGTH);
-	::memset(csd1 + YSF_CALLSIGN_LENGTH, ' ', YSF_CALLSIGN_LENGTH);
+	memset(csd1, '*', YSF_CALLSIGN_LENGTH);
+	memset(csd1 + YSF_CALLSIGN_LENGTH, ' ', YSF_CALLSIGN_LENGTH);
 	Header.GetMyCallsign().GetCallsignString(sz);
-	::memcpy(csd1 + YSF_CALLSIGN_LENGTH, sz, ::strlen(sz));
-	::memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
+	memcpy(csd1 + YSF_CALLSIGN_LENGTH, sz, ::strlen(sz));
+	memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 	CYSFPayload payload;
 	uint8_t temp[120];
 	payload.writeHeader(temp, csd1, csd2);
@@ -793,35 +793,35 @@ bool CYsfProtocol::IsValidwirexPacket(const CBuffer &Buffer, CYSFFICH *Fich, CCa
 				{
 					// get argument
 					char buffer[4U];
-					::memcpy(buffer, command + 5U + 2U, 3U);
+					memcpy(buffer, command + 5U + 2U, 3U);
 					buffer[3U] = 0x00U;
 					*Arg = ::atoi(buffer);
 					// and decode command
-					if (::memcmp(command + 1U, DX_REQ, 3U) == 0)
+					if (memcmp(command + 1U, DX_REQ, 3U) == 0)
 					{
 						*Cmd = WIRESX_CMD_DX_REQ;
 						*Arg = 0;
 					}
-					else if (::memcmp(command + 1U, ALL_REQ, 3U) == 0)
+					else if (memcmp(command + 1U, ALL_REQ, 3U) == 0)
 					{
 						// argument is start index of list
 						if ( *Arg > 0 )
 							(*Arg)--;
 						// check if all or search
-						if ( ::memcmp(command + 5U, "01", 2) == 0 )
+						if ( memcmp(command + 5U, "01", 2) == 0 )
 						{
 							*Cmd = WIRESX_CMD_ALL_REQ;
 						}
-						else if ( ::memcmp(command + 5U, "11", 2) == 0 )
+						else if ( memcmp(command + 5U, "11", 2) == 0 )
 						{
 							*Cmd = WIRESX_CMD_SEARCH_REQ;
 						}
 					}
-					else if (::memcmp(command + 1U, CONN_REQ, 3U) == 0)
+					else if (memcmp(command + 1U, CONN_REQ, 3U) == 0)
 					{
 						*Cmd = WIRESX_CMD_CONN_REQ;
 					}
-					else if (::memcmp(command + 1U, DISC_REQ, 3U) == 0)
+					else if (memcmp(command + 1U, DISC_REQ, 3U) == 0)
 					{
 						*Cmd = WIRESX_CMD_DISC_REQ;
 						*Arg = 0;
@@ -860,7 +860,7 @@ bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// hash
-	::memset(callsign, ' ', sizeof(callsign));
+	memset(callsign, ' ', sizeof(callsign));
 	g_Reflector.GetCallsign().GetCallsign(callsign);
 	char sz[16];
 	::sprintf(sz, "%05u", CalcHash(callsign, 16) % 100000U);
@@ -938,7 +938,7 @@ bool CYsfProtocol::DebugTestDecodePacket(const CBuffer &Buffer)
 			{
 			case YSF_FI_HEADER:
 				len = 0;
-				::memset(command, 0x00, sizeof(command));
+				memset(command, 0x00, sizeof(command));
 				std::cout << "Header" << std::endl;
 				break;
 			case YSF_FI_TERMINATOR:

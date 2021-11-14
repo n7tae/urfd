@@ -25,21 +25,21 @@
 
 CCallsignListItem::CCallsignListItem()
 {
-	::memset(m_Modules, 0, sizeof(m_Modules));
-	::memset(m_szUrl, 0, sizeof(m_szUrl));
+	memset(m_Modules, 0, sizeof(m_Modules));
+	memset(m_szUrl, 0, sizeof(m_szUrl));
 }
 
 CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const CIp &ip, const char *modules)
 {
 	m_Callsign = callsign;
-	::memset(m_szUrl, 0, sizeof(m_szUrl));
+	memset(m_szUrl, 0, sizeof(m_szUrl));
 	m_Ip = ip;
 	if ( modules != nullptr )
 	{
-		::memset(m_Modules, 0, sizeof(m_Modules));
+		memset(m_Modules, 0, sizeof(m_Modules));
 		if ( modules[0] == '*' )
 		{
-			::memcpy(m_Modules, ACTIVE_MODULES, sizeof(ACTIVE_MODULES));
+			memcpy(m_Modules, ACTIVE_MODULES, sizeof(ACTIVE_MODULES));
 		}
 		else
 		{
@@ -62,10 +62,10 @@ CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const char *url,
 	m_Ip = CIp(m_szUrl);
 	if ( modules != nullptr )
 	{
-		::memset(m_Modules, 0, sizeof(m_Modules));
+		memset(m_Modules, 0, sizeof(m_Modules));
 		if ( modules[0] == '*' )
 		{
-			::memcpy(m_Modules, ACTIVE_MODULES, sizeof(ACTIVE_MODULES));
+			memcpy(m_Modules, ACTIVE_MODULES, sizeof(ACTIVE_MODULES));
 		}
 		else
 		{
@@ -84,9 +84,9 @@ CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const char *url,
 CCallsignListItem::CCallsignListItem(const CCallsignListItem &item)
 {
 	m_Callsign = item.m_Callsign;
-	::memcpy(m_szUrl, item.m_szUrl, sizeof(m_szUrl));
+	memcpy(m_szUrl, item.m_szUrl, sizeof(m_szUrl));
 	m_Ip = item.m_Ip;
-	::memcpy(m_Modules, item.m_Modules, sizeof(m_Modules));
+	memcpy(m_Modules, item.m_Modules, sizeof(m_Modules));
 }
 
 
