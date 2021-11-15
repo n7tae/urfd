@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ protected:
 	CTimer              m_LastPacketTime;
 	CDvHeaderPacket     m_DvHeader;
 	std::shared_ptr<CClient> m_OwnerClient;
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 	std::shared_ptr<CCodecStream> m_CodecStream;
 #endif
 };

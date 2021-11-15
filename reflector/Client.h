@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "IP.h"
 #include "Callsign.h"
 #include "Buffer.h"
+#include "Packet.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -58,7 +59,7 @@ public:
 	// identity
 	virtual EProtocol GetProtocol(void) const           { return EProtocol::none; }
 	virtual int GetProtocolRevision(void) const         { return 0; }
-	virtual int GetCodec(void) const                    { return CODEC_NONE; }
+	virtual ECodecType GetCodec(void) const             { return ECodecType::none; }
 	virtual const char *GetProtocolName(void) const     { return "none"; }
 	virtual bool IsNode(void) const                     { return false; }
 	virtual bool IsPeer(void) const                     { return false; }
@@ -87,7 +88,7 @@ protected:
 
 	// status
 	char        m_ModuleMastered;
-	CTimer  m_LastKeepaliveTime;
+	CTimer      m_LastKeepaliveTime;
 	std::time_t m_ConnectTime;
 	std::time_t m_LastHeardTime;
 };

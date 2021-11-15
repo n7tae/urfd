@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ public:
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::ysf; }
 	const char *GetProtocolName(void) const     { return "YSF"; }
-	int GetCodec(void) const                    { return CODEC_AMBE2PLUS; }
+	ECodecType GetCodec(void) const             { return ECodecType::dmr; }
 	bool IsNode(void) const                     { return true; }
 
 	// status

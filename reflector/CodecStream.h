@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -21,15 +21,6 @@
 #include "UDPSocket.h"
 #include "PacketQueue.h"
 
-
-////////////////////////////////////////////////////////////////////////////////////////
-// define
-
-// frame sizes
-#define 9           9
-#define 9       9
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
@@ -39,7 +30,7 @@ class CCodecStream : public CPacketQueue
 {
 public:
 	// constructor
-	CCodecStream(CPacketStream *, uint16_t, uint8_t, uint8_t);
+	CCodecStream(CPacketStream *, uint16_t, ECodecType);
 
 	// destructor
 	virtual ~CCodecStream();
@@ -76,8 +67,7 @@ protected:
 	uint16_t          m_uiStreamId;
 	uint16_t          m_uiPort;
 	uint8_t           m_uiPid;
-	uint8_t           m_uiCodecIn;
-	uint8_t           m_uiCodecOut;
+	ECodecType        m_eCodecIn;
 
 	// socket
 	CIp             m_Ip;

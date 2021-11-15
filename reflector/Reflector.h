@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -133,10 +133,9 @@ protected:
 	std::future<void> m_XmlReportFuture;
 #ifdef JSON_MONITOR
 	std::future<void> m_JsonReportFuture;
-#endif
-
 	// notifications
 	CNotificationQueue  m_Notifications;
+#endif
 
 public:
 #ifdef DEBUG_DUMPFILE

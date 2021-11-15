@@ -3,7 +3,7 @@
 //  Copyright (C) 2018 by Andy Uribe CA6JAU
 //  Copyright (C) 2018 by Manuel Sanchez EA7EE
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify

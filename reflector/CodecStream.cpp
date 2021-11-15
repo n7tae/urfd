@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -25,13 +25,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t uiId, uint8_t uiCodecIn, uint8_t uiCodecOut)
+CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t uiId, ECodecType type)
 {
 	keep_running = true;
 	m_uiStreamId = uiId;
 	m_uiPid = 0;
-	m_uiCodecIn = uiCodecIn;
-	m_uiCodecOut = uiCodecOut;
+	m_eCodecIn = type;
 	m_bConnected = false;
 	m_fPingMin = -1;
 	m_fPingMax = -1;

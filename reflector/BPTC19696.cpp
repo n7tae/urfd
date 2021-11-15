@@ -1,7 +1,7 @@
 //	 Copyright (C) 2012 by Ian Wraith
 //   Copyright (C) 2015 by Jonathan Naylor G4KLX
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify

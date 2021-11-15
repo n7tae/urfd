@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -39,27 +39,6 @@ CURFClient::CURFClient(const CURFClient &client)
 	: CClient(client)
 {
 	m_ProtRev = client.m_ProtRev;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// identity
-
-int CURFClient::GetCodec(void) const
-{
-	int codec;
-
-	switch ( GetProtocolRevision() )
-	{
-	case XLX_PROTOCOL_REVISION_0:
-	case XLX_PROTOCOL_REVISION_1:
-	default:
-		codec = CODEC_AMBEPLUS;
-		break;
-	case XLX_PROTOCOL_REVISION_2:
-		codec = CODEC_NONE;
-		break;
-	}
-	return codec;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

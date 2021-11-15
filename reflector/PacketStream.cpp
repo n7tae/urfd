@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ CPacketStream::CPacketStream()
 	m_uiStreamId = 0;
 	m_uiPacketCntr = 0;
 	m_OwnerClient = nullptr;
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 	m_CodecStream = nullptr;
 #endif
 }
@@ -50,11 +50,11 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_DvHeader = DvHeader;
 		m_OwnerClient = client;
 		m_LastPacketTime.start();
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 		if (std::string::npos != std::string(TRANSCODED_MODULES).find(DvHeader.GetRpt2Module()))
 			m_CodecStream = g_Transcoder.GetCodecStream(this, client->GetCodec());
 		else
-			m_CodecStream = g_Transcoder.GetCodecStream(this, CODEC_NONE);
+			m_CodecStream = g_Transcoder.GetCodecStream(this, ECodecType::none);
 #endif
 		ok = true;
 	}
@@ -67,7 +67,7 @@ void CPacketStream::ClosePacketStream(void)
 	m_bOpen = false;
 	m_uiStreamId = 0;
 	m_OwnerClient = nullptr;
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 	g_Transcoder.ReleaseStream(m_CodecStream);
 	m_CodecStream = nullptr;
 #endif
@@ -82,7 +82,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	m_LastPacketTime.start();
 	Packet->UpdatePids(m_uiPacketCntr++);
 	// transcoder avaliable ?
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 	if ( m_CodecStream != nullptr )
 	{
 		// todo: verify no possibilty of double lock here
@@ -114,7 +114,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 
 bool CPacketStream::IsEmpty(void) const
 {
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 	bool bEmpty = empty();
 	// also check no packets still in Codec stream's queue
 	if ( bEmpty && (m_CodecStream != nullptr) )

@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -49,16 +49,19 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 	m_uiDmrid = dmrid;
 
 	// and populate
-	if ( ::strlen(sz) > 0 )
+	auto len = strlen(sz);
+	if ( len > 0 )
 	{
+		// callsign valid
+		memcpy(m_Callsign, sz, MIN(len, CALLSIGN_LEN-1));
+		if ( len > CALLSIGN_LEN )
+		{
+			m_Module = sz[len-1];
+		}
+
 		// Calculate the M17 coded callsign
 		CSIn();
-		// callsign valid
-		memcpy(m_Callsign, sz, MIN(strlen(sz), CALLSIGN_LEN-1));
-		if ( strlen(sz) >= CALLSIGN_LEN )
-		{
-			m_Module = sz[CALLSIGN_LEN-1];
-		}
+
 		// dmrid ok ?
 		if ( m_uiDmrid == 0 )
 		{
@@ -145,10 +148,11 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 	// set callsign
 	memset(m_Callsign, ' ', CALLSIGN_LEN);
 	m_Module = ' ';
-	memcpy(m_Callsign, sz, MIN(strlen(sz), CALLSIGN_LEN-1));
-	if ( strlen(sz) >= CALLSIGN_LEN )
+	auto len = strlen(sz);
+	memcpy(m_Callsign, sz, MIN(len, CALLSIGN_LEN-1));
+	if ( len > CALLSIGN_LEN )
 	{
-		m_Module = sz[CALLSIGN_LEN-1];
+		m_Module = sz[len-1];
 	}
 	// update M17 coded callsign
 	CSIn();
@@ -273,11 +277,8 @@ void CCallsign::GetCallsignString(char *sz) const
 
 const std::string CCallsign::GetCS(unsigned len) const
 {
-	if (len > 8)
-		len = 8;
-	std::string rval(m_Callsign);
-	if (len)
-		rval.resize(len, ' ');
+	std::string rval(m_Callsign, CALLSIGN_LEN);
+	rval.append(1, m_Module);
 	return rval;
 }
 
@@ -411,7 +412,7 @@ void CCallsign::CSIn()
 	auto pos = m17_alphabet.find(m_Module);
 	m_coded = pos;
 	m_coded *= 40;
-	for( int i=CALLSIGN_LEN-2; i>=0; i-- ) {
+	for( int i=CALLSIGN_LEN-1; i>=0; i-- ) {
 		pos = m17_alphabet.find(m_Callsign[i]);
 		if (pos == std::string::npos) {
 			pos = 0;

@@ -1,6 +1,6 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
-// ulxd -- The universal reflector
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -433,7 +433,6 @@ void CReflector::JsonReportThread()
 		std::cout << "Error creating monitor socket" << std::endl;
 	}
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // notifications
@@ -482,6 +481,7 @@ void CReflector::OnStreamClose(const CCallsign &callsign)
 	m_Notifications.push(notification);
 	m_Notifications.Unlock();
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // modules & queues
