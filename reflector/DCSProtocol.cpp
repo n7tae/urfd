@@ -396,12 +396,12 @@ bool CDcsProtocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHea
 		if ( Buffer.data()[45] & 0x40U )
 		{
 			// it's the last frame
-			frame = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
+			frame = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((SDstarFrame *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
 		}
 		else
 		{
 			// it's a regular DV frame
-			frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
+			frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDstarFrame *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
 		}
 
 		// check validity of packets

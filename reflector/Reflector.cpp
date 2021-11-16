@@ -93,7 +93,15 @@ bool CReflector::Start(void)
 	// start one thread per reflector module
 	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
-		m_Stream[*it] = std::make_shared<CPacketStream>();
+		m_TCReader[*it] = std::make_shared<CUnixDgramReader>();
+		std::string readername("TCtoRef");
+		readername.append(1, *it);
+		if (m_TCReader[*it]->Open(readername.c_str()))
+		{
+			std::cerr << "ERROR: Reflector can't open " << readername << std::endl;
+			m_TCReader[*it].reset();
+		}
+		m_Stream[*it] = std::make_shared<CPacketStream>(m_TCReader[*it]);
 		m_RouterFuture[*it] = std::async(std::launch::async, &CReflector::RouterThread, this, *it);
 	}
 

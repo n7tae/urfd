@@ -32,7 +32,7 @@ class CDvLastFramePacket : public CDvFramePacket
 public:
 	// constructor
 	CDvLastFramePacket();
-	CDvLastFramePacket(const struct dstar_dvframe *, uint16_t, uint8_t);
+	CDvLastFramePacket(const SDstarFrame *, uint16_t, uint8_t);
 	CDvLastFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
 	CDvLastFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
 	CDvLastFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *, ECodecType, const uint8_t *);

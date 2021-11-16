@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CPacketStream::CPacketStream()
+CPacketStream::CPacketStream(std::shared_ptr<CUnixDgramReader> reader)
 {
 	m_bOpen = false;
 	m_uiStreamId = 0;
@@ -30,6 +30,7 @@ CPacketStream::CPacketStream()
 	m_OwnerClient = nullptr;
 #ifdef TRANSCODED_MODULES
 	m_CodecStream = nullptr;
+	m_TCReader = reader;
 #endif
 }
 
@@ -52,9 +53,7 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_LastPacketTime.start();
 #ifdef TRANSCODED_MODULES
 		if (std::string::npos != std::string(TRANSCODED_MODULES).find(DvHeader.GetRpt2Module()))
-			m_CodecStream = g_Transcoder.GetCodecStream(this, client->GetCodec());
-		else
-			m_CodecStream = g_Transcoder.GetCodecStream(this, ECodecType::none);
+			m_CodecStream = std::make_shared<CCodecStream>(this, client->GetCodec(), m_TCReader);
 #endif
 		ok = true;
 	}
@@ -89,7 +88,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 		m_CodecStream->Lock();
 		{
 			// transcoder ready & frame need transcoding ?
-			if ( m_CodecStream->IsConnected() && Packet->HasTranscodableAmbe() )
+			if (Packet->HasTranscodableAmbe())
 			{
 				// yes, push packet to trancoder queue
 				// trancoder will push it after transcoding

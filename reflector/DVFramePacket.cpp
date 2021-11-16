@@ -25,25 +25,27 @@
 
 CDvFramePacket::CDvFramePacket()
 {
-	memset(m_uiAmbe, 0, AMBE_SIZE);
-	memset(m_uiDvData, 0, DVDATA_SIZE);
-	memset(m_uiAmbePlus, 0, AMBEPLUS_SIZE);
-	memset(m_uiDvSync, 0, DVSYNC_SIZE);
-	memset(m_uiCodec2, 0, 16);
+	memset(m_TCPack.dstar, 0, 9);
+	memset(m_uiDvData, 0, 3);
+	memset(m_TCPack.dmr, 0, 9);
+	memset(m_uiDvSync, 0, 7);
+	memset(m_TCPack.m17, 0, 16);
 	memset(m_Nonce, 0, 14);
+	m_TCPack.codec_in = ECodecType::none;
 };
 
 // dstar constructor
 
-CDvFramePacket::CDvFramePacket(const struct dstar_dvframe *dvframe, uint16_t sid, uint8_t pid)
+CDvFramePacket::CDvFramePacket(const SDStarFrame *dvframe, uint16_t sid, uint8_t pid)
 	: CPacket(sid, pid)
 {
-	memcpy(m_uiAmbe, dvframe->AMBE, AMBE_SIZE);
-	memcpy(m_uiDvData, dvframe->DVDATA, DVDATA_SIZE);
-	memset(m_uiAmbePlus, 0, AMBEPLUS_SIZE);
-	memset(m_uiDvSync, 0, DVSYNC_SIZE);
-	memset(m_uiCodec2, 0, 16);
+	memcpy(m_TCPack.dstar, dvframe->AMBE, 9);
+	memcpy(m_uiDvData, dvframe->DVDATA, 3);
+	memset(m_TCPack.dmr, 0, 9);
+	memset(m_uiDvSync, 0, 7);
+	memset(m_TCPack.m17, 0, 16);
 	memset(m_Nonce, 0, 14);
+	m_TCPack.codec_in = ECodecType::dstar;
 }
 
 // dmr constructor
@@ -51,12 +53,13 @@ CDvFramePacket::CDvFramePacket(const struct dstar_dvframe *dvframe, uint16_t sid
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid)
 	: CPacket(sid, pid, spid)
 {
-	memcpy(m_uiAmbePlus, ambe, AMBEPLUS_SIZE);
-	memcpy(m_uiDvSync, sync, DVSYNC_SIZE);
-	memset(m_uiAmbe, 0, AMBE_SIZE);
-	memset(m_uiDvData, 0, DVDATA_SIZE);
-	memset(m_uiCodec2, 0, 16);
+	memcpy(m_TCPack.dmr, ambe, 9);
+	memcpy(m_uiDvSync, sync, 7);
+	memset(m_TCPack.dstar, 0, 9);
+	memset(m_uiDvData, 0, 3);
+	memset(m_TCPack.m17, 0, 16);
 	memset(m_Nonce, 0, 14);
+	m_TCPack.codec_in = ECodecType::dmr;
 }
 
 // ysf constructor
@@ -64,12 +67,13 @@ CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid)
 	: CPacket(sid, pid, spid, fid)
 {
-	memcpy(m_uiAmbePlus, ambe, AMBEPLUS_SIZE);
-	memset(m_uiDvSync, 0, DVSYNC_SIZE);
-	memset(m_uiAmbe, 0, AMBE_SIZE);
-	memset(m_uiDvData, 0, DVDATA_SIZE);
-	memset(m_uiCodec2, 0, 16);
+	memcpy(m_TCPack.dmr, ambe, 9);
+	memset(m_uiDvSync, 0, 7);
+	memset(m_TCPack.dstar, 0, 9);
+	memset(m_uiDvData, 0, 3);
+	memset(m_TCPack.m17, 0, 16);
 	memset(m_Nonce, 0, 14);
+	m_TCPack.codec_in = ECodecType::dmr;
 }
 
 // xlx constructor
@@ -80,22 +84,35 @@ CDvFramePacket::CDvFramePacket
  uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType codecInType, const uint8_t *codec2, const uint8_t * nonce)
 	: CPacket(sid, dstarpid, dmrpid, dprspid, 0xFF, 0xFF, 0xFF, codecInType)
 {
-	memcpy(m_uiAmbe, dstarambe, AMBE_SIZE);
-	memcpy(m_uiDvData, dstardvdata, DVDATA_SIZE);
-	memcpy(m_uiAmbePlus, dmrambe, AMBEPLUS_SIZE);
-	memcpy(m_uiDvSync, dmrsync, DVSYNC_SIZE);
-	memcpy(m_uiCodec2, codec2, 16);
+	memcpy(m_TCPack.dstar, dstarambe, 9);
+	memcpy(m_uiDvData, dstardvdata, 3);
+	memcpy(m_TCPack.dmr, dmrambe, 9);
+	memcpy(m_uiDvSync, dmrsync, 7);
+	memcpy(m_TCPack.m17, codec2, 16);
 	memcpy(m_Nonce, nonce, 14);
+	m_TCPack.codec_in = codecInType;
 }
 
 CDvFramePacket::CDvFramePacket(const CM17Packet &m17) : CPacket(m17)
 {
-	memset(m_uiAmbe, 0, AMBE_SIZE);
-	memset(m_uiDvData, 0, DVDATA_SIZE);
-	memset(m_uiAmbePlus, 0, AMBEPLUS_SIZE);
-	memset(m_uiDvSync, 0, DVSYNC_SIZE);
-	memcpy(m_uiCodec2, m17.GetPayload(), 16);
+	memset(m_TCPack.dstar, 0, 9);
+	memset(m_uiDvData, 0, 3);
+	memset(m_TCPack.dmr, 0, 9);
+	memset(m_uiDvSync, 0, 7);
+	memcpy(m_TCPack.m17, m17.GetPayload(), 16);
 	memcpy(m_Nonce, m17.GetNonce(), 14);
+	switch (0x6U & m17.GetFrameType())
+	{
+		case 0x4U:
+			m_TCPack.codec_in = ECodecType::c2_3200;
+			break;
+		case 0x6U:
+			m_TCPack.codec_in = ECodecType::c2_1600;
+			break;
+		default:
+			m_TCPack.codec_in = ECodecType::none;
+			break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -114,12 +131,12 @@ const uint8_t *CDvFramePacket::GetCodecData(ECodecType type) const
 	switch (type)
 	{
 	case ECodecType::dstar:
-		return m_uiAmbe;
+		return m_TCPack.dstar;
 	case ECodecType::dmr:
-		return m_uiAmbePlus;
+		return m_TCPack.dmr;
 	case ECodecType::c2_1600:
 	case ECodecType::c2_3200:
-		return m_uiCodec2;
+		return m_TCPack.m17;
 	default:
 		return nullptr;
 	}
@@ -130,26 +147,31 @@ const uint8_t *CDvFramePacket::GetCodecData(ECodecType type) const
 
 void CDvFramePacket::SetDvData(uint8_t *DvData)
 {
-	memcpy(m_uiDvData, DvData, DVDATA_SIZE);
+	memcpy(m_uiDvData, DvData, 3);
 }
 
-void CDvFramePacket::SetCodecData(ECodecType type, uint8_t *data)
+void CDvFramePacket::SetCodecData(ECodecType type, const uint8_t *data)
 {
 	switch (type)
 	{
 	case ECodecType::dstar:
-		memcpy(m_uiAmbe, data, AMBE_SIZE);
+		memcpy(m_TCPack.dstar, data, 9);
 		break;
 	case ECodecType::dmr:
-		memcpy(m_uiAmbePlus, data, DVDATA_SIZE);
+		memcpy(m_TCPack.dmr, data, 3);
 		break;
 	case ECodecType::c2_1600:
-		memcpy(m_uiCodec2, data, 8);
+		memcpy(m_TCPack.m17, data, 8);
 		break;
 	case ECodecType::c2_3200:
-		memcpy(m_uiCodec2, data, 16);
+		memcpy(m_TCPack.m17, data, 16);
 		break;
 	}
+}
+
+void CDvFramePacket::SetCodecData(const STCPacket *pack)
+{
+	memcpy(&m_TCPack, pack, sizeof(STCPacket));
 }
 
 
@@ -158,11 +180,9 @@ void CDvFramePacket::SetCodecData(ECodecType type, uint8_t *data)
 
 bool CDvFramePacket::operator ==(const CDvFramePacket &DvFrame) const
 {
-	return ( (memcmp(m_uiAmbe, DvFrame.m_uiAmbe, AMBE_SIZE) == 0)
-			 && (memcmp(m_uiDvData, DvFrame.m_uiDvData, DVDATA_SIZE) == 0)
-#ifndef NO_XLX
-			 && (memcmp(m_uiAmbePlus, DvFrame.m_uiAmbePlus, AMBEPLUS_SIZE) == 0)
-			 && (memcmp(m_uiDvSync, DvFrame.m_uiDvSync, DVSYNC_SIZE) == 0)
-#endif
+	return ( (memcmp(m_TCPack.dstar, DvFrame.m_TCPack.dstar, 9) == 0)
+			 && (memcmp(m_uiDvData, DvFrame.m_uiDvData, 3) == 0)
+			 && (memcmp(m_TCPack.dmr, DvFrame.m_TCPack.dmr, 9) == 0)
+			 && (memcmp(m_uiDvSync, DvFrame.m_uiDvSync, 7) == 0)
 		   );
 }

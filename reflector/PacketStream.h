@@ -31,11 +31,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
+#include "UnixDgramSocket.h"
+
 class CPacketStream : public CPacketQueue
 {
 public:
 	// constructor
-	CPacketStream();
+	CPacketStream(std::shared_ptr<CUnixDgramReader>);
 
 	// open / close
 	bool OpenPacketStream(const CDvHeaderPacket &, std::shared_ptr<CClient>);
@@ -63,6 +65,7 @@ protected:
 	CDvHeaderPacket     m_DvHeader;
 	std::shared_ptr<CClient> m_OwnerClient;
 #ifdef TRANSCODED_MODULES
+	std::shared_ptr<CUnixDgramReader> m_TCReader;
 	std::shared_ptr<CCodecStream> m_CodecStream;
 #endif
 };

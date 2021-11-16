@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "UDPSocket.h"
+#include "UnixDgramSocket.h"
 #include "PacketQueue.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -30,17 +30,16 @@ class CCodecStream : public CPacketQueue
 {
 public:
 	// constructor
-	CCodecStream(CPacketStream *, uint16_t, ECodecType);
+	CCodecStream(CPacketStream *packetstream, uint16_t streamid, ECodecType codectype, std::shared_ptr<CUnixDgramReader> reader);
 
 	// destructor
 	virtual ~CCodecStream();
 
 	// initialization
-	bool Init(uint16_t);
+	bool Init();
 	void Close(void);
 
 	// get
-	bool     IsConnected(void) const          { return m_bConnected; }
 	uint16_t GetStreamId(void) const          { return m_uiStreamId; }
 	double   GetPingMin(void) const           { return m_fPingMin; }
 	double   GetPingMax(void) const           { return m_fPingMax; }
@@ -53,26 +52,16 @@ public:
 	void Thread(void);
 	void Task(void);
 
-
-protected:
-	// packet decoding helpers
-	bool IsValidAmbePacket(const CBuffer &, uint8_t *);
-
-	// packet encoding helpers
-	void EncodeAmbePacket(CBuffer *, const uint8_t *);
-
-
 protected:
 	// data
-	uint16_t          m_uiStreamId;
-	uint16_t          m_uiPort;
-	uint8_t           m_uiPid;
-	ECodecType        m_eCodecIn;
+	uint16_t        m_uiStreamId;
+	uint16_t        m_uiPort;
+	uint8_t         m_uiPid;
+	ECodecType      m_eCodecIn;
 
-	// socket
-	CIp             m_Ip;
-	CUdpSocket      m_Socket;
-	bool            m_bConnected;
+	// sockets
+	std::shared_ptr<CUnixDgramReader> m_TCReader;
+	CUnixDgramWriter m_TCWriter;
 
 	// associated packet stream
 	CPacketStream  *m_PacketStream;

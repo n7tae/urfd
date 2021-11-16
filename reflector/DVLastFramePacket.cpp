@@ -29,7 +29,7 @@ CDvLastFramePacket::CDvLastFramePacket()
 
 // dstar constructor
 
-CDvLastFramePacket::CDvLastFramePacket(const struct dstar_dvframe *DvFrame, uint16_t sid, uint8_t pid)
+CDvLastFramePacket::CDvLastFramePacket(const SDstarFrame *DvFrame, uint16_t sid, uint8_t pid)
 	: CDvFramePacket(DvFrame, sid, pid)
 {
 }

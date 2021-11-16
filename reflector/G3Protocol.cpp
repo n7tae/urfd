@@ -606,7 +606,7 @@ bool CG3Protocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CD
 	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDstarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -619,7 +619,7 @@ bool CG3Protocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_pt
 	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((struct dstar_dvframe *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((SDstarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;

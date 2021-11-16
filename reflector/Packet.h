@@ -20,11 +20,10 @@
 
 // Origin Id
 
-enum class ECodecType { none, dstar, dmr, c2_1600, c2_3200 };
-
 #define ORIGIN_LOCAL    0
 #define ORIGIN_PEER     1
 
+#include "Defines.h"
 #include "M17Packet.h"
 
 class CPacket

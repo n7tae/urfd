@@ -24,6 +24,9 @@
 #include "Protocols.h"
 #include "PacketStream.h"
 #include "NotificationQueue.h"
+#ifdef TRANSCODED_MODULES
+#include "UnixDgramSocket.h"
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -126,6 +129,7 @@ protected:
 
 	// queues
 	std::unordered_map<char, std::shared_ptr<CPacketStream>> m_Stream;
+	std::unordered_map<char, std::shared_ptr<CUnixDgramReader>> m_TCReader;
 
 	// threads
 	std::atomic<bool> keep_running;

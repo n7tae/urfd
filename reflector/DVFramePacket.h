@@ -23,18 +23,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // defines
 
-#define AMBE_SIZE       9
-#define DVDATA_SIZE     3
-
-#define AMBEPLUS_SIZE   9
-#define DVSYNC_SIZE     7
-
 // typedef & structures
 
-struct __attribute__ ((__packed__))dstar_dvframe
+using SDStarFrame = struct __attribute__ ((__packed__))dstar_dvframe_tag
 {
-	uint8_t	AMBE[AMBE_SIZE];
-	uint8_t	DVDATA[DVDATA_SIZE];
+	uint8_t	AMBE[9];
+	uint8_t	DVDATA[3];
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +40,7 @@ class CDvFramePacket : public CPacket
 public:
 	// constructor
 	CDvFramePacket();
-	CDvFramePacket(const struct dstar_dvframe *, uint16_t, uint8_t);
+	CDvFramePacket(const SDStarFrame *, uint16_t, uint8_t);
 	CDvFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
 	CDvFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
 	CDvFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *, ECodecType, const uint8_t *, const uint8_t *);
@@ -60,6 +54,7 @@ public:
 	bool HasTranscodableAmbe(void) const { return true; }
 
 	// get
+	const STCPacket *GetCodecPacket() const { return &m_TCPack; }
 	const uint8_t *GetCodecData(ECodecType) const;
 	const uint8_t *GetDvSync(void) const { return m_uiDvSync; }
 	const uint8_t *GetDvData(void) const { return m_uiDvData; }
@@ -67,19 +62,19 @@ public:
 
 	// set
 	void SetDvData(uint8_t *);
-	void SetCodecData(ECodecType, uint8_t *);
+	void SetCodecData(ECodecType, const uint8_t *);
+	void SetCodecData(const STCPacket *pack);
 
 	// operators
 	bool operator ==(const CDvFramePacket &) const;
 
 protected:
 	// data (dstar)
-	uint8_t m_uiAmbe[AMBE_SIZE];
-	uint8_t m_uiDvData[DVDATA_SIZE];
+	uint8_t m_uiDvData[3];
 	// data (dmr)
-	uint8_t m_uiAmbePlus[AMBEPLUS_SIZE];
-	uint8_t m_uiDvSync[DVSYNC_SIZE];
-
-	uint8_t m_uiCodec2[16];
+	uint8_t m_uiDvSync[7];
+	// m17
 	uint8_t m_Nonce[14];
+	// the transcoder packet
+	STCPacket m_TCPack;
 };
