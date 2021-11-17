@@ -26,10 +26,10 @@
 
 CURFClient::CURFClient()
 {
-	m_ProtRev = XLX_PROTOCOL_REVISION_0;
+	m_ProtRev = EXLXProtocol::m17;
 }
 
-CURFClient::CURFClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, int protRev)
+CURFClient::CURFClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, EXLXProtocol protRev)
 	: CClient(callsign, ip, reflectorModule)
 {
 	m_ProtRev = protRev;

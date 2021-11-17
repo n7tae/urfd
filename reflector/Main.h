@@ -57,9 +57,9 @@
 
 // version -----------------------------------------------------
 
-#define VERSION_MAJOR                   2
-#define VERSION_MINOR                   4
-#define VERSION_REVISION                31
+#define VERSION_MAJOR                   17
+#define VERSION_MINOR                   0
+#define VERSION_REVISION                0
 
 // global ------------------------------------------------------
 

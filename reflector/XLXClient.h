@@ -20,27 +20,23 @@
 
 #include "Client.h"
 
-#define XLX_PROTOCOL_REVISION_0      0       // AMBE only, original connect mechanism
-#define XLX_PROTOCOL_REVISION_1      1       // AMBE only, revised connect mechanism
-#define XLX_PROTOCOL_REVISION_2      2       // Transcoded AMBE+AMBE2 interlink
-
 class CURFClient : public CClient
 {
 public:
 	// constructors
 	CURFClient();
-	CURFClient(const CCallsign &, const CIp &, char = ' ', int = XLX_PROTOCOL_REVISION_0);
+	CURFClient(const CCallsign &, const CIp &, char = ' ', EXLXProtocol = EXLXProtocol::m17);
 	CURFClient(const CURFClient &);
 
 	// destructor
 	virtual ~CURFClient() {};
 
 	// identity
-	EProtocol GetProtocol(void) const           { return EProtocol::ulx; }
-	int GetProtocolRevision(void) const         { return m_ProtRev; }
-	const char *GetProtocolName(void) const     { return "XLX"; }
-	ECodecType GetCodec(void) const             { return ECodecType::none; }
-	bool IsPeer(void) const                     { return true; }
+	EProtocol GetProtocol(void) const            { return EProtocol::ulx; }
+	EXLXProtocol GetProtocolRevision(void) const { return m_ProtRev; }
+	const char *GetProtocolName(void) const      { return "XLX"; }
+	ECodecType GetCodec(void) const              { return ECodecType::none; }
+	bool IsPeer(void) const                      { return true; }
 
 	// status
 	bool IsAlive(void) const;
@@ -50,5 +46,5 @@ public:
 
 protected:
 	// data
-	int     m_ProtRev;
+	EXLXProtocol m_ProtRev;
 };

@@ -24,11 +24,7 @@
 #include "Buffer.h"
 #include "Packet.h"
 
-////////////////////////////////////////////////////////////////////////////////////////
-//
-
-////////////////////////////////////////////////////////////////////////////////////////
-// class
+enum class EXLXProtocol { original, revised, ambe, m17 };
 
 class CClient
 {
@@ -57,14 +53,14 @@ public:
 	void SetReflectorModule(char c)                     { m_ReflectorModule = c; }
 
 	// identity
-	virtual EProtocol GetProtocol(void) const           { return EProtocol::none; }
-	virtual int GetProtocolRevision(void) const         { return 0; }
-	virtual ECodecType GetCodec(void) const             { return ECodecType::none; }
-	virtual const char *GetProtocolName(void) const     { return "none"; }
-	virtual bool IsNode(void) const                     { return false; }
-	virtual bool IsPeer(void) const                     { return false; }
-	virtual bool IsDextraDongle(void) const             { return false; }
-	virtual void SetDextraDongle(void)                  { }
+	virtual EProtocol GetProtocol(void) const            { return EProtocol::none; }
+	virtual EXLXProtocol GetProtocolRevision(void) const { return EXLXProtocol::m17; }
+	virtual ECodecType GetCodec(void) const              { return ECodecType::none; }
+	virtual const char *GetProtocolName(void) const      { return "none"; }
+	virtual bool IsNode(void) const                      { return false; }
+	virtual bool IsPeer(void) const                      { return false; }
+	virtual bool IsDextraDongle(void) const              { return false; }
+	virtual void SetDextraDongle(void)                   { }
 
 	// status
 	virtual void Alive(void);
