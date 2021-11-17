@@ -88,7 +88,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 		m_CodecStream->Lock();
 		{
 			// transcoder ready & frame need transcoding ?
-			if (Packet->HasTranscodableAmbe())
+			if (Packet->HasTranscodableData())
 			{
 				// yes, push packet to trancoder queue
 				// trancoder will push it after transcoding

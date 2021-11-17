@@ -47,7 +47,7 @@ public:
 	virtual bool IsDvHeader(void) const             { return false; }
 	virtual bool IsDvFrame(void) const              { return false; }
 	virtual bool IsLastPacket(void) const           { return false; }
-	virtual bool HasTranscodableAmbe(void) const    { return false; }
+	virtual bool HasTranscodableData(void) const    { return false; }
 
 	// get
 	virtual bool IsValid(void) const             { return true; }

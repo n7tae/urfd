@@ -44,9 +44,7 @@ CDvLastFramePacket::CDvLastFramePacket(const uint8_t *ambe, uint16_t sid, uint8_
 
 // urf constructor
 CDvLastFramePacket::CDvLastFramePacket
-(uint16_t sid,
- uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata,
- uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *codec2, const uint8_t *nonce)
+(uint16_t sid, uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata, uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *codec2, const uint8_t *nonce)
 	: CDvFramePacket(sid, dstarpid, dstarambe, dstardvdata, dmrpid, dprspid, dmrambe, dmrsync, type, codec2, nonce)
 {
 }

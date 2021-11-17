@@ -35,7 +35,7 @@ public:
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::ulx; }
 	int GetProtocolRevision(void) const         { return XLX_PROTOCOL_REVISION_2; }
-	const char *GetProtocolName(void) const     { return "ULX"; }
+	const char *GetProtocolName(void) const     { return "XLX"; }
 	ECodecType GetCodec(void) const             { return ECodecType::dmr; }
 	bool IsPeer(void) const                     { return true; }
 

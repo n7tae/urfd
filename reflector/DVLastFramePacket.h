@@ -50,5 +50,5 @@ public:
 
 	// identity
 	bool IsLastPacket(void) const        { return true; }
-	bool HasTranscodableAmbe(void) const { return false; }
+	bool HasTranscodableData(void) const { return false; }
 };

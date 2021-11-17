@@ -55,7 +55,7 @@ public:
 
 	// identity
 	bool IsDvFrame(void) const           { return true; }
-	bool HasTranscodableAmbe(void) const { return true; }
+	bool HasTranscodableData(void) const { return true; }
 
 	// get
 	const STCPacket *GetCodecPacket() const { return &m_TCPack; }

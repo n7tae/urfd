@@ -34,7 +34,7 @@ public:
 
 	// identity
 	EProtocol GetProtocol(void) const       { return EProtocol::ulx; }
-	const char *GetProtocolName(void) const { return "ULX"; }
+	const char *GetProtocolName(void) const { return "XLX"; }
 
 	// revision helper
 	static int GetProtocolRevision(const CVersion &);
