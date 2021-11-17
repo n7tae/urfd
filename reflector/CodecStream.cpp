@@ -136,6 +136,13 @@ void CCodecStream::Task(void)
 			// todo: check the PID
 			// update content with transcoded data
 			Frame->SetCodecData(&pack);
+			// mark the DStar sync frames if the source isn't dstar
+			if (ECodecType::dstar!=Frame->GetCodecIn() && 0==Frame->GetPacketId()%21)
+			{
+				const uint8_t DStarSync[] = { 0x55,0x2D,0x16 };
+				Frame->SetDvData(DStarSync);
+			}
+
 			// and push it back to client
 			m_PacketStream->Lock();
 			m_PacketStream->push(Packet);

@@ -19,59 +19,50 @@
 #include "Main.h"
 #include "DVLastFramePacket.h"
 
-
-////////////////////////////////////////////////////////////////////////////////////////
 // constructor
-
 CDvLastFramePacket::CDvLastFramePacket()
 {
 }
 
 // dstar constructor
-
-CDvLastFramePacket::CDvLastFramePacket(const SDstarFrame *DvFrame, uint16_t sid, uint8_t pid)
+CDvLastFramePacket::CDvLastFramePacket(const SDStarFrame *DvFrame, uint16_t sid, uint8_t pid)
 	: CDvFramePacket(DvFrame, sid, pid)
 {
 }
 
 // dmr constructor
-
 CDvLastFramePacket::CDvLastFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid)
 	: CDvFramePacket(ambe, sync, sid, pid, spid)
 {
 }
 
 // ysf constructor
-
 CDvLastFramePacket::CDvLastFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid)
 	: CDvFramePacket(ambe, sid, pid, spid, fid)
 {
 }
 
 // urf constructor
-
 CDvLastFramePacket::CDvLastFramePacket
 (uint16_t sid,
  uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata,
- uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *codec2)
-	: CDvFramePacket(sid, dstarpid, dstarambe, dstardvdata, dmrpid, dprspid, dmrambe, dmrsync, type, codec2)
+ uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *codec2, const uint8_t *nonce)
+	: CDvFramePacket(sid, dstarpid, dstarambe, dstardvdata, dmrpid, dprspid, dmrambe, dmrsync, type, codec2, nonce)
 {
 }
 
+// m17 constructor
 CDvLastFramePacket::CDvLastFramePacket(const CM17Packet &m17) : CDvFramePacket(m17)
 {
 }
 
 // copy constructor
-
 CDvLastFramePacket::CDvLastFramePacket(const CDvLastFramePacket &DvFrame)
 	: CDvFramePacket(DvFrame)
 {
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
 // virtual duplication
-
 std::unique_ptr<CPacket> CDvLastFramePacket::Duplicate(void) const
 {
 	return std::unique_ptr<CPacket>(new CDvLastFramePacket(*this));

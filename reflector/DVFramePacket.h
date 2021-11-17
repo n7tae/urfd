@@ -40,10 +40,14 @@ class CDvFramePacket : public CPacket
 public:
 	// constructor
 	CDvFramePacket();
-	CDvFramePacket(const SDStarFrame *, uint16_t, uint8_t);
-	CDvFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
-	CDvFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
-	CDvFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *, ECodecType, const uint8_t *, const uint8_t *);
+	// DStar frame
+	CDvFramePacket(const SDStarFrame *dstarframe, uint16_t streamid, uint8_t counter);
+	// DMR Frame
+	CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t streamid, uint8_t counter1, uint8_t counter2);
+	// YSF Frame
+	CDvFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t counter1, uint8_t counter2, uint8_t counter3);
+	// URF Frame
+	CDvFramePacket(uint16_t streamid, uint8_t dstarcounter, const uint8_t *dstarambe, const uint8_t *dvdata, uint8_t dmrcounter1, uint8_t dmrcounter2, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *m17codec, const uint8_t *nonce);
 	CDvFramePacket(const CM17Packet &m17);
 
 	// virtual duplication
@@ -61,7 +65,7 @@ public:
 	const uint8_t *GetNonce(void)  const { return m_Nonce; }
 
 	// set
-	void SetDvData(uint8_t *);
+	void SetDvData(const uint8_t *);
 	void SetCodecData(ECodecType, const uint8_t *);
 	void SetCodecData(const STCPacket *pack);
 

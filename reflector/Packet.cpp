@@ -125,7 +125,7 @@ CPacket::CPacket(const CM17Packet &m17) : CPacket()
 ////////////////////////////////////////////////////////////////////////////////////////
 // pid conversion
 
-void CPacket::UpdatePids(uint32_t pid)
+void CPacket::UpdatePids(const uint32_t pid)
 {
 	// called while pushing this packet in a stream queue
 	// so now packet sequence number is known and undefined pids can be updated
@@ -153,6 +153,7 @@ void CPacket::UpdatePids(uint32_t pid)
 	// m17 needs update?
 	if (m_uiM17FrameNumber == 0x8000U)
 	{
-		m_uiM17FrameNumber = pid % 0x7FFFU;
+		// frames are every 20 milliseconds, so the m17 data will come every 40 milliseconds
+		m_uiM17FrameNumber = (pid % 2) % 0x7FFFU;
 	}
 }

@@ -30,19 +30,25 @@
 class CDvLastFramePacket : public CDvFramePacket
 {
 public:
-	// constructor
+	// empty constructor
 	CDvLastFramePacket();
-	CDvLastFramePacket(const SDstarFrame *, uint16_t, uint8_t);
-	CDvLastFramePacket(const uint8_t *, const uint8_t *, uint16_t, uint8_t, uint8_t);
-	CDvLastFramePacket(const uint8_t *, uint16_t, uint8_t, uint8_t, uint8_t);
-	CDvLastFramePacket(uint16_t, uint8_t, const uint8_t *, const uint8_t *, uint8_t, uint8_t, const uint8_t *, const uint8_t *, ECodecType, const uint8_t *);
+	// DStar constructor
+	CDvLastFramePacket(const SDStarFrame *dvframe, uint16_t streamid, uint8_t counter);
+	// DRM constructor
+	CDvLastFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t streamid, uint8_t counter1, uint8_t counter2);
+	// YSF constructor
+	CDvLastFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t counter1, uint8_t counter2, uint8_t counter3);
+	// URF constructor
+	CDvLastFramePacket(uint16_t streamid, uint8_t dstarcounter, const uint8_t *dstarambe, const uint8_t *dvdata, uint8_t dmrcounter1, uint8_t dmrcounter2, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *codec2, const uint8_t *nonce);
+	// M17 constructor
 	CDvLastFramePacket(const CM17Packet &);
+	// copy constructor
 	CDvLastFramePacket(const CDvLastFramePacket &);
 
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;
 
 	// identity
-	bool IsLastPacket(void) const           { return true; }
-	bool HasTranscodableAmbe(void) const   { return false; }
+	bool IsLastPacket(void) const        { return true; }
+	bool HasTranscodableAmbe(void) const { return false; }
 };

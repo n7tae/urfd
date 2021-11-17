@@ -145,7 +145,7 @@ const uint8_t *CDvFramePacket::GetCodecData(ECodecType type) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // set
 
-void CDvFramePacket::SetDvData(uint8_t *DvData)
+void CDvFramePacket::SetDvData(const uint8_t *DvData)
 {
 	memcpy(m_uiDvData, DvData, 3);
 }

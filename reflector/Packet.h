@@ -65,7 +65,7 @@ public:
 	ECodecType   GetCodecIn(void) const          { return m_eCodecIn; }
 
 	// set
-	void UpdatePids(uint32_t);
+	void UpdatePids(const uint32_t);
 	void SetModule(char cMod)      { m_cModule = cMod; }
 	void SetLocalOrigin(void)      { m_uiOriginId = ORIGIN_LOCAL; }
 	void SetRemotePeerOrigin(void) { m_uiOriginId = ORIGIN_PEER; }
