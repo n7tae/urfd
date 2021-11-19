@@ -72,16 +72,7 @@ void CDcsProtocol::Task(void)
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
-				if ( !Frame->IsLastPacket() )
-				{
-					//std::cout << "DCS DV frame" << std::endl;
-					OnDvFramePacketIn(Frame, &Ip);
-				}
-				else
-				{
-					//std::cout << "DCS DV last frame" << std::endl;
-					OnDvLastFramePacketIn((std::unique_ptr<CDvLastFramePacket> &)Frame, &Ip);
-				}
+				OnDvFramePacketIn(Frame, &Ip);
 			}
 		}
 		else if ( IsValidConnectPacket(Buffer, &Callsign, &ToLinkModule) )
@@ -393,16 +384,7 @@ bool CDcsProtocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHea
 		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[4]), *((uint16_t *)&(Buffer.data()[43])), 0x80));
 
 		// get the frame
-		if ( Buffer.data()[45] & 0x40U )
-		{
-			// it's the last frame
-			frame = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((SDstarFrame *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
-		}
-		else
-		{
-			// it's a regular DV frame
-			frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDstarFrame *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
-		}
+		frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDStarFrame *)&(Buffer.data()[46]), *((uint16_t *)&(Buffer.data()[43])), Buffer.data()[45]));
 
 		// check validity of packets
 		if ( header && header->IsValid() && frame && frame->IsValid() )

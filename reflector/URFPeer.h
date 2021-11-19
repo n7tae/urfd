@@ -1,7 +1,7 @@
 #pragma once
 
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
+//
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -18,45 +18,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-#include "Client.h"
+#include "Peer.h"
+#include "URFClient.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define
-
-#define XLX_PROTOCOL_REVISION_0      0       // AMBE only, original connect mechanism
-#define XLX_PROTOCOL_REVISION_1      1       // AMBE only, revised connect mechanism
-#define XLX_PROTOCOL_REVISION_2      2       // Transcoded AMBE+AMBE2 interlink
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CXlxClient : public CClient
+class CURFPeer : public CPeer
 {
 public:
 	// constructors
-	CXlxClient();
-	CXlxClient(const CCallsign &, const CIp &, char = ' ', EProtoRev = EProtoRev::original);
-	CXlxClient(const CXlxClient &);
-
-	// destructor
-	virtual ~CXlxClient() {};
-
-	// identity
-	EProtocol GetProtocol(void) const           { return EProtocol::xlx; }
-	EProtoRev GetProtocolRevision(void) const   { return m_ProtRev; }
-	const char *GetProtocolName(void) const     { return "XLX"; }
-	ECodecType GetCodec(void) const;
-	bool IsPeer(void) const                     { return true; }
+	CURFPeer();
+	CURFPeer(const CCallsign &, const CIp &, const char *, const CVersion &);
+	CURFPeer(const CURFPeer &) = delete;
 
 	// status
 	bool IsAlive(void) const;
 
-	// reporting
-	void WriteXml(std::ofstream &) {}
+	// identity
+	EProtocol GetProtocol(void) const          { return EProtocol::urf; }
+	const char *GetProtocolName(void) const    { return "URF"; }
 
-protected:
-	// data
-	EProtoRev     m_ProtRev;
+	// revision helper
+	static EProtoRev GetProtocolRevision(const CVersion &);
 };

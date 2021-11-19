@@ -20,10 +20,9 @@
 
 #include <string>
 #include "Timer.h"
-#include "DCSProtocol.h"
+#include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 #include "RawSocket.h"
 #include "UDPMsgSocket.h"
 
@@ -98,12 +97,11 @@ protected:
 	// packet decoding helpers
 	bool IsValidDvHeaderPacket(const CBuffer &, std::unique_ptr<CDvHeaderPacket> &);
 	bool IsValidDvFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
-	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvLastFramePacket> &);
 
 	// packet encoding helpers
 	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
 	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
-	bool EncodeDvLastFramePacket(const CDvLastFramePacket &, CBuffer *) const;
+	bool EncodeDvLastFramePacket(const CDvFramePacket &, CBuffer *) const;
 
 protected:
 	std::future<void> m_PresenceFuture, m_ConfigFuture, m_IcmpFuture;

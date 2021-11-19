@@ -372,7 +372,6 @@ void CG3Protocol::Task(void)
 	int       ProtRev;
 	std::unique_ptr<CDvHeaderPacket>    Header;
 	std::unique_ptr<CDvFramePacket>     Frame;
-	std::unique_ptr<CDvLastFramePacket> LastFrame;
 
 	// any incoming packet ?
 	if ( m_Socket4.Receive(Buffer, Ip, 20) )
@@ -412,10 +411,6 @@ void CG3Protocol::Task(void)
 					// handle it
 					OnDvHeaderPacketIn(Header, *BaseIp);
 				}
-			}
-			else if ( IsValidDvLastFramePacket(Buffer, LastFrame) )
-			{
-				OnDvLastFramePacketIn(LastFrame, BaseIp);
 			}
 		}
 	}
@@ -603,23 +598,10 @@ bool CG3Protocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<C
 
 bool CG3Protocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
+	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDstarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
-		// check validity of packet
-		if ( dvframe && dvframe->IsValid() )
-			return true;
-	}
-	return false;
-}
-
-bool CG3Protocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
-{
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
-	{
-		// create packet
-		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((SDstarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDStarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -659,7 +641,7 @@ bool CG3Protocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buf
 
 }
 
-bool CG3Protocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
+bool CG3Protocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
 	uint8_t tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };

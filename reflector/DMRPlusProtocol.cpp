@@ -475,21 +475,21 @@ bool CDmrplusProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer
 			uint32_t uiStreamId = IpToStreamId(Ip);
 			// frame1
 			memcpy(dmrambe, &dmr3ambe[0], 9);
-			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 1));
+			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 1, false));
 
 			// frame2
 			memcpy(dmrambe, &dmr3ambe[9], 9);
-			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 2));
+			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 2, false));
 
 			// frame3
 			memcpy(dmrambe, &dmr3ambe[18], 9);
 			if ( uiPacketType == 3 )
 			{
-				frames[2] = std::unique_ptr<CDvFramePacket>(new CDvLastFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 3));
+				frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 3, true));
 			}
 			else
 			{
-				frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 3));
+				frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(dmrambe, dmrsync, uiStreamId, uiVoiceSeq, 3, false));
 			}
 
 			// check

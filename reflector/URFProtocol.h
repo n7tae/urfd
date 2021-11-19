@@ -1,5 +1,7 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+#pragma once
 
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -16,30 +18,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
+#include "Version.h"
 #include "Timer.h"
 #include "Protocol.h"
-#include "DVHeaderPacket.h"
-#include "DVFramePacket.h"
-#include "M17CRC.h"
+#include "Clients.h"
 
-////////////////////////////////////////////////////////////////////////////////////////
-// define
+class CPeer;
 
-////////////////////////////////////////////////////////////////////////////////////////
-// class
-
-class CM17StreamCacheItem
-{
-public:
-	CM17StreamCacheItem() : m_iSeqCounter(0) {}
-
-	CDvHeaderPacket m_dvHeader;
-	uint32_t        m_iSeqCounter;
-};
-
-class CM17Protocol : public CProtocol
+class CURFProtocol : public CProtocol
 {
 public:
 	// initialization
@@ -53,29 +39,33 @@ protected:
 	void HandleQueue(void);
 
 	// keepalive helpers
+	void HandlePeerLinks(void);
 	void HandleKeepalives(void);
 
 	// stream helpers
 	void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &);
+	void OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
 
 	// packet decoding helpers
-	bool IsValidConnectPacket(const CBuffer &, CCallsign &, char &);
-	bool IsValidDisconnectPacket(const CBuffer &, CCallsign &);
-	bool IsValidKeepAlivePacket(const CBuffer &, CCallsign &);
-	bool IsValidDvPacket(const CBuffer &, std::unique_ptr<CDvHeaderPacket> &, std::unique_ptr<CDvFramePacket> &);
+	bool IsValidKeepAlivePacket(const CBuffer &, CCallsign *);
+	bool IsValidConnectPacket(const CBuffer &, CCallsign *, char *, CVersion *);
+	bool IsValidDisconnectPacket(const CBuffer &, CCallsign *);
+	bool IsValidAckPacket(const CBuffer &, CCallsign *, char *, CVersion *);
+	bool IsValidNackPacket(const CBuffer &, CCallsign *);
+	bool IsValidDvHeaderPacket(const CBuffer &, std::unique_ptr<CDvHeaderPacket> &);
+	bool IsValidDvFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
 
 	// packet encoding helpers
-	void EncodeKeepAlivePacket(CBuffer &);
-	void EncodeDvPacket(SM17Frame &, const CDvHeaderPacket &, const CDvFramePacket &, uint32_t) const;
-	void EncodeDvLastPacket(SM17Frame &, const CDvHeaderPacket &, const CDvFramePacket &, uint32_t) const;
+	void EncodeKeepAlivePacket(CBuffer *);
+	void EncodeConnectPacket(CBuffer *, const char *);
+	void EncodeDisconnectPacket(CBuffer *);
+	void EncodeConnectAckPacket(CBuffer *, const char *);
+	void EncodeConnectNackPacket(CBuffer *Buffer);
+	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
+	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
 
 protected:
-	// for keep alive
+	// time
 	CTimer m_LastKeepaliveTime;
-
-	// for queue header caches
-	std::unordered_map<char, CM17StreamCacheItem> m_StreamsCache;
-
-private:
-	CM17CRC m17crc;
+	CTimer m_LastPeersLinkTime;
 };

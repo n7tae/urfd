@@ -1,5 +1,5 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
+//
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -16,23 +16,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <string.h>
-
 #include "Main.h"
+#include <string.h>
 #include "Reflector.h"
-#include "XLXPeer.h"
-#include "XLXClient.h"
+#include "URFPeer.h"
+#include "URFClient.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
 
-CXlxPeer::CXlxPeer()
+CURFPeer::CURFPeer()
 {
 }
 
-CXlxPeer::CXlxPeer(const CCallsign &callsign, const CIp &ip, const char *modules, const CVersion &version)
+CURFPeer::CURFPeer(const CCallsign &callsign, const CIp &ip, const char *modules, const CVersion &version)
 	: CPeer(callsign, ip, modules, version)
 {
 	// get protocol revision
@@ -43,32 +42,22 @@ CXlxPeer::CXlxPeer(const CCallsign &callsign, const CIp &ip, const char *modules
 	for ( unsigned i = 0; i < ::strlen(modules); i++ )
 	{
 		// create and append to vector
-		m_Clients.push_back(std::make_shared<CXlxClient>(callsign, ip, modules[i], protrev));
+		m_Clients.push_back(std::make_shared<CURFClient>(callsign, ip, modules[i], protrev));
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // status
 
-bool CXlxPeer::IsAlive(void) const
+bool CURFPeer::IsAlive(void) const
 {
-	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
+	return (m_LastKeepaliveTime.time() < URF_KEEPALIVE_TIMEOUT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // revision helper
 
-EProtoRev CXlxPeer::GetProtocolRevision(const CVersion &version)
+EProtoRev CURFPeer::GetProtocolRevision(const CVersion &/*version*/)
 {
-	EProtoRev protrev = EProtoRev::original;
-
-	if ( version.IsEqualOrHigherTo(CVersion(2,2,0)) )
-	{
-		protrev = EProtoRev::ambe;
-	}
-	else if ( version.IsEqualOrHigherTo(CVersion(1,4,0)) )
-	{
-		protrev = EProtoRev::revised;
-	}
-	return protrev;
+	return EProtoRev::urf;
 }

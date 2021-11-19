@@ -32,9 +32,9 @@ public:
 	// constructor
 	CPacket();
 	CPacket(uint16_t sid, uint8_t dstarpid);
-	CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrsubpid);
-	CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax);
-	CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax, ECodecType);
+	CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrsubpid, bool lastpacket);
+	CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax, bool lastpacket);
+	CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax, ECodecType, bool lastpacket);
 	CPacket(const CM17Packet &);
 
 	// destructor
@@ -44,10 +44,10 @@ public:
 	virtual std::unique_ptr<CPacket> Duplicate(void) const = 0;
 
 	// identity
-	virtual bool IsDvHeader(void) const             { return false; }
-	virtual bool IsDvFrame(void) const              { return false; }
-	virtual bool IsLastPacket(void) const           { return false; }
-	virtual bool HasTranscodableData(void) const    { return false; }
+	virtual bool IsDvHeader(void) const          { return false; }
+	virtual bool IsDvFrame(void) const           { return false; }
+	virtual bool HasTranscodableData(void) const { return false; }
+	bool IsLastPacket(void) const                { return m_bLastPacket; }
 
 	// get
 	virtual bool IsValid(void) const             { return true; }
@@ -72,6 +72,9 @@ public:
 
 protected:
 	// data
+	ECodecType m_eCodecIn;
+	bool       m_bLastPacket;
+	char       m_cModule;
 	uint16_t   m_uiStreamId;
 	uint16_t   m_uiM17FrameNumber;
 	uint8_t    m_uiDstarPacketId;
@@ -80,7 +83,5 @@ protected:
 	uint8_t    m_uiYsfPacketId;
 	uint8_t    m_uiYsfPacketSubId;
 	uint8_t    m_uiYsfPacketFrameId;
-	char       m_cModule;
 	uint8_t    m_uiOriginId;
-	ECodecType m_eCodecIn;
 };

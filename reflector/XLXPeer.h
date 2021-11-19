@@ -1,4 +1,6 @@
-///  Copyright © 2016 Jean-Luc Deltombe (LX3JL). All rights reserved.
+#pragma once
+
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
@@ -16,26 +18,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "Peer.h"
-#include "URFClient.h"
+#include "XLXClient.h"
 
-class CURFPeer : public CPeer
+class CXlxPeer : public CPeer
 {
 public:
 	// constructors
-	CURFPeer();
-	CURFPeer(const CCallsign &, const CIp &, const char *, const CVersion &);
-	CURFPeer(const CURFPeer &) = delete;
+	CXlxPeer();
+	CXlxPeer(const CCallsign &, const CIp &, const char *, const CVersion &);
+	CXlxPeer(const CXlxPeer &) = delete;
 
 	// status
 	bool IsAlive(void) const;
 
 	// identity
-	EProtocol GetProtocol(void) const       { return EProtocol::ulx; }
-	const char *GetProtocolName(void) const { return "XLX"; }
+	EProtocol GetProtocol(void) const           { return EProtocol::xlx; }
+	const char *GetProtocolName(void) const     { return "XLX"; }
 
 	// revision helper
-	static int GetProtocolRevision(const CVersion &);
+	static EProtoRev GetProtocolRevision(const CVersion &);
 };

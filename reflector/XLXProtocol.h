@@ -1,3 +1,5 @@
+#pragma once
+
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
@@ -16,8 +18,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "Version.h"
 #include "Timer.h"
 #include "DExtraProtocol.h"
@@ -30,11 +30,11 @@ class CPeer;
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CURFProtocol : public CDextraProtocol
+class CXlxProtocol : public CDextraProtocol
 {
 public:
 	// initialization
-	bool Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
+	bool Initialize(const char *type, EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 
 	// task
 	void Task(void);
@@ -50,7 +50,7 @@ protected:
 	// stream helpers
 	void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &);
 	void OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
-	void OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &, const CIp * = nullptr);
+	void OnDvLastFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
 
 	// packet decoding helpers
 	bool IsValidKeepAlivePacket(const CBuffer &, CCallsign *);
@@ -59,7 +59,7 @@ protected:
 	bool IsValidAckPacket(const CBuffer &, CCallsign *, char *, CVersion *);
 	bool IsValidNackPacket(const CBuffer &, CCallsign *);
 	bool IsValidDvFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
-	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvLastFramePacket> &);
+	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
 
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer *);
@@ -68,10 +68,10 @@ protected:
 	void EncodeConnectAckPacket(CBuffer *, const char *);
 	void EncodeConnectNackPacket(CBuffer *);
 	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
-	bool EncodeDvLastFramePacket(const CDvLastFramePacket &, CBuffer *) const;
+	bool EncodeDvLastFramePacket(const CDvFramePacket &, CBuffer *) const;
 
 	// protocol revision helper
-	int GetConnectingPeerProtocolRevision(const CCallsign &, const CVersion &);
+	EProtoRev GetConnectingPeerProtocolRevision(const CCallsign &, const CVersion &);
 	std::shared_ptr<CPeer>CreateNewPeer(const CCallsign &, const CIp &, char *, const CVersion &);
 
 protected:

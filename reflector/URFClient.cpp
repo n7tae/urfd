@@ -1,5 +1,5 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
+//
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -16,28 +16,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include <string.h>
+#include "Main.h"
+#include "URFClient.h"
 
-#include "Protocol.h"
 
-class CProtocols
+////////////////////////////////////////////////////////////////////////////////////////
+// constructors
+
+CURFClient::CURFClient()
 {
-public:
-	// destructors
-	~CProtocols();
+	m_ProtRev = EProtoRev::original;
+}
 
-	// initialization
-	bool Init(void);
-	void Close(void);
-	void Lock(void)   { m_Mutex.lock(); }
-	void Unlock(void) { m_Mutex.unlock(); }
+CURFClient::CURFClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, EProtoRev protRev)
+	: CClient(callsign, ip, reflectorModule)
+{
+	m_ProtRev = protRev;
+}
 
-	// pass-thru
-	std::list<std::unique_ptr<CProtocol>>::iterator begin() { return m_Protocols.begin(); }
-	std::list<std::unique_ptr<CProtocol>>::iterator end()   { return m_Protocols.end(); }
+CURFClient::CURFClient(const CURFClient &client)
+	: CClient(client)
+{
+	m_ProtRev = client.m_ProtRev;
+}
 
-protected:
-	// data
-	std::mutex m_Mutex;
-	std::list<std::unique_ptr<CProtocol>> m_Protocols;
-};
+////////////////////////////////////////////////////////////////////////////////////////
+// status
+
+bool CURFClient::IsAlive(void) const
+{
+	return (m_LastKeepaliveTime.time() < URF_KEEPALIVE_TIMEOUT);
+}

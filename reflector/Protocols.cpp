@@ -24,6 +24,7 @@
 #include "DMRPlusProtocol.h"
 #include "DMRMMDVMProtocol.h"
 #include "YSFProtocol.h"
+#include "M17Protocol.h"
 #ifndef NO_G3
 #include "G3Protocol.h"
 #endif
@@ -69,7 +70,11 @@ bool CProtocols::Init(void)
 			return false;
 
 		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));
-		if (! m_Protocols.back()->Initialize("XLX", EProtocol::ulx, XLX_PORT, DMR_IPV4, DMR_IPV6))
+		if (! m_Protocols.back()->Initialize("URF", EProtocol::urf, URF_PORT, URF_IPV4, URF_IPV6))
+			return false;
+
+		m_Protocols.emplace_back(std::unique_ptr<CM17Protocol>(new CM17Protocol));
+		if (! m_Protocols.back()->Initialize("URF", EProtocol::m17, M17_PORT, M17_IPV4, M17_IPV6))
 			return false;
 
 #ifndef NO_G3

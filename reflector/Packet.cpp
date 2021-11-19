@@ -37,6 +37,7 @@ CPacket::CPacket()
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 	m_eCodecIn = ECodecType::none;
+	m_bLastPacket = false;
 };
 
 // dstar contrsuctor
@@ -54,11 +55,12 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 	m_eCodecIn = ECodecType::dstar;
+	m_bLastPacket = (0x40U == (dstarpid & 0x40U));
 };
 
 // dmr constructor
 
-CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid)
+CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid, bool lastpacket)
 {
 	m_uiStreamId = sid;
 	m_uiDmrPacketId = dmrpid;
@@ -71,11 +73,12 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid)
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 	m_eCodecIn = ECodecType::dmr;
+	m_bLastPacket = lastpacket;
 };
 
 // ysf constructor
 
-CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid)
+CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, bool lastpacket)
 {
 	m_uiStreamId = sid;
 	m_uiYsfPacketId = ysfpid;
@@ -88,11 +91,12 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 	m_eCodecIn = ECodecType::dmr;
+	m_bLastPacket = lastpacket;
 }
 
 // xlx  constructor
 
-CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, ECodecType codecIn)
+CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, ECodecType codecIn, bool lastpacket)
 {
 	m_uiStreamId = sid;
 	m_uiDstarPacketId = dstarpid;
@@ -105,6 +109,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 	m_cModule = ' ';
 	m_uiOriginId = ORIGIN_LOCAL;
 	m_eCodecIn = codecIn;
+	m_bLastPacket = lastpacket;
 }
 
 // m17 constructor
@@ -120,6 +125,7 @@ CPacket::CPacket(const CM17Packet &m17) : CPacket()
 	m_uiYsfPacketFrameId = 0xFF;
 	m_eCodecIn = (0x6U == (0x6U & m17.GetFrameType())) ? ECodecType::c2_1600 : ECodecType::c2_3200;
 	m_uiM17FrameNumber = 0x7FFFU & m17.GetFrameNumber();
+	m_bLastPacket = m17.IsLastPacket();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

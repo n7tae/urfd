@@ -95,14 +95,14 @@ public:
 
 protected:
 	// data
-	uint8_t       m_uiFlag1;
-	uint8_t       m_uiFlag2;
-	uint8_t       m_uiFlag3;
+	uint8_t     m_uiFlag1;
+	uint8_t     m_uiFlag2;
+	uint8_t     m_uiFlag3;
 	CCallsign   m_csUR;
 	CCallsign   m_csRPT1;
 	CCallsign   m_csRPT2;
 	CCallsign   m_csMY;
-	uint16_t      m_uiCrc;
+	uint16_t    m_uiCrc;
 #ifdef IMPLEMENT_CDVHEADERPACKET_CONST_CHAR_OPERATOR
 	// buffer
 	char		m_sz[256];

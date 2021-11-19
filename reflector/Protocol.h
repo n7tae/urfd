@@ -22,7 +22,6 @@
 #include "PacketStream.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -88,12 +87,10 @@ protected:
 	virtual bool EncodeDvPacket(const CPacket &, CBuffer *) const;
 	virtual bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const         { return false; }
 	virtual bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const           { return false; }
-	virtual bool EncodeDvLastFramePacket(const CDvLastFramePacket &, CBuffer *) const   { return false; }
 
 	// stream helpers
 	virtual void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &) {}
 	virtual void OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
-	virtual void OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &, const CIp * = nullptr);
 
 	// stream handle helpers
 	std::shared_ptr<CPacketStream> GetStream(uint16_t, const CIp * = nullptr);

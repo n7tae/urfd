@@ -49,15 +49,19 @@
 #define DMR_IPV4 true
 #define YSF_IPV4 true
 #define XLX_IPV4 true
+#define M17_IPV4 true
+#define URF_IPV4 true
 
 #define DSTAR_IPV6 true
 #define DMR_IPV6 false
 #define YSF_IPV6 false
 #define XLX_IPV6 false
+#define M17_IPV6 true
+#define URF_IPV6 true
 
 // version -----------------------------------------------------
 
-#define VERSION_MAJOR                   17
+#define VERSION_MAJOR                   1
 #define VERSION_MINOR                   0
 #define VERSION_REVISION                0
 
@@ -73,9 +77,9 @@
 // protocols ---------------------------------------------------
 
 #ifndef NO_G3
-enum class EProtocol { any, none, dextra, dplus, dcs, ulx, dmrplus, dmrmmdvm, ysf, m17, g3 };
+enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdvm, ysf, m17, g3 };
 #else
-enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ysf, m17 };
+enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdvm, ysf, m17 };
 #endif
 
 // DExtra
@@ -99,6 +103,12 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, dmrplus, dmrmmdvm, ys
 #define XLX_KEEPALIVE_PERIOD            1                                   // in seconds
 #define XLX_KEEPALIVE_TIMEOUT           (XLX_KEEPALIVE_PERIOD*30)           // in seconds
 #define XLX_RECONNECT_PERIOD            5                                   // in seconds
+
+// URF
+#define URF_PORT                        10017                               // UDP port
+#define URF_KEEPALIVE_PERIOD            1                                   // in seconds
+#define URF_KEEPALIVE_TIMEOUT           (XLX_KEEPALIVE_PERIOD*30)           // in seconds
+#define URF_RECONNECT_PERIOD            5                                   // in seconds
 
 // DMRPlus (dongle)
 #define DMRPLUS_PORT                    8880                                // UDP port

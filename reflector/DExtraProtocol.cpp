@@ -54,7 +54,6 @@ void CDextraProtocol::Task(void)
 	int                 ProtRev;
 	std::unique_ptr<CDvHeaderPacket>    Header;
 	std::unique_ptr<CDvFramePacket>     Frame;
-	std::unique_ptr<CDvLastFramePacket> LastFrame;
 
 	// any incoming packet ?
 #if DSTAR_IPV6==true
@@ -79,10 +78,6 @@ void CDextraProtocol::Task(void)
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 			}
-		}
-		else if ( IsValidDvLastFramePacket(Buffer, LastFrame) )
-		{
-			OnDvLastFramePacketIn(LastFrame, &Ip);
 		}
 		else if ( IsValidConnectPacket(Buffer, &Callsign, &ToLinkModule, &ProtRev) )
 		{
@@ -151,12 +146,12 @@ void CDextraProtocol::Task(void)
 			if ( client != nullptr )
 			{
 				// ack disconnect packet
-				if ( client->GetProtocolRevision() == 1 )
+				if ( client->GetProtocolRevision() == EProtoRev::revised )
 				{
 					EncodeDisconnectedPacket(&Buffer);
 					Send(Buffer, Ip);
 				}
-				else if ( client->GetProtocolRevision() == 2 )
+				else if ( client->GetProtocolRevision() == EProtoRev::ambe )
 				{
 					Send(Buffer, Ip);
 				}
@@ -412,7 +407,7 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 			// get client callsign
 			rpt1 = client->GetCallsign();
 			// apply protocol revision details
-			if ( client->GetProtocolRevision() == 2 )
+			if ( client->GetProtocolRevision() == EProtoRev::ambe )
 			{
 				// update Header RPT2 module letter with
 				// the module the client is linked to
@@ -507,7 +502,7 @@ bool CDextraProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_pt
 	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0U==(Buffer.data()[14] & 0x40U) )
 	{
 		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDstarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDStarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
 			return true;
@@ -515,18 +510,6 @@ bool CDextraProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_pt
 	return false;
 }
 
-bool CDextraProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvLastFramePacket> &dvframe)
-{
-	if ( 27==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40) )
-	{
-		// create packet
-		dvframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket((SDstarFrame *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), Buffer.data()[14]));
-		// check validity of packet
-		if ( dvframe && dvframe->IsValid() )
-			return true;
-	}
-	return false;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet encoding helpers
@@ -617,17 +600,4 @@ bool CDextraProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer 
 
 	return true;
 
-}
-
-bool CDextraProtocol::EncodeDvLastFramePacket(const CDvLastFramePacket &Packet, CBuffer *Buffer) const
-{
-	uint8_t tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
-	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
-
-	Buffer->Set(tag1, sizeof(tag1));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
-	Buffer->Append(tag2, sizeof(tag2));
-
-	return true;
 }

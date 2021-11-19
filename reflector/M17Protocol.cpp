@@ -73,16 +73,7 @@ void CM17Protocol::Task(void)
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
-				if ( !Frame->IsLastPacket() )
-				{
-					//std::cout << "M17 DV frame" << std::endl;
-					OnDvFramePacketIn(Frame, &Ip);
-				}
-				else
-				{
-					//std::cout << "M17 DV last frame" << std::endl;
-					OnDvLastFramePacketIn((std::unique_ptr<CDvLastFramePacket> &)Frame, &Ip);
-				}
+				OnDvFramePacketIn((std::unique_ptr<CDvFramePacket> &)Frame, &Ip);
 			}
 		}
 		else if ( IsValidConnectPacket(Buffer, Callsign, ToLinkModule) )
@@ -373,16 +364,7 @@ bool CM17Protocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHea
 		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(m17));
 
 		// get the frame
-		if (m17.IsLastPacket())
-		{
-			// it's the last frame
-			frame = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket(m17));
-		}
-		else
-		{
-			// it's a regular DV frame
-			frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(m17));
-		}
+		frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(m17));
 
 		// check validity of packets
 		if ( header && header->IsValid() && frame && frame->IsValid() )

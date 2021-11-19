@@ -79,7 +79,7 @@ void CYsfProtocol::Task(void)
 	std::unique_ptr<CDvHeaderPacket>               Header;
 	std::array<std::unique_ptr<CDvFramePacket>, 5> Frames;
 	std::unique_ptr<CDvFramePacket>                OneFrame;
-	std::unique_ptr<CDvLastFramePacket>            LastFrame;
+	std::unique_ptr<CDvFramePacket>                LastFrame;
 
 	// handle outgoing packets
 	{
@@ -130,7 +130,7 @@ void CYsfProtocol::Task(void)
 			else if ( IsValidDvLastFramePacket(Ip, Fich, Buffer, OneFrame, LastFrame) )
 			{
 				OnDvFramePacketIn(OneFrame, &Ip);
-				OnDvLastFramePacketIn(LastFrame, &Ip);
+				OnDvFramePacketIn(LastFrame, &Ip);
 			}
 		}
 		else if ( IsValidConnectPacket(Buffer, &Callsign) )
@@ -445,8 +445,8 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 		{
 			uint8_t  uiAmbe[9];
 			memset(uiAmbe, 0x00, sizeof(uiAmbe));
-			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0));
-			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0));
+			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0, false));
+			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0, false));
 		}
 
 		// check validity of packets
@@ -476,11 +476,11 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 
 		// get DV frames
 		uint8_t fid = Buffer.data()[34];
-		frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe0, uiStreamId, Fich.getFN(), 0, fid));
-		frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe1, uiStreamId, Fich.getFN(), 1, fid));
-		frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe2, uiStreamId, Fich.getFN(), 2, fid));
-		frames[3] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe3, uiStreamId, Fich.getFN(), 3, fid));
-		frames[4] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe4, uiStreamId, Fich.getFN(), 4, fid));
+		frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe0, uiStreamId, Fich.getFN(), 0, fid, false));
+		frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe1, uiStreamId, Fich.getFN(), 1, fid, false));
+		frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe2, uiStreamId, Fich.getFN(), 2, fid, false));
+		frames[3] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe3, uiStreamId, Fich.getFN(), 3, fid, false));
+		frames[4] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe4, uiStreamId, Fich.getFN(), 4, fid, false));
 
 		// check validity of packets
 		if ( frames[0] && frames[0]->IsValid() && frames[1] && frames[1]->IsValid() && frames[2] && frames[2]->IsValid() && frames[3] && frames[3]->IsValid() && frames[4] && frames[4]->IsValid() )
@@ -489,7 +489,7 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 	return false;
 }
 
-bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich, const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &oneframe, std::unique_ptr<CDvLastFramePacket> &lastframe)
+bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich, const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &oneframe, std::unique_ptr<CDvFramePacket> &lastframe)
 {
 	// DV header ?
 	if ( Fich.getFI() == YSF_FI_TERMINATOR )
@@ -501,8 +501,8 @@ bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich,
 		{
 			uint8_t  uiAmbe[9];
 			memset(uiAmbe, 0x00, sizeof(uiAmbe));
-			oneframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0));
-			lastframe = std::unique_ptr<CDvLastFramePacket>(new CDvLastFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0));
+			oneframe  = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0, false));
+			lastframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0, true));
 		}
 
 		// check validity of packets

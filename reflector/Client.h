@@ -24,7 +24,7 @@
 #include "Buffer.h"
 #include "Packet.h"
 
-enum class EXLXProtocol { original, revised, ambe, m17 };
+enum class EProtoRev { original, revised, ambe, urf };
 
 class CClient
 {
@@ -54,7 +54,7 @@ public:
 
 	// identity
 	virtual EProtocol GetProtocol(void) const            { return EProtocol::none; }
-	virtual EXLXProtocol GetProtocolRevision(void) const { return EXLXProtocol::m17; }
+	virtual EProtoRev GetProtocolRevision(void) const    { return EProtoRev::ambe; }
 	virtual ECodecType GetCodec(void) const              { return ECodecType::none; }
 	virtual const char *GetProtocolName(void) const      { return "none"; }
 	virtual bool IsNode(void) const                      { return false; }

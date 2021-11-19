@@ -19,10 +19,9 @@
 #pragma once
 
 #include "Timer.h"
-#include "DCSProtocol.h"
+#include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define

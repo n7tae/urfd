@@ -43,11 +43,13 @@ public:
 	// DStar frame
 	CDvFramePacket(const SDStarFrame *dstarframe, uint16_t streamid, uint8_t counter);
 	// DMR Frame
-	CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t streamid, uint8_t counter1, uint8_t counter2);
+	CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t streamid, uint8_t counter1, uint8_t counter2, bool islast);
 	// YSF Frame
-	CDvFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t counter1, uint8_t counter2, uint8_t counter3);
+	CDvFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t counter1, uint8_t counter2, uint8_t counter3, bool islast);
+	// XLX Frame
+	CDvFramePacket(uint16_t streamid, uint8_t counter, const uint8_t *ambe, const uint8_t *dvdata, uint8_t counter1, uint8_t counter2, const uint8_t *ambe2, const uint8_t *dmrsync, ECodecType type, bool islast);
 	// URF Frame
-	CDvFramePacket(uint16_t streamid, uint8_t dstarcounter, const uint8_t *dstarambe, const uint8_t *dvdata, uint8_t dmrcounter1, uint8_t dmrcounter2, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *m17codec, const uint8_t *nonce);
+	CDvFramePacket(uint16_t streamid, uint8_t dstarcounter, const uint8_t *dstarambe, const uint8_t *dvdata, uint8_t dmrcounter1, uint8_t dmrcounter2, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType type, const uint8_t *m17codec, const uint8_t *nonce, bool islast);
 	CDvFramePacket(const CM17Packet &m17);
 
 	// virtual duplication

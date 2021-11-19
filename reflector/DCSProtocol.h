@@ -22,7 +22,6 @@
 #include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define

@@ -19,10 +19,9 @@
 #pragma once
 
 #include "Timer.h"
-#include "DCSProtocol.h"
+#include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 #include "YSFDefines.h"
 #include "YSFFich.h"
 #include "WiresXInfo.h"
@@ -87,7 +86,7 @@ protected:
 	bool IsValidDvPacket(const CBuffer &, CYSFFICH *);
 	bool IsValidDvHeaderPacket(const CIp &, const CYSFFICH &, const CBuffer &, std::unique_ptr<CDvHeaderPacket> &, std::array<std::unique_ptr<CDvFramePacket>, 5> &);
 	bool IsValidDvFramePacket(const CIp &, const CYSFFICH &, const CBuffer &, std::array<std::unique_ptr<CDvFramePacket>, 5> &);
-	bool IsValidDvLastFramePacket(const CIp &, const CYSFFICH &, const CBuffer &, std::unique_ptr<CDvFramePacket> &, std::unique_ptr<CDvLastFramePacket> &);
+	bool IsValidDvLastFramePacket(const CIp &, const CYSFFICH &, const CBuffer &, std::unique_ptr<CDvFramePacket> &, std::unique_ptr<CDvFramePacket> &);
 
 	// DV packet encoding helpers
 	void EncodeConnectAckPacket(CBuffer *) const;

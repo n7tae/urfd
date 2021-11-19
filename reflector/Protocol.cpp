@@ -17,7 +17,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Main.h"
-#include "DCSProtocol.h"
+#include "Protocol.h"
 #include "Clients.h"
 #include "Reflector.h"
 
@@ -130,12 +130,8 @@ void CProtocol::Close(void)
 bool CProtocol::EncodeDvPacket(const CPacket &packet, CBuffer *buffer) const
 {
 	if ( packet.IsDvFrame() )
-	{
-		if ( packet.IsLastPacket() )
-			return EncodeDvLastFramePacket((CDvLastFramePacket &)packet, buffer);
-		else
-			return EncodeDvFramePacket((CDvFramePacket &)packet, buffer);
-	}
+		return EncodeDvFramePacket((CDvFramePacket &)packet, buffer);
+
 	if ( packet.IsDvHeader() )
 		return EncodeDvHeaderPacket((CDvHeaderPacket &)packet, buffer);
 
@@ -158,34 +154,11 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 		stream->Push(std::move(Frame));
 		stream->Unlock();
 	}
-	// else
-	// {
-	// 	std::cout << "Orphaned Frame with ID " << Frame->GetStreamId() << " on " << *Ip << std::endl;
-	// }
-}
-
-void CProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvLastFramePacket> &Frame, const CIp *Ip)
-{
-	// find the stream
-	auto stream = GetStream(Frame->GetStreamId(), Ip);
-	if ( stream )
+	else
 	{
-		// push
-		stream->Lock();
-		stream->Push(std::move(Frame));
-		stream->Unlock();
-
-		// Don't close yet, this stops the last packet relfection bug that was fixed in upstream by the same change.
-		// Don't close the stream yet but rely on CheckStreamsTimeout
-        	// mechanism, so the stream will be closed after the queues have
-        	// been sinked out. This avoid last packets to be send back
-        	// to transmitting client (master)
-
+		std::cout << "Orphaned Frame with ID " << Frame->GetStreamId() << " on " << *Ip << std::endl;
+		Frame.reset();
 	}
-	// else
-	// {
-	// 	std::cout << "Orphaned Last Frame with ID " << Frame->GetStreamId() << " on " << *Ip << std::endl;
-	// }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

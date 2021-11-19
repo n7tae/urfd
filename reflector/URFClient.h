@@ -1,7 +1,7 @@
 #pragma once
 
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
+//
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
@@ -21,34 +21,25 @@
 
 #include "Client.h"
 
-////////////////////////////////////////////////////////////////////////////////////////
-// define
+enum class EURFProtocol { original };
 
-#define XLX_PROTOCOL_REVISION_0      0       // AMBE only, original connect mechanism
-#define XLX_PROTOCOL_REVISION_1      1       // AMBE only, revised connect mechanism
-#define XLX_PROTOCOL_REVISION_2      2       // Transcoded AMBE+AMBE2 interlink
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// class
-
-class CXlxClient : public CClient
+class CURFClient : public CClient
 {
 public:
 	// constructors
-	CXlxClient();
-	CXlxClient(const CCallsign &, const CIp &, char = ' ', EProtoRev = EProtoRev::original);
-	CXlxClient(const CXlxClient &);
+	CURFClient();
+	CURFClient(const CCallsign &, const CIp &, char = ' ', EProtoRev = EProtoRev::original);
+	CURFClient(const CURFClient &);
 
 	// destructor
-	virtual ~CXlxClient() {};
+	virtual ~CURFClient() {};
 
 	// identity
-	EProtocol GetProtocol(void) const           { return EProtocol::xlx; }
-	EProtoRev GetProtocolRevision(void) const   { return m_ProtRev; }
-	const char *GetProtocolName(void) const     { return "XLX"; }
-	ECodecType GetCodec(void) const;
-	bool IsPeer(void) const                     { return true; }
+	EProtocol GetProtocol(void) const            { return EProtocol::urf; }
+	EProtoRev GetProtocolRevision(void) const { return m_ProtRev; }
+	const char *GetProtocolName(void) const      { return "URF"; }
+	ECodecType GetCodec(void) const              { return ECodecType::none; };
+	bool IsPeer(void) const                      { return true; }
 
 	// status
 	bool IsAlive(void) const;
@@ -58,5 +49,5 @@ public:
 
 protected:
 	// data
-	EProtoRev     m_ProtRev;
+	EProtoRev m_ProtRev;
 };

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Client.h"
-#include "URFClient.h"
+#include "XLXClient.h"
 
 class CBmClient : public CClient
 {
@@ -33,11 +33,11 @@ public:
 	virtual ~CBmClient() {};
 
 	// identity
-	EProtocol GetProtocol(void) const           { return EProtocol::ulx; }
-	int GetProtocolRevision(void) const         { return XLX_PROTOCOL_REVISION_2; }
-	const char *GetProtocolName(void) const     { return "XLX"; }
-	ECodecType GetCodec(void) const             { return ECodecType::dmr; }
-	bool IsPeer(void) const                     { return true; }
+	EProtocol GetProtocol(void) const            { return EProtocol::xlx; }
+	EProtoRev GetProtocolRevision(void) const { return EProtoRev::m17; }
+	const char *GetProtocolName(void) const      { return "XLX"; }
+	ECodecType GetCodec(void) const              { return ECodecType::dmr; }
+	bool IsPeer(void) const                      { return true; }
 
 	// status
 	bool IsAlive(void) const;

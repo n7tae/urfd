@@ -19,10 +19,9 @@
 #pragma once
 
 #include "Timer.h"
-#include "DCSProtocol.h"
+#include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +73,6 @@ protected:
 	bool IsValidKeepAlivePacket(  const CBuffer &, CCallsign *);
 	bool IsValidDvHeaderPacket(   const CBuffer &, std::unique_ptr<CDvHeaderPacket> &);
 	bool IsValidDvFramePacket(    const CBuffer &, std::unique_ptr<CDvFramePacket> &);
-	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvLastFramePacket> &);
 
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer *);
@@ -85,7 +83,6 @@ protected:
 	void EncodeDisconnectedPacket(CBuffer *);
 	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
 	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
-	bool EncodeDvLastFramePacket(const CDvLastFramePacket &, CBuffer *) const;
 
 protected:
 	// time

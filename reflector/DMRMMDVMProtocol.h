@@ -19,10 +19,9 @@
 #pragma once
 
 #include "Timer.h"
-#include "DCSProtocol.h"
+#include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
-#include "DVLastFramePacket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define
@@ -82,7 +81,7 @@ protected:
 	bool IsValidRssiPacket(const CBuffer &, CCallsign *, int *);
 	bool IsValidDvHeaderPacket(const CBuffer &, std::unique_ptr<CDvHeaderPacket> &, uint8_t *, uint8_t *);
 	bool IsValidDvFramePacket(const CBuffer &, std::array<std::unique_ptr<CDvFramePacket>, 3> &);
-	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvLastFramePacket> &);
+	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
 
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer *, std::shared_ptr<CClient>);

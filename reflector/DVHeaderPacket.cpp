@@ -52,7 +52,7 @@ CDvHeaderPacket::CDvHeaderPacket(const struct dstar_header *buffer, uint16_t sid
 // dmr constructor
 
 CDvHeaderPacket::CDvHeaderPacket(uint32_t my, const CCallsign &ur, const CCallsign &rpt1, const CCallsign &rpt2, uint16_t sid, uint8_t pid, uint8_t spid)
-	: CPacket(sid, pid, spid)
+	: CPacket(sid, pid, spid, false)
 {
 	m_uiFlag1 = 0;
 	m_uiFlag2 = 0;
