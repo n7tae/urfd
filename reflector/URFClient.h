@@ -18,10 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 #include "Client.h"
-
-enum class EURFProtocol { original };
 
 class CURFClient : public CClient
 {
@@ -35,11 +32,11 @@ public:
 	virtual ~CURFClient() {};
 
 	// identity
-	EProtocol GetProtocol(void) const            { return EProtocol::urf; }
+	EProtocol GetProtocol(void) const         { return EProtocol::urf; }
 	EProtoRev GetProtocolRevision(void) const { return m_ProtRev; }
-	const char *GetProtocolName(void) const      { return "URF"; }
-	ECodecType GetCodec(void) const              { return ECodecType::none; };
-	bool IsPeer(void) const                      { return true; }
+	const char *GetProtocolName(void) const   { return "URF"; }
+	ECodecType GetCodec(void) const           { return ECodecType::none; }
+	bool IsPeer(void) const                   { return true; }
 
 	// status
 	bool IsAlive(void) const;

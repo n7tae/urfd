@@ -307,7 +307,7 @@ void CDplusProtocol::SendDvHeader(CDvHeaderPacket *packet, CDplusClient *client)
 			// clone the packet and patch it
 			CDvHeaderPacket packet2(*((CDvHeaderPacket *)packet));
 			CCallsign rpt2 = packet2.GetRpt2Callsign();
-			rpt2.PatchCallsign(0, (const uint8_t *)"XRF", 3);
+			rpt2.PatchCallsign(0, "XRF", 3);
 			packet2.SetRpt2Callsign(rpt2);
 
 			// encode it

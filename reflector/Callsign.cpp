@@ -243,7 +243,7 @@ void CCallsign::SetSuffix(const uint8_t *buffer, int len)
 ////////////////////////////////////////////////////////////////////////////////////////
 // modify
 
-void CCallsign::PatchCallsign(int off, const uint8_t *patch, int len)
+void CCallsign::PatchCallsign(int off, const char *patch, int len)
 {
 	if ( off < CALLSIGN_LEN )
 	{

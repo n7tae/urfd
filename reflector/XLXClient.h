@@ -18,26 +18,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 #include "Client.h"
-
-////////////////////////////////////////////////////////////////////////////////////////
-// define
-
-#define XLX_PROTOCOL_REVISION_0      0       // AMBE only, original connect mechanism
-#define XLX_PROTOCOL_REVISION_1      1       // AMBE only, revised connect mechanism
-#define XLX_PROTOCOL_REVISION_2      2       // Transcoded AMBE+AMBE2 interlink
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// class
 
 class CXlxClient : public CClient
 {
 public:
 	// constructors
 	CXlxClient();
-	CXlxClient(const CCallsign &, const CIp &, char = ' ', EProtoRev = EProtoRev::original);
+	CXlxClient(const CCallsign &, const CIp &, char = ' ', EProtoRev = EProtoRev::ambe);
 	CXlxClient(const CXlxClient &);
 
 	// destructor

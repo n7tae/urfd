@@ -107,7 +107,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdv
 // URF
 #define URF_PORT                        10017                               // UDP port
 #define URF_KEEPALIVE_PERIOD            1                                   // in seconds
-#define URF_KEEPALIVE_TIMEOUT           (XLX_KEEPALIVE_PERIOD*30)           // in seconds
+#define URF_KEEPALIVE_TIMEOUT           (URF_KEEPALIVE_PERIOD*30)           // in seconds
 #define URF_RECONNECT_PERIOD            5                                   // in seconds
 
 // DMRPlus (dongle)

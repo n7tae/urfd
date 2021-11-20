@@ -59,7 +59,7 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 
 	// update the reflector callsign
 	if (type)
-		m_ReflectorCallsign.PatchCallsign(0, (const uint8_t *)type, 3);
+		m_ReflectorCallsign.PatchCallsign(0, type, 3);
 
 	// create our sockets
 #ifdef LISTEN_IPV4

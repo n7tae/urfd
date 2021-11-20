@@ -53,7 +53,7 @@ public:
 	void SetSuffix(const uint8_t *, int);
 
 	// modify
-	void PatchCallsign(int, const uint8_t *, int);
+	void PatchCallsign(int, const char *, int);
 
 	// get
 	void GetCallsign(uint8_t *) const;

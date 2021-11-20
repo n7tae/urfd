@@ -43,7 +43,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, con
 	keep_running = true;
 
 	// update the reflector callsign
-	//m_ReflectorCallsign.PatchCallsign(0, (const uint8_t *)"XLX", 3);
+	//m_ReflectorCallsign.PatchCallsign(0, "XLX", 3);
 
 	// create our sockets
 	CIp ip(AF_INET, G3_DV_PORT, LISTEN_IPV4);

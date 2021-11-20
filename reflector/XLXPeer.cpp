@@ -60,15 +60,5 @@ bool CXlxPeer::IsAlive(void) const
 
 EProtoRev CXlxPeer::GetProtocolRevision(const CVersion &version)
 {
-	EProtoRev protrev = EProtoRev::original;
-
-	if ( version.IsEqualOrHigherTo(CVersion(2,2,0)) )
-	{
-		protrev = EProtoRev::ambe;
-	}
-	else if ( version.IsEqualOrHigherTo(CVersion(1,4,0)) )
-	{
-		protrev = EProtoRev::revised;
-	}
-	return protrev;
+	return EProtoRev::ambe;
 }
