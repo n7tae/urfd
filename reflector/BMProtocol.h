@@ -20,7 +20,7 @@
 
 #include "Version.h"
 #include "Timer.h"
-#include "DExtraProtocol.h"
+#include "Protocol.h"
 #include "Clients.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ class CPeer;
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CXlxProtocol : public CDextraProtocol
+class CBMProtocol : public CProtocol
 {
 public:
 	// initialization
@@ -50,16 +50,15 @@ protected:
 	// stream helpers
 	void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &);
 	void OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
-	void OnDvLastFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
 
 	// packet decoding helpers
+	bool IsValidDvHeaderPacket(const CBuffer &, std::unique_ptr<CDvHeaderPacket> &);
 	bool IsValidKeepAlivePacket(const CBuffer &, CCallsign *);
 	bool IsValidConnectPacket(const CBuffer &, CCallsign *, char *, CVersion *);
 	bool IsValidDisconnectPacket(const CBuffer &, CCallsign *);
 	bool IsValidAckPacket(const CBuffer &, CCallsign *, char *, CVersion *);
 	bool IsValidNackPacket(const CBuffer &, CCallsign *);
 	bool IsValidDvFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
-	bool IsValidDvLastFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
 
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer *);
@@ -69,10 +68,6 @@ protected:
 	void EncodeConnectNackPacket(CBuffer *);
 	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
 	bool EncodeDvLastFramePacket(const CDvFramePacket &, CBuffer *) const;
-
-	// protocol revision helper
-	EProtoRev GetConnectingPeerProtocolRevision(const CCallsign &, const CVersion &);
-	std::shared_ptr<CPeer>CreateNewPeer(const CCallsign &, const CIp &, char *, const CVersion &);
 
 protected:
 	// time

@@ -62,6 +62,7 @@ public:
 	uint8_t      GetYsfPacketFrameId(void) const { return m_uiYsfPacketFrameId; }
 	char         GetModule(void) const           { return m_cModule; }
 	bool         IsLocalOrigin(void) const       { return (m_uiOriginId == ORIGIN_LOCAL); }
+	bool         IsSecond(void) const            { return m_bIsSecond; }
 	ECodecType   GetCodecIn(void) const          { return m_eCodecIn; }
 
 	// set
@@ -74,6 +75,7 @@ protected:
 	// data
 	ECodecType m_eCodecIn;
 	bool       m_bLastPacket;
+	bool       m_bIsSecond;
 	char       m_cModule;
 	uint16_t   m_uiStreamId;
 	uint16_t   m_uiM17FrameNumber;

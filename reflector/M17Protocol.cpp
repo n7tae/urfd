@@ -73,7 +73,8 @@ void CM17Protocol::Task(void)
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
-				OnDvFramePacketIn((std::unique_ptr<CDvFramePacket> &)Frame, &Ip);
+				OnDvFramePacketIn(Frame, &Ip);
+				OnDvFramePacketIn(Frame, &Ip); // push two packet because we need a packet every 20 ms
 			}
 		}
 		else if ( IsValidConnectPacket(Buffer, Callsign, ToLinkModule) )
@@ -232,7 +233,7 @@ void CM17Protocol::HandleQueue(void)
 			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
 			m_StreamsCache[module].m_iSeqCounter = 0;
 		}
-		else
+		else if (packet->IsSecond() || packet->IsLastPacket())
 		{
 			// encode it
 			SM17Frame frame;

@@ -19,9 +19,8 @@
 #include <string.h>
 
 #include "Main.h"
-#include "XLXPeer.h"
 #include "BMPeer.h"
-#include "XLXProtocol.h"
+#include "BMProtocol.h"
 #include "Reflector.h"
 #include "GateKeeper.h"
 
@@ -29,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CXlxProtocol::Initialize(const char *type, EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CBMProtocol::Initialize(const char *type, EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
@@ -45,7 +44,7 @@ bool CXlxProtocol::Initialize(const char *type, EProtocol ptype, const uint16_t 
 ////////////////////////////////////////////////////////////////////////////////////////
 // task
 
-void CXlxProtocol::Task(void)
+void CBMProtocol::Task(void)
 {
 	CBuffer   Buffer;
 	CIp       Ip;
@@ -79,10 +78,6 @@ void CXlxProtocol::Task(void)
 				OnDvHeaderPacketIn(Header, Ip);
 			}
 		}
-		else if ( IsValidDvLastFramePacket(Buffer, Frame) )
-		{
-			OnDvLastFramePacketIn(Frame, &Ip);
-		}
 		else if ( IsValidConnectPacket(Buffer, &Callsign, Modules, &Version) )
 		{
 			std::cout << "XLX (" << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision() << ") connect packet for modules " << Modules << " from " << Callsign <<  " at " << Ip << std::endl;
@@ -90,32 +85,9 @@ void CXlxProtocol::Task(void)
 			// callsign authorized?
 			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::xlx, Modules) )
 			{
-				// acknowledge connecting request
-				// following is version dependent
-				switch ( GetConnectingPeerProtocolRevision(Callsign, Version) )
-				{
-				case EProtoRev::original:
-				{
-					// already connected ?
-					CPeers *peers = g_Reflector.GetPeers();
-					if ( peers->FindPeer(Callsign, Ip, EProtocol::xlx) == nullptr )
-					{
-						// acknowledge the request
-						EncodeConnectAckPacket(&Buffer, Modules);
-						Send(Buffer, Ip);
-					}
-					g_Reflector.ReleasePeers();
-
-				}
-				break;
-				case EProtoRev::revised:
-				case EProtoRev::ambe:
-				default:
-					// acknowledge the request
-					EncodeConnectAckPacket(&Buffer, Modules);
-					Send(Buffer, Ip);
-					break;
-				}
+				// acknowledge the request
+				EncodeConnectAckPacket(&Buffer, Modules);
+				Send(Buffer, Ip);
 			}
 			else
 			{
@@ -137,7 +109,7 @@ void CXlxProtocol::Task(void)
 				{
 					// create the new peer
 					// this also create one client per module
-					std::shared_ptr<CPeer>peer = CreateNewPeer(Callsign, Ip, Modules, Version);
+					std::shared_ptr<CPeer>peer = std::make_shared<CBmPeer>(Callsign, Ip, Modules, Version);
 
 					// append the peer to reflector peer list
 					// this also add all new clients to reflector client list
@@ -218,7 +190,7 @@ void CXlxProtocol::Task(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // queue helper
 
-void CXlxProtocol::HandleQueue(void)
+void CBMProtocol::HandleQueue(void)
 {
 	m_Queue.Lock();
 	while ( !m_Queue.empty() )
@@ -285,7 +257,7 @@ void CXlxProtocol::HandleQueue(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // keepalive helpers
 
-void CXlxProtocol::HandleKeepalives(void)
+void CBMProtocol::HandleKeepalives(void)
 {
 	// DExtra protocol sends and monitors keepalives packets
 	// event if the client is currently streaming
@@ -327,7 +299,7 @@ void CXlxProtocol::HandleKeepalives(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // Peers helpers
 
-void CXlxProtocol::HandlePeerLinks(void)
+void CBMProtocol::HandlePeerLinks(void)
 {
 	CBuffer buffer;
 
@@ -378,7 +350,7 @@ void CXlxProtocol::HandlePeerLinks(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 // streams helpers
 
-void CXlxProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
+void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
 {
 	CCallsign peer;
 
@@ -423,29 +395,32 @@ void CXlxProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 	}
 }
 
-void CXlxProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, const CIp *Ip)
+void CBMProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, const CIp *Ip)
 {
 	// tag packet as remote peer origin
 	DvFrame->SetRemotePeerOrigin();
 
 	// anc call base class
-	CDextraProtocol::OnDvFramePacketIn(DvFrame, Ip);
+	CProtocol::OnDvFramePacketIn(DvFrame, Ip);
 }
-
-void CXlxProtocol::OnDvLastFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, const CIp *Ip)
-{
-	// tag packet as remote peer origin
-	DvFrame->SetRemotePeerOrigin();
-
-	// anc call base class
-	CDextraProtocol::OnDvFramePacketIn(DvFrame, Ip);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet decoding helpers
 
-bool CXlxProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CBMProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header)
+{
+	if ( 56==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x10U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
+	{
+		// create packet
+		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket((struct dstar_header *)&(Buffer.data()[15]), *((uint16_t *)&(Buffer.data()[12])), 0x80));
+		// check validity of packet
+		if ( header && header->IsValid() )
+			return true;
+	}
+	return false;
+}
+
+bool CBMProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
 	if (Buffer.size() == 9)
@@ -457,7 +432,7 @@ bool CXlxProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *call
 }
 
 
-bool CXlxProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
+bool CBMProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
 	bool valid = false;
 	if ((Buffer.size() == 39) && (Buffer.data()[0] == 'L') && (Buffer.data()[38] == 0))
@@ -474,7 +449,7 @@ bool CXlxProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 	return valid;
 }
 
-bool CXlxProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CBMProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
 	if ((Buffer.size() == 10) && (Buffer.data()[0] == 'U') && (Buffer.data()[9] == 0))
@@ -485,7 +460,7 @@ bool CXlxProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *cal
 	return valid;
 }
 
-bool CXlxProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
+bool CBMProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
 	bool valid = false;
 	if ((Buffer.size() == 39) && (Buffer.data()[0] == 'A') && (Buffer.data()[38] == 0))
@@ -502,7 +477,7 @@ bool CXlxProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, 
 	return valid;
 }
 
-bool CXlxProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CBMProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
 	if ((Buffer.size() == 10) && (Buffer.data()[0] == 'N') && (Buffer.data()[9] == 0))
@@ -513,14 +488,9 @@ bool CXlxProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
 	return valid;
 }
 
-bool CXlxProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
+bool CBMProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	// base class first (protocol revision 1 and lower)
-	if (CDextraProtocol::IsValidDvFramePacket(Buffer, dvframe))
-		return true;
-
-	// otherwise try protocol revision 2
-	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && 0==(Buffer.data()[14] & 0x40) )
+	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] )
 	{
 		// create packet
 		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(
@@ -530,33 +500,7 @@ bool CXlxProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<C
 			Buffer.data()[14], &(Buffer.data()[15]), &(Buffer.data()[24]),
 			// dmr
 			Buffer.data()[27], Buffer.data()[28], &(Buffer.data()[29]), &(Buffer.data()[38]),
-			ECodecType::dmr, false));
-
-		// check validity of packet
-		if ( dvframe && dvframe->IsValid() )
-			return true;
-	}
-	return false;
-}
-
-bool CXlxProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
-{
-	// base class first (protocol revision 1 and lower)
-	if (CDextraProtocol::IsValidDvFramePacket(Buffer, dvframe))
-		return true;
-
-	// otherwise try protocol revision 2
-	if ( 45==Buffer.size() && 0==Buffer.Compare((uint8_t *)"DSVT", 4) && 0x20U==Buffer.data()[4] && 0x20U==Buffer.data()[8] && (Buffer.data()[14] & 0x40U) )
-	{
-		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(
-			// sid
-			*((uint16_t *)&(Buffer.data()[12])),
-			// dstar
-			Buffer.data()[14], &(Buffer.data()[15]), &(Buffer.data()[24]),
-			// dmr
-			Buffer.data()[27], Buffer.data()[28], &(Buffer.data()[29]), &(Buffer.data()[38]),
-			ECodecType::dmr, true));
+			ECodecType::dmr, 0x40U==(Buffer.data()[14] & 0x40U)));
 
 		// check validity of packet
 		if ( dvframe && dvframe->IsValid() )
@@ -568,12 +512,12 @@ bool CXlxProtocol::IsValidDvLastFramePacket(const CBuffer &Buffer, std::unique_p
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet encoding helpers
 
-void CXlxProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
+void CBMProtocol::EncodeKeepAlivePacket(CBuffer *Buffer)
 {
 	Buffer->Set(GetReflectorCallsign());
 }
 
-void CXlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
+void CBMProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 {
 	uint8_t tag[] = { 'L' };
 
@@ -591,7 +535,7 @@ void CXlxProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->resize(39);
 }
 
-void CXlxProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
+void CBMProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 {
 	uint8_t tag[] = { 'U' };
 
@@ -603,7 +547,7 @@ void CXlxProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 	Buffer->Append((uint8_t)0);
 }
 
-void CXlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
+void CBMProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 {
 	uint8_t tag[] = { 'A' };
 
@@ -621,7 +565,7 @@ void CXlxProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->resize(39);
 }
 
-void CXlxProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
+void CBMProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 {
 	uint8_t tag[] = { 'N' };
 
@@ -633,7 +577,7 @@ void CXlxProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 	Buffer->Append((uint8_t)0);
 }
 
-bool CXlxProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CBMProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
@@ -652,7 +596,7 @@ bool CXlxProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Bu
 
 }
 
-bool CXlxProtocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CBMProtocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
 	uint8_t tag[]         = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	uint8_t dstarambe[]   = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00 };
@@ -671,39 +615,4 @@ bool CXlxProtocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer
 	Buffer->Append((uint8_t *)Packet.GetDvSync(), 7);
 
 	return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// protocol revision helper
-
-EProtoRev CXlxProtocol::GetConnectingPeerProtocolRevision(const CCallsign &Callsign, const CVersion &Version)
-{
-	EProtoRev protrev;
-
-	// BM ?
-	if ( Callsign.HasSameCallsignWithWildcard(CCallsign("BM*")) )
-	{
-		protrev = CBmPeer::GetProtocolRevision(Version);
-	}
-	// otherwise, assume native xlx
-	else
-	{
-		protrev = CXlxPeer::GetProtocolRevision(Version);
-	}
-
-	// done
-	return protrev;
-}
-
-std::shared_ptr<CPeer> CXlxProtocol::CreateNewPeer(const CCallsign &Callsign, const CIp &Ip, char *Modules, const CVersion &Version)
-{
-	// BM ?
-	if ( Callsign.HasSameCallsignWithWildcard(CCallsign("BM*")) )
-	{
-		return std::make_shared<CBmPeer>(Callsign, Ip, Modules, Version);
-	}
-	else
-	{
-		return std::make_shared<CXlxPeer>(Callsign, Ip, Modules, Version);
-	}
 }

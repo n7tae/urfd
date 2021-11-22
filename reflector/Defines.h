@@ -23,7 +23,6 @@ enum class ECodecType { none, dstar, dmr, c2_1600, c2_3200 };
 using STCPacket = struct tcpacket_tag {
 	char module;
 	bool is_last_packet;
-	bool has_valid_m17;
 	uint16_t streamid;
 	ECodecType codec_in;
 	uint8_t dstar[9];

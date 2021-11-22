@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Client.h"
-#include "XLXClient.h"
 
 class CBmClient : public CClient
 {

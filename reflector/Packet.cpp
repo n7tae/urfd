@@ -162,4 +162,7 @@ void CPacket::UpdatePids(const uint32_t pid)
 		// frames are every 20 milliseconds, so the m17 data will come every 40 milliseconds
 		m_uiM17FrameNumber = (pid % 2) % 0x7FFFU;
 	}
+
+	// set the Is Second member used for M17 clients
+	m_bIsSecond = (1 == pid % 2);
 }

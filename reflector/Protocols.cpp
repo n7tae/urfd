@@ -25,6 +25,7 @@
 #include "DMRMMDVMProtocol.h"
 #include "YSFProtocol.h"
 #include "M17Protocol.h"
+#include "BMProtocol.h"
 #ifndef NO_G3
 #include "G3Protocol.h"
 #endif
@@ -61,6 +62,10 @@ bool CProtocols::Init(void)
 		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::dmrmmdvm, DMRMMDVM_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
 
+		m_Protocols.emplace_back(std::unique_ptr<CBMProtocol>(new CBMProtocol));
+		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::xlx, XLX_PORT, DMR_IPV4, DMR_IPV6))
+			return false;
+
 		m_Protocols.emplace_back(std::unique_ptr<CDmrplusProtocol>(new CDmrplusProtocol));
 		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::dmrplus, DMRPLUS_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
@@ -69,12 +74,12 @@ bool CProtocols::Init(void)
 		if (! m_Protocols.back()->Initialize("YSF", EProtocol::ysf, YSF_PORT, YSF_IPV4, YSF_IPV6))
 			return false;
 
-		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));
-		if (! m_Protocols.back()->Initialize("URF", EProtocol::urf, URF_PORT, URF_IPV4, URF_IPV6))
-			return false;
-
 		m_Protocols.emplace_back(std::unique_ptr<CM17Protocol>(new CM17Protocol));
 		if (! m_Protocols.back()->Initialize("URF", EProtocol::m17, M17_PORT, M17_IPV4, M17_IPV6))
+			return false;
+
+		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));
+		if (! m_Protocols.back()->Initialize("URF", EProtocol::urf, URF_PORT, URF_IPV4, URF_IPV6))
 			return false;
 
 #ifndef NO_G3
