@@ -242,19 +242,11 @@ void CDcsProtocol::HandleQueue(void)
 			CBuffer buffer;
 			if ( packet->IsLastPacket() )
 			{
-				EncodeDvLastPacket(
-					m_StreamsCache[module].m_dvHeader,
-					(const CDvFramePacket &)*packet.get(),
-					m_StreamsCache[module].m_iSeqCounter++,
-					&buffer);
+				EncodeLastDCSPacket(m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++, &buffer);
 			}
 			else if ( packet->IsDvFrame() )
 			{
-				EncodeDvPacket(
-					m_StreamsCache[module].m_dvHeader,
-					(const CDvFramePacket &)*packet.get(),
-					m_StreamsCache[module].m_iSeqCounter++,
-					&buffer);
+				EncodeDCSPacket(m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++, &buffer);
 			}
 
 			// send it
@@ -461,7 +453,7 @@ void CDcsProtocol::EncodeDisconnectPacket(CBuffer *Buffer, std::shared_ptr<CClie
 	Buffer->Append((uint8_t)0x00);
 }
 
-void CDcsProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer *Buffer) const
+void CDcsProtocol::EncodeDCSPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { '0','0','0','1' };
 	struct dstar_header DstarHeader;
@@ -481,8 +473,8 @@ void CDcsProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFrameP
 	Buffer->Append((uint8_t)0x00, 38);
 }
 
-void CDcsProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer *Buffer) const
+void CDcsProtocol::EncodeLastDCSPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer *Buffer) const
 {
-	EncodeDvPacket(Header, DvFrame, iSeq, Buffer);
+	EncodeDCSPacket(Header, DvFrame, iSeq, Buffer);
 	(Buffer->data())[45] |= 0x40;
 }

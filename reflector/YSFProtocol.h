@@ -92,9 +92,9 @@ protected:
 	void EncodeConnectAckPacket(CBuffer *) const;
 	//void EncodeConnectNackPacket(const CCallsign &, char, CBuffer *);
 	//void EncodeDisconnectPacket(CBuffer *, std::shared_ptr<CClient>);
-	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
-	bool EncodeDvPacket(const CDvHeaderPacket &, const CDvFramePacket *, CBuffer *) const;
-	bool EncodeDvLastPacket(const CDvHeaderPacket &, CBuffer *) const;
+	bool EncodeYSFHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
+	bool EncodeYSFPacket(const CDvHeaderPacket &, const CDvFramePacket *, CBuffer *) const;
+	bool EncodeLastYSFPacket(const CDvHeaderPacket &, CBuffer *) const;
 
 	// Wires-X packet decoding helpers
 	bool IsValidwirexPacket(const CBuffer &, CYSFFICH *, CCallsign *, int *, int*);

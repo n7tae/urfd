@@ -1,3 +1,5 @@
+#pragma once
+
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
@@ -15,8 +17,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-#pragma once
 
 #include "UDPSocket.h"
 #include "PacketStream.h"
@@ -83,13 +83,7 @@ public:
 	virtual void Task(void) = 0;
 
 protected:
-	// packet encoding helpers
-	virtual bool EncodeDvPacket(const CPacket &, CBuffer *) const;
-	virtual bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const         { return false; }
-	virtual bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const           { return false; }
-
 	// stream helpers
-	virtual void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &) {}
 	virtual void OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &, const CIp * = nullptr);
 
 	// stream handle helpers

@@ -241,7 +241,7 @@ void CDmrplusProtocol::HandleQueue(void)
 			m_StreamsCache[mod].m_uiSeqId = 4;
 
 			// encode it
-			EncodeDvHeaderPacket((const CDvHeaderPacket &)*packet.get(), &buffer);
+			EncodeDMRPlusHeaderPacket((const CDvHeaderPacket &)*packet.get(), &buffer);
 		}
 		else
 		{
@@ -255,13 +255,7 @@ void CDmrplusProtocol::HandleQueue(void)
 				m_StreamsCache[mod].m_dvFrame1 = CDvFramePacket((const CDvFramePacket &)*packet.get());
 				break;
 			case 3:
-				EncodeDvPacket(
-					m_StreamsCache[mod].m_dvHeader,
-					m_StreamsCache[mod].m_dvFrame0,
-					m_StreamsCache[mod].m_dvFrame1,
-					(const CDvFramePacket &)*packet.get(),
-					m_StreamsCache[mod].m_uiSeqId,
-					&buffer);
+				EncodeDMRPlusPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_dvFrame0, m_StreamsCache[mod].m_dvFrame1, (const CDvFramePacket &)*packet.get(), m_StreamsCache[mod].m_uiSeqId, &buffer);
 				m_StreamsCache[mod].m_uiSeqId = GetNextSeqId(m_StreamsCache[mod].m_uiSeqId);
 				break;
 			default:
@@ -516,11 +510,9 @@ void CDmrplusProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 	Buffer->Set(tag, sizeof(tag));
 }
 
-bool CDmrplusProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
+bool CDmrplusProtocol::EncodeDMRPlusHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
 {
-	uint8_t tag[]	= { 0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x02,
-					0x00,0x05,0x01,0x02,0x00,0x00,0x00
-				  } ;
+	uint8_t tag[]	= { 0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x02,0x00,0x05,0x01,0x02,0x00,0x00,0x00 };
 	Buffer->Set(tag, sizeof(tag));
 
 	// uiSeqId
@@ -563,10 +555,7 @@ bool CDmrplusProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuff
 	return true;
 }
 
-void CDmrplusProtocol::EncodeDvPacket
-(const CDvHeaderPacket &Header,
- const CDvFramePacket &DvFrame0, const CDvFramePacket &DvFrame1, const CDvFramePacket &DvFrame2,
- uint8_t seqid, CBuffer *Buffer) const
+void CDmrplusProtocol::EncodeDMRPlusPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame0, const CDvFramePacket &DvFrame1, const CDvFramePacket &DvFrame2, uint8_t seqid, CBuffer *Buffer) const
 {
 
 	uint8_t tag[]	= { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,

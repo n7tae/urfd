@@ -20,7 +20,7 @@
 
 #include "Version.h"
 #include "Timer.h"
-#include "Protocol.h"
+#include "SEProtocol.h"
 #include "Clients.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ class CPeer;
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CBMProtocol : public CProtocol
+class CBMProtocol : public CSEProtocol
 {
 public:
 	// initialization
@@ -66,6 +66,7 @@ protected:
 	void EncodeDisconnectPacket(CBuffer *);
 	void EncodeConnectAckPacket(CBuffer *, const char *);
 	void EncodeConnectNackPacket(CBuffer *);
+	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
 	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
 	bool EncodeDvLastFramePacket(const CDvFramePacket &, CBuffer *) const;
 

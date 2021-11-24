@@ -368,14 +368,14 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 			m_StreamsCache[mod].m_uiSeqId = 0;
 
 			// encode it
-			EncodeDvHeaderPacket((CDvHeaderPacket &)*packet.get(), m_StreamsCache[mod].m_uiSeqId, &buffer);
+			EncodeMMDVMHeaderPacket((CDvHeaderPacket &)*packet.get(), m_StreamsCache[mod].m_uiSeqId, &buffer);
 			m_StreamsCache[mod].m_uiSeqId = 1;
 		}
 		// check if it's a last frame
 		else if ( packet->IsLastPacket() )
 		{
 			// encode it
-			EncodeDvLastPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_uiSeqId, &buffer);
+			EncodeLastMMDVMPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_uiSeqId, &buffer);
 			m_StreamsCache[mod].m_uiSeqId = (m_StreamsCache[mod].m_uiSeqId + 1) & 0xFF;
 		}
 		// otherwise, just a regular DV frame
@@ -391,13 +391,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 				m_StreamsCache[mod].m_dvFrame1 = CDvFramePacket((const CDvFramePacket &)*packet.get());
 				break;
 			case 3:
-				EncodeDvPacket(
-					m_StreamsCache[mod].m_dvHeader,
-					m_StreamsCache[mod].m_dvFrame0,
-					m_StreamsCache[mod].m_dvFrame1,
-					(const CDvFramePacket &)*packet.get(),
-					m_StreamsCache[mod].m_uiSeqId,
-					&buffer);
+				EncodeMMDVMPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_dvFrame0, m_StreamsCache[mod].m_dvFrame1, (const CDvFramePacket &)*packet.get(), m_StreamsCache[mod].m_uiSeqId, &buffer);
 				m_StreamsCache[mod].m_uiSeqId = (m_StreamsCache[mod].m_uiSeqId + 1) & 0xFF;
 				break;
 			default:
@@ -820,7 +814,7 @@ void CDmrmmdvmProtocol::EncodeClosePacket(CBuffer *Buffer, std::shared_ptr<CClie
 }
 
 
-bool CDmrmmdvmProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, uint8_t seqid, CBuffer *Buffer) const
+bool CDmrmmdvmProtocol::EncodeMMDVMHeaderPacket(const CDvHeaderPacket &Packet, uint8_t seqid, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'D','M','R','D' };
 
@@ -861,10 +855,7 @@ bool CDmrmmdvmProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, uint
 	return true;
 }
 
-void CDmrmmdvmProtocol::EncodeDvPacket(
-	const CDvHeaderPacket &Header,
-	const CDvFramePacket &DvFrame0, const CDvFramePacket &DvFrame1, const CDvFramePacket &DvFrame2,
-	uint8_t seqid, CBuffer *Buffer) const
+void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame0, const CDvFramePacket &DvFrame1, const CDvFramePacket &DvFrame2, uint8_t seqid, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'D','M','R','D' };
 	Buffer->Set(tag, sizeof(tag));
@@ -927,7 +918,7 @@ void CDmrmmdvmProtocol::EncodeDvPacket(
 }
 
 
-void CDmrmmdvmProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Packet, uint8_t seqid, CBuffer *Buffer) const
+void CDmrmmdvmProtocol::EncodeLastMMDVMPacket(const CDvHeaderPacket &Packet, uint8_t seqid, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'D','M','R','D' };
 

@@ -572,6 +572,21 @@ void CBMProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 	Buffer->Append((uint8_t)0);
 }
 
+bool CBMProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
+{
+	uint8_t tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
+	struct dstar_header DstarHeader;
+
+	Packet.ConvertToDstarStruct(&DstarHeader);
+
+	Buffer->Set(tag, sizeof(tag));
+	Buffer->Append(Packet.GetStreamId());
+	Buffer->Append((uint8_t)0x80);
+	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
+
+	return true;
+}
+
 bool CBMProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };

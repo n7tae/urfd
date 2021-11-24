@@ -70,8 +70,8 @@ protected:
 	void EncodeConnectAckPacket(const CCallsign &, char, CBuffer *);
 	void EncodeConnectNackPacket(const CCallsign &, char, CBuffer *);
 	void EncodeDisconnectPacket(CBuffer *, std::shared_ptr<CClient>);
-	void EncodeDvPacket(const CDvHeaderPacket &, const CDvFramePacket &, uint32_t, CBuffer *) const;
-	void EncodeDvLastPacket(const CDvHeaderPacket &, const CDvFramePacket &, uint32_t, CBuffer *) const;
+	void EncodeDCSPacket(const CDvHeaderPacket &, const CDvFramePacket &, uint32_t, CBuffer *) const;
+	void EncodeLastDCSPacket(const CDvHeaderPacket &, const CDvFramePacket &, uint32_t, CBuffer *) const;
 
 protected:
 	// for keep alive

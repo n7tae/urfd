@@ -20,12 +20,12 @@
 
 #include "Version.h"
 #include "Timer.h"
-#include "Protocol.h"
+#include "SEProtocol.h"
 #include "Clients.h"
 
 class CPeer;
 
-class CURFProtocol : public CProtocol
+class CURFProtocol : public CSEProtocol
 {
 public:
 	// initialization

@@ -20,11 +20,10 @@
 
 // Origin Id
 
-#define ORIGIN_LOCAL    0
-#define ORIGIN_PEER     1
-
 #include "Defines.h"
 #include "M17Packet.h"
+
+enum class EOrigin { local, peer };
 
 class CPacket
 {
@@ -61,19 +60,20 @@ public:
 	uint8_t      GetYsfPacketSubId(void) const   { return m_uiYsfPacketSubId; }
 	uint8_t      GetYsfPacketFrameId(void) const { return m_uiYsfPacketFrameId; }
 	char         GetModule(void) const           { return m_cModule; }
-	bool         IsLocalOrigin(void) const       { return (m_uiOriginId == ORIGIN_LOCAL); }
+	bool         IsLocalOrigin(void) const       { return (m_eOrigin == EOrigin::local); }
 	bool         IsSecond(void) const            { return m_bIsSecond; }
 	ECodecType   GetCodecIn(void) const          { return m_eCodecIn; }
 
 	// set
 	void UpdatePids(const uint32_t);
 	void SetModule(char cMod)      { m_cModule = cMod; }
-	void SetLocalOrigin(void)      { m_uiOriginId = ORIGIN_LOCAL; }
-	void SetRemotePeerOrigin(void) { m_uiOriginId = ORIGIN_PEER; }
+	void SetLocalOrigin(void)      { m_eOrigin = EOrigin::local; }
+	void SetRemotePeerOrigin(void) { m_eOrigin = EOrigin::peer; }
 
 protected:
 	// data
 	ECodecType m_eCodecIn;
+	EOrigin    m_eOrigin;
 	bool       m_bLastPacket;
 	bool       m_bIsSecond;
 	char       m_cModule;
@@ -85,5 +85,4 @@ protected:
 	uint8_t    m_uiYsfPacketId;
 	uint8_t    m_uiYsfPacketSubId;
 	uint8_t    m_uiYsfPacketFrameId;
-	uint8_t    m_uiOriginId;
 };

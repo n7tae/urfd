@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Timer.h"
-#include "Protocol.h"
+#include "SEProtocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
 
@@ -47,7 +47,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CDextraProtocol : public CProtocol
+class CDextraProtocol : public CSEProtocol
 {
 public:
 	// initialization

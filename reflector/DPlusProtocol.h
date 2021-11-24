@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Timer.h"
-#include "Protocol.h"
+#include "SEProtocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
 
@@ -34,7 +34,7 @@ public:
 	uint8_t         m_iSeqCounter;
 };
 
-class CDplusProtocol : public CProtocol
+class CDplusProtocol : public CSEProtocol
 {
 public:
 	// initialization

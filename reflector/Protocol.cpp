@@ -125,21 +125,6 @@ void CProtocol::Close(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// packet encoding helpers
-
-bool CProtocol::EncodeDvPacket(const CPacket &packet, CBuffer *buffer) const
-{
-	if ( packet.IsDvFrame() )
-		return EncodeDvFramePacket((CDvFramePacket &)packet, buffer);
-
-	if ( packet.IsDvHeader() )
-		return EncodeDvHeaderPacket((CDvHeaderPacket &)packet, buffer);
-
-	std::cerr << "Can't encode an unknown packet type!" << std::endl;
-	return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
 // streams helpers
 
 void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const CIp *Ip)

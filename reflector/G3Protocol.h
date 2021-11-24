@@ -20,7 +20,7 @@
 
 #include <string>
 #include "Timer.h"
-#include "Protocol.h"
+#include "SEProtocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
 #include "RawSocket.h"
@@ -52,7 +52,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CG3Protocol : public CProtocol
+class CG3Protocol : public CSEProtocol
 {
 public:
 	// constructor

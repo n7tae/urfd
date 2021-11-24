@@ -35,7 +35,7 @@ CPacket::CPacket()
 	m_uiYsfPacketFrameId = 0;
 	m_uiM17FrameNumber = 0;
 	m_cModule = ' ';
-	m_uiOriginId = ORIGIN_LOCAL;
+	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::none;
 	m_bLastPacket = false;
 };
@@ -53,7 +53,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 	m_uiYsfPacketFrameId = 0xFF;
 	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
-	m_uiOriginId = ORIGIN_LOCAL;
+	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dstar;
 	m_bLastPacket = (0x40U == (dstarpid & 0x40U));
 };
@@ -71,7 +71,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid, bool lastpacket)
 	m_uiYsfPacketFrameId = 0xFF;
 	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
-	m_uiOriginId = ORIGIN_LOCAL;
+	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
 	m_bLastPacket = lastpacket;
 };
@@ -89,7 +89,7 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_uiDmrPacketSubid = 0xFF;
 	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
-	m_uiOriginId = ORIGIN_LOCAL;
+	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
 	m_bLastPacket = lastpacket;
 }
@@ -107,7 +107,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 	m_uiYsfPacketFrameId = ysffrid;
 	m_uiM17FrameNumber = 0x8000U;
 	m_cModule = ' ';
-	m_uiOriginId = ORIGIN_LOCAL;
+	m_eOrigin = EOrigin::local;
 	m_eCodecIn = codecIn;
 	m_bLastPacket = lastpacket;
 }

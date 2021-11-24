@@ -395,7 +395,7 @@ void CURFProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, c
 	DvFrame->SetRemotePeerOrigin();
 
 	// and call base class
-	OnDvFramePacketIn(DvFrame, Ip);
+	CProtocol::OnDvFramePacketIn(DvFrame, Ip);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

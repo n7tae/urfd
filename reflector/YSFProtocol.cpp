@@ -295,13 +295,13 @@ void CYsfProtocol::HandleQueue(void)
 			m_StreamsCache[mod].m_dvHeader = CDvHeaderPacket((CDvHeaderPacket &)*packet.get());
 
 			// encode it
-			EncodeDvHeaderPacket((CDvHeaderPacket &)*packet.get(), &buffer);
+			EncodeYSFHeaderPacket((CDvHeaderPacket &)*packet.get(), &buffer);
 		}
 		// check if it's a last frame
 		else if ( packet->IsLastPacket() )
 		{
 			// encode it
-			EncodeDvLastPacket(m_StreamsCache[mod].m_dvHeader, &buffer);
+			EncodeLastYSFPacket(m_StreamsCache[mod].m_dvHeader, &buffer);
 		}
 		// otherwise, just a regular DV frame
 		else
@@ -315,7 +315,7 @@ void CYsfProtocol::HandleQueue(void)
 				if ( sid == 4 )
 				{
 
-					EncodeDvPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_dvFrames, &buffer);
+					EncodeYSFPacket(m_StreamsCache[mod].m_dvHeader, m_StreamsCache[mod].m_dvFrames, &buffer);
 				}
 			}
 		}
@@ -522,7 +522,7 @@ void CYsfProtocol::EncodeConnectAckPacket(CBuffer *Buffer) const
 	Buffer->Set(tag, sizeof(tag));
 }
 
-bool CYsfProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Header, CBuffer *Buffer) const
+bool CYsfProtocol::EncodeYSFHeaderPacket(const CDvHeaderPacket &Header, CBuffer *Buffer) const
 {
 	uint8_t tag[]  = { 'Y','S','F','D' };
 	uint8_t dest[] = { 'A','L','L',' ',' ',' ',' ',' ',' ',' ' };
@@ -577,7 +577,7 @@ bool CYsfProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Header, CBuffer *
 	return true;
 }
 
-bool CYsfProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFramePacket *DvFrames, CBuffer *Buffer) const
+bool CYsfProtocol::EncodeYSFPacket(const CDvHeaderPacket &Header, const CDvFramePacket *DvFrames, CBuffer *Buffer) const
 {
 	uint8_t tag[]  = { 'Y','S','F','D' };
 	uint8_t dest[] = { 'A','L','L',' ',' ',' ',' ',' ',' ',' ' };
@@ -669,7 +669,7 @@ bool CYsfProtocol::EncodeDvPacket(const CDvHeaderPacket &Header, const CDvFrameP
 	return true;
 }
 
-bool CYsfProtocol::EncodeDvLastPacket(const CDvHeaderPacket &Header, CBuffer *Buffer) const
+bool CYsfProtocol::EncodeLastYSFPacket(const CDvHeaderPacket &Header, CBuffer *Buffer) const
 {
 	uint8_t tag[]  = { 'Y','S','F','D' };
 	uint8_t dest[] = { 'A','L','L',' ',' ',' ',' ',' ',' ',' ' };

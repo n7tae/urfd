@@ -240,11 +240,11 @@ void CM17Protocol::HandleQueue(void)
 			memcpy(frame.magic, "M17 ", 4);
 			if ( packet->IsLastPacket() )
 			{
-				EncodeDvLastPacket(frame, m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+				EncodeLastM17Packet(frame, m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
 			}
 			else if ( packet->IsDvFrame() )
 			{
-				EncodeDvPacket(frame, m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
 			}
 
 			// push it to all our clients linked to the module and who are not streaming in
@@ -385,7 +385,7 @@ void CM17Protocol::EncodeKeepAlivePacket(CBuffer &Buffer)
 	g_Reflector.GetCallsign().CodeOut(Buffer.data() + 4);
 }
 
-void CM17Protocol::EncodeDvPacket(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
+void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
 {
 	ECodecType codec_in = Header.GetCodecIn();  // We'll need this
 
@@ -410,8 +410,8 @@ void CM17Protocol::EncodeDvPacket(SM17Frame &frame, const CDvHeaderPacket &Heade
 	frame.crc = htons(m17crc.CalcCRC(frame.magic, sizeof(SM17Frame)-2));
 }
 
-void CM17Protocol::EncodeDvLastPacket(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
+void CM17Protocol::EncodeLastM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
 {
-	EncodeDvPacket(frame, Header, DvFrame, iSeq);
+	EncodeM17Packet(frame, Header, DvFrame, iSeq);
 	frame.framenumber |= 0x8000U;
 }

@@ -74,8 +74,8 @@ protected:
 	// packet encoding helpers
 	void EncodeConnectAckPacket(CBuffer *);
 	void EncodeConnectNackPacket(CBuffer *);
-	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
-	void EncodeDvPacket(const CDvHeaderPacket &, const CDvFramePacket &, const CDvFramePacket &, const CDvFramePacket &, uint8_t, CBuffer *) const;
+	bool EncodeDMRPlusHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
+	void EncodeDMRPlusPacket(const CDvHeaderPacket &, const CDvFramePacket &, const CDvFramePacket &, const CDvFramePacket &, uint8_t, CBuffer *) const;
 	void SwapEndianess(uint8_t *, int) const;
 
 	// dmr SeqId helper
