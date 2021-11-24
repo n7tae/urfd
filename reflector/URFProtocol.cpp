@@ -87,7 +87,7 @@ void CURFProtocol::Task(void)
 			{
 				// acknowledge connecting request
 				// following is version dependent
-				if (EProtoRev::urf == CURFPeer::GetProtocolRevision(Version))
+				if (EProtoRev::original == CURFPeer::GetProtocolRevision(Version))
 				{
 					// already connected ?
 					CPeers *peers = g_Reflector.GetPeers();
@@ -235,7 +235,7 @@ void CURFProtocol::HandleQueue(void)
 					{
 						// no, send the packet
 						// this is protocol revision dependent
-						if (EProtoRev::urf == client->GetProtocolRevision())
+						if (EProtoRev::original == client->GetProtocolRevision())
 						{
 							Send(buffer, client->GetIp());
 						}
@@ -376,7 +376,7 @@ void CURFProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
-				m_Streams.push_back(stream);
+				m_Streams[stream->GetStreamId()] = stream;
 			}
 			// get origin
 			peer = client->GetCallsign();

@@ -24,7 +24,7 @@
 #include "Buffer.h"
 #include "Packet.h"
 
-enum class EProtoRev { original, revised, ambe, urf };
+enum class EProtoRev { original, revised, ambe };
 
 class CClient
 {

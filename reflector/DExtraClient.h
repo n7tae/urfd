@@ -32,15 +32,15 @@ class CDextraClient : public CClient
 public:
 	// constructors
 	CDextraClient();
-	CDextraClient(const CCallsign &, const CIp &, char = ' ', int = 0);
-	CDextraClient(const CDextraClient &);
+	CDextraClient(const CCallsign &, const CIp &, char, EProtoRev);
+//	CDextraClient(const CDextraClient &);
 
 	// destructor
 	virtual ~CDextraClient() {};
 
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::dextra; }
-	int GetProtocolRevision(void) const         { return m_ProtRev; }
+	EProtoRev GetProtocolRevision(void) const   { return m_ProtRev; }
 	const char *GetProtocolName(void) const     { return "DExtra"; }
 	ECodecType GetCodec(void) const             { return ECodecType::dstar; }
 	bool IsNode(void) const                     { return true; }
@@ -50,5 +50,5 @@ public:
 
 protected:
 	// data
-	int     m_ProtRev;
+	EProtoRev m_ProtRev;
 };

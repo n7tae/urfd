@@ -225,6 +225,3 @@ extern CYsfNodeDirHttp   g_YsfNodeDir;
 class CYsfNodeDirFile;
 extern CYsfNodeDirFile   g_YsfNodeDir;
 #endif
-
-class CTranscoder;
-extern CTranscoder g_Transcoder;

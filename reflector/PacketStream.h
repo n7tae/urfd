@@ -21,7 +21,8 @@
 #include "PacketQueue.h"
 #include "Timer.h"
 #include "DVHeaderPacket.h"
-#include "Transcoder.h"
+#include "UnixDgramSocket.h"
+#include "CodecStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,8 +31,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
-
-#include "UnixDgramSocket.h"
 
 class CPacketStream : public CPacketQueue
 {

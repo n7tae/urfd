@@ -166,21 +166,18 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 
 std::shared_ptr<CPacketStream> CProtocol::GetStream(uint16_t uiStreamId, const CIp *Ip)
 {
-	for ( auto it=m_Streams.begin(); it!=m_Streams.end(); it++ )
+	auto it = m_Streams.find(uiStreamId);
+	if (it == m_Streams.end())
+		return nullptr;
+
+	if (it->second->GetOwnerIp() != nullptr)
 	{
-		if ( (*it)->GetStreamId() == uiStreamId )
+		if (*Ip == *it->second->GetOwnerIp())
 		{
-			// if Ip not nullptr, also check if IP match
-			if ( (Ip != nullptr) && ((*it)->GetOwnerIp() != nullptr) )
-			{
-				if ( *Ip == *((*it)->GetOwnerIp()) )
-				{
-					return *it;
-				}
-			}
+			return it->second;
 		}
 	}
-	// done
+
 	return nullptr;
 }
 
@@ -189,18 +186,19 @@ void CProtocol::CheckStreamsTimeout(void)
 	for ( auto it=m_Streams.begin(); it!=m_Streams.end(); )
 	{
 		// time out ?
-		(*it)->Lock();
-		if ( (*it)->IsExpired() )
+		it->second->Lock();
+		if ( it->second->IsExpired() )
 		{
 			// yes, close it
-			(*it)->Unlock();
-			g_Reflector.CloseStream(*it);
-			// and remove it
+			it->second->Unlock();
+			g_Reflector.CloseStream(it->second);
+			// and remove it from the m_Streams map
 			it = m_Streams.erase(it);
 		}
 		else
 		{
-			(*it++)->Unlock();
+			it->second->Unlock();
+			it++;
 		}
 	}
 }

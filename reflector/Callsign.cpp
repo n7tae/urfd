@@ -24,8 +24,7 @@
 #include "Callsign.h"
 
 // if a client is using special characters ',', '-' or '/', he's out of luck!
-//#define M17CHARACTERS " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/."
-#define M17CHARACTERS " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+#define M17CHARACTERS " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/."
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructors

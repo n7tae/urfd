@@ -59,5 +59,5 @@ bool CURFPeer::IsAlive(void) const
 
 EProtoRev CURFPeer::GetProtocolRevision(const CVersion &/*version*/)
 {
-	return EProtoRev::urf;
+	return EProtoRev::original;
 }

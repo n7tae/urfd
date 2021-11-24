@@ -40,8 +40,8 @@ CDextraPeer::CDextraPeer(const CCallsign &callsign, const CIp &ip, const char *m
 	// and construct the DExtra clients
 	for ( unsigned i = 0; i < ::strlen(modules); i++ )
 	{
-		// create and append to vector
-		m_Clients.push_back(std::make_shared<CDextraClient>(callsign, ip, modules[i], version.GetMajor()));
+		// create and append to list
+		m_Clients.push_back(std::make_shared<CDextraClient>(callsign, ip, modules[i], EProtoRev::ambe));
 	}
 }
 

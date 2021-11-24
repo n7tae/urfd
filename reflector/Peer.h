@@ -47,7 +47,7 @@ public:
 
 	// identity
 	virtual EProtocol GetProtocol(void) const           { return EProtocol::none; }
-	virtual int GetProtocolRevision(void) const         { return 0; }
+	virtual EProtoRev GetProtocolRevision(void) const   { return EProtoRev::original; }
 	virtual const char *GetProtocolName(void) const     { return "NONE"; }
 
 	// status

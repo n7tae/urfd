@@ -125,7 +125,7 @@ protected:
 	CUdpSocket m_Socket6;
 
 	// streams
-	std::list<std::shared_ptr<CPacketStream>> m_Streams;
+	std::unordered_map<uint16_t, std::shared_ptr<CPacketStream>> m_Streams;
 
 	// queue
 	CPacketQueue    m_Queue;

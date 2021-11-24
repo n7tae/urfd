@@ -40,7 +40,7 @@
 //      the protocol is detected by looking at "XRF" in connect packet callsign
 //      the protocol require a specific connect ack packet
 //      the protocol also implement a workaround for detecting stream's module
-//          as dxrfd soes not set DV header RPT2 properly.
+//          as dxrfd does not set DV header RPT2 properly.
 //      the protocol assumes that a dxrfd can only be linked to one module at a time
 
 
@@ -68,7 +68,7 @@ protected:
 	void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &);
 
 	// packet decoding helpers
-	bool IsValidConnectPacket(    const CBuffer &, CCallsign *, char *, int *);
+	bool IsValidConnectPacket(    const CBuffer &, CCallsign &, char &, EProtoRev &);
 	bool IsValidDisconnectPacket( const CBuffer &, CCallsign *);
 	bool IsValidKeepAlivePacket(  const CBuffer &, CCallsign *);
 	bool IsValidDvHeaderPacket(   const CBuffer &, std::unique_ptr<CDvHeaderPacket> &);
@@ -77,7 +77,7 @@ protected:
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer *);
 	void EncodeConnectPacket(CBuffer *, const char *);
-	void EncodeConnectAckPacket(CBuffer *, int);
+	void EncodeConnectAckPacket(CBuffer *, EProtoRev);
 	void EncodeConnectNackPacket(CBuffer *);
 	void EncodeDisconnectPacket(CBuffer *, char);
 	void EncodeDisconnectedPacket(CBuffer *);

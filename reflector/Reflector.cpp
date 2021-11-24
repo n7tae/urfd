@@ -22,7 +22,6 @@
 #include "GateKeeper.h"
 #include "DMRIdDirFile.h"
 #include "DMRIdDirHttp.h"
-#include "Transcoder.h"
 #include "YSFNodeDirFile.h"
 #include "YSFNodeDirHttp.h"
 
@@ -76,12 +75,6 @@ bool CReflector::Start(void)
 
 	// init wiresx node directory. Likewise with the return vale.
 	g_YsfNodeDir.Init();
-
-#ifdef TRANSCODER_IP
-	// init the transcoder
-	if (! g_Transcoder.Init())
-		return false;
-#endif
 
 	// create protocols
 	if (! m_Protocols.Init())
@@ -143,11 +136,6 @@ void CReflector::Stop(void)
 
 	// close gatekeeper
 	g_GateKeeper.Close();
-
-#ifdef TRANSCODER_IP
-	// close transcoder
-	g_Transcoder.Close();
-#endif
 
 	// close databases
 	g_DmridDir.Close();
@@ -441,6 +429,7 @@ void CReflector::JsonReportThread()
 		std::cout << "Error creating monitor socket" << std::endl;
 	}
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // notifications
@@ -489,7 +478,6 @@ void CReflector::OnStreamClose(const CCallsign &callsign)
 	m_Notifications.push(notification);
 	m_Notifications.Unlock();
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // modules & queues

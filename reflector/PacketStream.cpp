@@ -53,7 +53,7 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_LastPacketTime.start();
 #ifdef TRANSCODED_MODULES
 		if (std::string::npos != std::string(TRANSCODED_MODULES).find(DvHeader.GetRpt2Module()))
-			m_CodecStream = std::make_shared<CCodecStream>(this, client->GetCodec(), m_TCReader);
+			m_CodecStream = std::make_shared<CCodecStream>(this, m_uiStreamId, client->GetCodec(), m_TCReader);
 #endif
 		ok = true;
 	}
@@ -67,7 +67,6 @@ void CPacketStream::ClosePacketStream(void)
 	m_uiStreamId = 0;
 	m_OwnerClient = nullptr;
 #ifdef TRANSCODED_MODULES
-	g_Transcoder.ReleaseStream(m_CodecStream);
 	m_CodecStream = nullptr;
 #endif
 }

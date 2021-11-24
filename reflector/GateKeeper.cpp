@@ -98,7 +98,7 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 		break;
 
 	// XLX interlinks
-	case EProtocol::ulx:
+	case EProtocol::urf:
 		ok &= IsPeerListedOk(callsign, ip, modules);
 		break;
 
@@ -143,7 +143,7 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EP
 		break;
 
 	// XLX interlinks
-	case EProtocol::ulx:
+	case EProtocol::urf:
 		ok = ok && IsPeerListedOk(callsign, ip, module);
 		break;
 
@@ -280,8 +280,8 @@ const std::string CGateKeeper::ProtocolName(const EProtocol p) const
 			return "MMDVM DMR";
 		case EProtocol::dmrplus:
 			return "DMR+";
-		case EProtocol::ulx:
-			return "ULX";
+		case EProtocol::urf:
+			return "URF";
 		case EProtocol::ysf:
 			return "YSF";
 #ifndef NO_G3

@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
-bool CBMProtocol::Initialize(const char *type, EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+bool CBMProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
@@ -234,15 +234,10 @@ void CBMProtocol::HandleQueue(void)
 						case EProtoRev::ambe:
 						default:
 #ifdef TRANSCODED_MODULES
-							if ( g_Transcoder.IsConnected() )
-							{
-								Send(buffer, client->GetIp());
-							}
-							else
+							Send(buffer, client->GetIp());
+#else
+							Send(bufferLegacy, client->GetIp());
 #endif
-							{
-								Send(bufferLegacy, client->GetIp());
-							}
 							break;
 						}
 					}
@@ -382,7 +377,7 @@ void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
-				m_Streams.push_back(stream);
+				m_Streams[stream->GetStreamId()] = stream;
 			}
 			// get origin
 			peer = client->GetCallsign();

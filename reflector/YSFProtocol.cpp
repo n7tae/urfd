@@ -254,7 +254,7 @@ void CYsfProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
-				m_Streams.push_back(stream);
+				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release

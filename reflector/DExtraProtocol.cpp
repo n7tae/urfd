@@ -51,7 +51,7 @@ void CDextraProtocol::Task(void)
 	CIp                 Ip;
 	CCallsign           Callsign;
 	char                ToLinkModule;
-	int                 ProtRev;
+	EProtoRev           ProtRev;
 	std::unique_ptr<CDvHeaderPacket>    Header;
 	std::unique_ptr<CDvFramePacket>     Frame;
 
@@ -79,9 +79,23 @@ void CDextraProtocol::Task(void)
 				OnDvHeaderPacketIn(Header, Ip);
 			}
 		}
-		else if ( IsValidConnectPacket(Buffer, &Callsign, &ToLinkModule, &ProtRev) )
+		else if ( IsValidConnectPacket(Buffer, Callsign, ToLinkModule, ProtRev) )
 		{
-			std::cout << "DExtra connect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << " rev " << ProtRev << std::endl;
+			std::cout << "DExtra connect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << " rev ";
+			switch (ProtRev) {
+				case EProtoRev::original:
+					std::cout << "Original" << std::endl;
+					break;
+				case EProtoRev::revised:
+					std::cout << "Revised" << std::endl;
+					break;
+				case EProtoRev::ambe:
+					std::cout << "AMBE" << std::endl;
+					break;
+				default:
+					std::cout << "UNEXPECTED Revision" << std::endl;
+					break;
+			}
 
 			// callsign authorized?
 			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dextra) )
@@ -419,7 +433,7 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
-				m_Streams.push_back(stream);
+				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
@@ -434,28 +448,27 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet decoding helpers
 
-bool CDextraProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *reflectormodule, int *revision)
+bool CDextraProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign &callsign, char &module, EProtoRev &protrev)
 {
 	bool valid = false;
 	if ((Buffer.size() == 11) && (Buffer.data()[9] != ' '))
 	{
-		callsign->SetCallsign(Buffer.data(), 8);
-		callsign->SetModule(Buffer.data()[8]);
-		*reflectormodule = Buffer.data()[9];
-		*revision = (Buffer.data()[10] == 11) ? 1 : 0;
-		valid = (callsign->IsValid() && IsLetter(*reflectormodule));
+		callsign.SetCallsign(Buffer.data(), 8);
+		callsign.SetModule(Buffer.data()[8]);
+		module = Buffer.data()[9];
+		valid = (callsign.IsValid() && IsLetter(module));
 		// detect revision
 		if ( (Buffer.data()[10] == 11) )
 		{
-			*revision = 1;
+			protrev = EProtoRev::revised;
 		}
-		else if ( callsign->HasSameCallsignWithWildcard(CCallsign("XRF*")) )
+		else if ( callsign.HasSameCallsignWithWildcard(CCallsign("XRF*")) )
 		{
-			*revision = 2;
+			protrev = EProtoRev::ambe;
 		}
 		else
 		{
-			*revision = 0;
+			EProtoRev::original;
 		}
 	}
 	return valid;
@@ -529,10 +542,10 @@ void CDextraProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->Append((uint8_t)0);
 }
 
-void CDextraProtocol::EncodeConnectAckPacket(CBuffer *Buffer, int ProtRev)
+void CDextraProtocol::EncodeConnectAckPacket(CBuffer *Buffer, EProtoRev ProtRev)
 {
 	// is it for a XRF or repeater
-	if ( ProtRev == 2 )
+	if ( ProtRev == EProtoRev::ambe )
 	{
 		// XRFxxx
 		uint8_t rm = (Buffer->data())[8];

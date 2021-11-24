@@ -25,20 +25,20 @@
 
 CDextraClient::CDextraClient()
 {
-	m_ProtRev = 0;
+	m_ProtRev = EProtoRev::ambe;
 }
 
-CDextraClient::CDextraClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, int protRev)
+CDextraClient::CDextraClient(const CCallsign &callsign, const CIp &ip, char reflectorModule, EProtoRev protRev)
 	: CClient(callsign, ip, reflectorModule)
 {
 	m_ProtRev = protRev;
 }
 
-CDextraClient::CDextraClient(const CDextraClient &client)
-	: CClient(client)
-{
-	m_ProtRev = client.m_ProtRev;
-}
+//CDextraClient::CDextraClient(const CDextraClient &client)
+//	: CClient(client)
+//{
+//	m_ProtRev = client.m_ProtRev;
+//}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // status

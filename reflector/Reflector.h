@@ -24,9 +24,6 @@
 #include "Protocols.h"
 #include "PacketStream.h"
 #include "NotificationQueue.h"
-#ifdef TRANSCODED_MODULES
-//#include "UnixDgramSocket.h"
-#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +79,7 @@ public:
 	bool IsValidModule(char c) const                { return m_Modules.npos!=m_Modules.find(c); }
 
 	// notifications
+
 	void OnPeersChanged(void);
 	void OnClientsChanged(void);
 	void OnUsersChanged(void);
@@ -137,9 +135,9 @@ protected:
 	std::future<void> m_XmlReportFuture;
 #ifdef JSON_MONITOR
 	std::future<void> m_JsonReportFuture;
+#endif
 	// notifications
 	CNotificationQueue  m_Notifications;
-#endif
 
 public:
 #ifdef DEBUG_DUMPFILE

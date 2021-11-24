@@ -36,23 +36,21 @@ endif
 
 LDFLAGS=-pthread
 
-XRFSRCS = Buffer.cpp Callsign.cpp CallsignList.cpp CallsignListItem.cpp Client.cpp Clients.cpp DCSClient.cpp DCSProtocol.cpp DExtraClient.cpp DExtraPeer.cpp DExtraProtocol.cpp DPlusClient.cpp DPlusProtocol.cpp DVFramePacket.cpp DVHeaderPacket.cpp DVLastFramePacket.cpp GateKeeper.cpp IP.cpp Notification.cpp Packet.cpp PacketStream.cpp PeerCallsignList.cpp Peer.cpp Peers.cpp Protocol.cpp Protocols.cpp Reflector.cpp UDPSocket.cpp User.cpp Users.cpp Version.cpp Main.cpp
-XLXSRCS = BMClient.cpp BMPeer.cpp BPTC19696.cpp CRC.cpp DMRIdDir.cpp DMRIdDirFile.cpp DMRIdDirHttp.cpp DMRMMDVMClient.cpp DMRMMDVMProtocol.cpp DMRPlusClient.cpp DMRPlusProtocol.cpp Golay2087.cpp Golay24128.cpp Hamming.cpp QR1676.cpp RS129.cpp Semaphore.cpp Utils.cpp WiresXCmd.cpp WiresXCmdHandler.cpp WiresXInfo.cpp XLXClient.cpp XLXProtocol.cpp XLXPeer.cpp YSFClient.cpp YSFConvolution.cpp YSFFich.cpp YSFNode.cpp YSFNodeDir.cpp YSFNodeDirFile.cpp YSFNodeDirHttp.cpp YSFPayload.cpp YSFProtocol.cpp YSFUtils.cpp
+XRFSRCS = Buffer.cpp Callsign.cpp CallsignList.cpp CallsignListItem.cpp Client.cpp Clients.cpp DCSClient.cpp DCSProtocol.cpp DExtraClient.cpp DExtraPeer.cpp DExtraProtocol.cpp DPlusClient.cpp DPlusProtocol.cpp DVFramePacket.cpp DVHeaderPacket.cpp GateKeeper.cpp IP.cpp M17Client.cpp M17CRC.cpp M17Packet.cpp M17Client.cpp Notification.cpp Packet.cpp PacketStream.cpp PeerCallsignList.cpp Peer.cpp Peers.cpp Protocol.cpp Protocols.cpp Reflector.cpp UDPSocket.cpp User.cpp Users.cpp Version.cpp Main.cpp
+XLXSRCS = BMClient.cpp BMPeer.cpp BPTC19696.cpp CRC.cpp DMRIdDir.cpp DMRIdDirFile.cpp DMRIdDirHttp.cpp DMRMMDVMClient.cpp DMRMMDVMProtocol.cpp DMRPlusClient.cpp DMRPlusProtocol.cpp Golay2087.cpp Golay24128.cpp Hamming.cpp QR1676.cpp RS129.cpp Semaphore.cpp Utils.cpp WiresXCmd.cpp WiresXCmdHandler.cpp WiresXInfo.cpp URFClient.cpp URFProtocol.cpp URFPeer.cpp YSFClient.cpp YSFConvolution.cpp YSFFich.cpp YSFNode.cpp YSFNodeDir.cpp YSFNodeDirFile.cpp YSFNodeDirHttp.cpp YSFPayload.cpp YSFProtocol.cpp YSFUtils.cpp
 G3SRCS = G3Client.cpp G3Protocol.cpp RawSocket.cpp UDPMsgSocket.cpp
 
-SRCS = $(XRFSRCS)
+SRCS = $(XRFSRCS) $(XLXSRCS)
+ifeq ($(use_g3), true)
+SRCS += $(G3SRCS)
+endif
 
-SRCS += $(XLXSRCS)
 ifeq ($(ysf_db), true)
 LDFLAGS += `mysql_config --libs`
 endif
 
 ifdef need_tc
-SRCS += CodecStream.cpp
-endif
-
-ifeq ($(use_g3), true)
-SRCS += $(G3SRCS)
+SRCS += CodecStream.cpp UnixDgramSocket.cpp
 endif
 
 OBJS = $(SRCS:.cpp=.o)
