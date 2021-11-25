@@ -20,9 +20,7 @@
 #include <string.h>
 #include "DVFramePacket.h"
 
-////////////////////////////////////////////////////////////////////////////////////////
-// constructor
-
+// default constructor
 CDvFramePacket::CDvFramePacket()
 {
 	memset(m_TCPack.dstar, 0, 9);
@@ -35,7 +33,6 @@ CDvFramePacket::CDvFramePacket()
 };
 
 // dstar constructor
-
 CDvFramePacket::CDvFramePacket(const SDStarFrame *dvframe, uint16_t sid, uint8_t pid)
 	: CPacket(sid, pid)
 {
@@ -49,7 +46,6 @@ CDvFramePacket::CDvFramePacket(const SDStarFrame *dvframe, uint16_t sid, uint8_t
 }
 
 // dmr constructor
-
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid, bool islast)
 	: CPacket(sid, pid, spid, islast)
 {
@@ -63,7 +59,6 @@ CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_
 }
 
 // ysf constructor
-
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid, bool islast)
 	: CPacket(sid, pid, spid, fid, islast)
 {
@@ -76,12 +71,9 @@ CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, u
 	m_TCPack.codec_in = ECodecType::dmr;
 }
 
-// xlx constructor
-
+// bm constructor
 CDvFramePacket::CDvFramePacket
-(uint16_t sid,
- uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata,
- uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType codecInType, bool islast)
+(uint16_t sid, uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata, uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType codecInType, bool islast)
 	: CPacket(sid, dstarpid, dmrpid, dprspid, 0xFF, 0xFF, 0xFF, codecInType, islast)
 {
 	::memcpy(m_TCPack.dstar, dstarambe, 9);
@@ -91,22 +83,7 @@ CDvFramePacket::CDvFramePacket
 	m_TCPack.codec_in = codecInType;
 }
 
-// urf constructor
-
-CDvFramePacket::CDvFramePacket
-(uint16_t sid,
- uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata,
- uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType codecInType, const uint8_t *codec2, const uint8_t * nonce, bool islast)
-	: CPacket(sid, dstarpid, dmrpid, dprspid, 0xFF, 0xFF, 0xFF, codecInType, islast)
-{
-	memcpy(m_TCPack.dstar, dstarambe, 9);
-	memcpy(m_uiDvData, dstardvdata, 3);
-	memcpy(m_TCPack.dmr, dmrambe, 9);
-	memcpy(m_uiDvSync, dmrsync, 7);
-	memcpy(m_TCPack.m17, codec2, 16);
-	memcpy(m_Nonce, nonce, 14);
-	m_TCPack.codec_in = codecInType;
-}
+// m17 constructor
 
 CDvFramePacket::CDvFramePacket(const CM17Packet &m17) : CPacket(m17)
 {

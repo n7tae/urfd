@@ -20,7 +20,7 @@
 
 // Origin Id
 
-#include "Defines.h"
+#include "TCPacketDef.h"
 #include "M17Packet.h"
 
 enum class EOrigin { local, peer };

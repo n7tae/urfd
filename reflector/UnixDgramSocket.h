@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <sys/un.h>
 
-#include "Defines.h"
+#include "TCPacketDef.h"
 
 class CUnixDgramReader
 {

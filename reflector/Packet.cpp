@@ -19,11 +19,7 @@
 #include "Main.h"
 #include "Packet.h"
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// constructor
-
+// default constructor
 CPacket::CPacket()
 {
 	m_uiStreamId = 0;
@@ -41,7 +37,6 @@ CPacket::CPacket()
 };
 
 // dstar contrsuctor
-
 CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 {
 	m_uiStreamId = sid;
@@ -59,7 +54,6 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 };
 
 // dmr constructor
-
 CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid, bool lastpacket)
 {
 	m_uiStreamId = sid;
@@ -77,7 +71,6 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid, bool lastpacket)
 };
 
 // ysf constructor
-
 CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, bool lastpacket)
 {
 	m_uiStreamId = sid;
@@ -94,8 +87,7 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_bLastPacket = lastpacket;
 }
 
-// xlx  constructor
-
+// bm  constructor
 CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, ECodecType codecIn, bool lastpacket)
 {
 	m_uiStreamId = sid;
@@ -113,7 +105,6 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 }
 
 // m17 constructor
-
 CPacket::CPacket(const CM17Packet &m17) : CPacket()
 {
 	m_uiStreamId = m17.GetStreamId();

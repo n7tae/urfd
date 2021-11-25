@@ -18,12 +18,10 @@
 
 #include <cstdint>
 
-enum class ECodecType { none, dstar, dmr, c2_1600, c2_3200 };
+enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4 };
 
 using STCPacket = struct tcpacket_tag {
 	char module;
-	bool is_last_packet;
-	uint16_t streamid;
 	ECodecType codec_in;
 	uint8_t dstar[9];
 	uint8_t dmr[9];
