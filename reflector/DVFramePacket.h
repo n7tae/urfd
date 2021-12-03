@@ -67,8 +67,8 @@ public:
 
 	// set
 	void SetDvData(const uint8_t *);
-	void SetCodecData(ECodecType, const uint8_t *);
 	void SetCodecData(const STCPacket *pack);
+	void SetTCParams(void);
 
 	// operators
 	bool operator ==(const CDvFramePacket &) const;

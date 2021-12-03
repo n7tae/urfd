@@ -62,7 +62,7 @@ CCodecStream::~CCodecStream()
 
 bool CCodecStream::Init()
 {
-	m_TCWriter.SetUp("ReftoTC");
+	m_TCWriter.SetUp(REF2TC);
 	keep_running = true;
 	m_Future = std::async(std::launch::async, &CCodecStream::Thread, this);
 
@@ -128,9 +128,13 @@ void CCodecStream::Task(void)
 		m_fPingSum += ping;
 		m_fPingCount += 1;
 
-		// pop the original packet
-		if ( !m_LocalQueue.empty() )
+		if ( m_LocalQueue.empty() )
 		{
+			std::cout << "Unexpected transcoded packet received from transcoder" << std::endl;
+		}
+		else
+		{
+			// pop the original packet
 			auto Packet = m_LocalQueue.pop();
 			auto Frame = (CDvFramePacket *)Packet.get();
 			// todo: check the PID
@@ -148,10 +152,6 @@ void CCodecStream::Task(void)
 			m_PacketStream->push(Packet);
 			m_PacketStream->Unlock();
 		}
-		else
-		{
-			std::cout << "Unexpected transcoded packet received from transcoder" << std::endl;
-		}
 	}
 
 	// anything in our queue
@@ -159,9 +159,14 @@ void CCodecStream::Task(void)
 	{
 		// yes, pop it from queue
 		auto Packet = pop();
+
+		// we need a CDvFramePacket pointer to access Frame stuff
 		auto Frame = (CDvFramePacket *)Packet.get();
 
-		// yes, send to transcoder
+		// update important stuff in Frame->m_TCPack for the transcoder
+		Frame->SetTCParams();
+
+		// now send to transcoder
 		// this assume that thread pushing the Packet
 		// have verified that the CodecStream is connected
 		// and that the packet needs transcoding

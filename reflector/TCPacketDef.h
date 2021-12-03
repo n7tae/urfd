@@ -18,10 +18,15 @@
 
 #include <cstdint>
 
+#define TC2REF "TC2URFMod"
+#define REF2TC "URF2TC"
+
 enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4 };
 
 using STCPacket = struct tcpacket_tag {
 	char module;
+	bool is_second, is_last;
+	uint16_t streamid;
 	ECodecType codec_in;
 	uint8_t dstar[9];
 	uint8_t dmr[9];

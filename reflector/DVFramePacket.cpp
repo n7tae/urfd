@@ -142,30 +142,17 @@ void CDvFramePacket::SetDvData(const uint8_t *DvData)
 	memcpy(m_uiDvData, DvData, 3);
 }
 
-void CDvFramePacket::SetCodecData(ECodecType type, const uint8_t *data)
-{
-	switch (type)
-	{
-	case ECodecType::dstar:
-		memcpy(m_TCPack.dstar, data, 9);
-		break;
-	case ECodecType::dmr:
-		memcpy(m_TCPack.dmr, data, 3);
-		break;
-	case ECodecType::c2_1600:
-		memcpy(m_TCPack.m17, data, 8);
-		break;
-	case ECodecType::c2_3200:
-		memcpy(m_TCPack.m17, data, 16);
-		break;
-	}
-}
-
 void CDvFramePacket::SetCodecData(const STCPacket *pack)
 {
 	memcpy(&m_TCPack, pack, sizeof(STCPacket));
 }
 
+void CDvFramePacket::SetTCParams()
+{
+	m_TCPack.streamid = m_uiStreamId;
+	m_TCPack.is_second = m_bIsSecond;
+	m_TCPack.is_last = m_bLastPacket;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operators
