@@ -37,15 +37,9 @@ public:
 
 	// initialization
 	bool Init();
-	void Close(void);
 
 	// get
 	uint16_t GetStreamId(void) const          { return m_uiStreamId; }
-	double   GetPingMin(void) const           { return m_fPingMin; }
-	double   GetPingMax(void) const           { return m_fPingMax; }
-	double   GetPingAve(void) const           { return (m_fPingCount != 0) ? m_fPingSum/m_fPingCount : 0; }
-	uint32_t GetTotalPackets(void) const      { return m_uiTotalPackets; }
-	uint32_t GetTimeoutPackets(void) const    { return m_uiTimeoutPackets; }
 	bool     IsEmpty(void) const;
 
 	// task
