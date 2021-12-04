@@ -89,18 +89,17 @@ void CCodecStream::Thread()
 	// display stats
 	if (m_fPingMin >= 0.0)
 	{
-		char sz[64];
 		double min = m_fPingMin * 1000.0;
 		double max = m_fPingMax * 1000.0;
 		double ave = (m_fPingCount > 0) ? m_fPingSum / m_fPingCount * 1000.0 : 0.0;
-		sprintf(sz, "ambed stats (ms) : %.1f/%.1f/%.1f", min, ave, max);
-		std::cout << sz << std::endl;
+		auto prec = std::cout.precision();
+		std::cout.precision(1);
+		std::cout << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
+		std::cout.precision(prec);
 	}
 	if (m_uiTimeoutPackets)
 	{
-		char sz[64];
-		sprintf(sz, "ambed %d of %d packets timed out", m_uiTimeoutPackets, m_uiTotalPackets);
-		std::cout << sz << std::endl;
+		std::cout << m_uiTimeoutPackets << " of " << m_uiTotalPackets << " packets timed out" << std::endl;
 	}
 }
 

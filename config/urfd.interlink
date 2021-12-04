@@ -1,0 +1,16 @@
+##############################################################################
+#  URFD interlink file
+#
+#  one line per entry
+#  each entry specifies a remote XLX or XRF to peer with
+#  format:
+#    <URF callsign> <ip> <list of modules shared>
+#    <XRF callsign> <ip> <local module><remote module>
+#  example:
+#    URF270 158.64.26.132 ACD
+#    XRF270 158.64.26.132 BB
+#
+#  note: the remote XLX must list this XLX in its interlink file
+#        for the link to be established
+#
+#############################################################################
