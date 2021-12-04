@@ -35,7 +35,7 @@ CReflector  g_Reflector;
 int main()
 {
 	const std::string cs(CALLSIGN);
-	if ((cs.size() != 6) || (cs.compare(0, 3, "XLX") && cs.compare(0, 3, "XRF")))
+	if ((cs.size() != 6) || cs.compare(0, 3, "URF"))
 	{
 		std::cerr << "Malformed reflector callsign: '" << cs << "', aborting!" << std::endl;
 		return EXIT_FAILURE;
@@ -47,7 +47,7 @@ int main()
 	// splash
 	std::cout << "Starting " << cs << " " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_REVISION << std::endl << std::endl;
 
-#ifdef TRANSCODER_IP
+#ifdef TRANSCODER_IS_REMOTE
 	g_Reflector.SetTranscoderIp(TRANSCODER_IP, INET6_ADDRSTRLEN);
 #endif
 
