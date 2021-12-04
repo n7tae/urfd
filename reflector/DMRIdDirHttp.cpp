@@ -115,7 +115,7 @@ bool CDmridDirHttp::HttpGet(const char *hostname, const char *filename, int port
 			{
 				// send the GET request
 				char request[DMRID_HTTPGET_SIZEMAX];
-				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: xlxd\r\n\r\n",
+				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n",
 						  filename, (const char *)g_Reflector.GetCallsign());
 				::write(sock_id, request, strlen(request));
 

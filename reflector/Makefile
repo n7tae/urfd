@@ -24,7 +24,7 @@ include configure.mk
 # in the main.h file as well as the systemd service file.
 BINDIR = /usr/local/bin
 CFGDIR = /usr/local/etc
-DATADIR = /var/lib/xlxd
+DATADIR = /var/lib/urfd
 
 CC = g++
 

@@ -272,8 +272,7 @@ tcdh='../tcd/configure.h'
 tcdm='../tcd/configure.mk'
 ysfs='wiresx/configure.php'
 dbcr='configure.sql'
-xlxserv='/etc/systemd/system/xlxd.service'
-xrfserv='/etc/systemd/system/xrfd.service'
+urfserv='/etc/systemd/system/urfd.service'
 # default values
 callsign_d='CHNGME'
 modules_d='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -303,9 +302,9 @@ else
 fi
 
 if [ -z ${expertmode+x} ]; then
-	if [ -e $xlxserv ] || [ -e $xrfserv ]; then
+	if [ -e $urfserv ]; then
 		echo -n "You cannot change the configuration right now beacuse there is an "
-		if [ -e $xlxserv ]; then
+		if [ -e $urfserv ]; then
 			echo "XLX server running."
 		else
 			echo "XRF server running."

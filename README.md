@@ -8,7 +8,7 @@ This will build **either** a new kind of XLX reflector **or** a tri-mode XRF ref
 
 This is an improved version of the multi-protocol Reflector. Nearly all std::vector containers have been replaced with std::list containers. This is a better choice for any collection where it is common to delete elements that are not at the end of the collection. Also in this package, no classes are derived from any standard containers. Because standard containers don't have a virtual destructor, derriving from them is ill-advised and while the original XLX server worked using such derivations, it represents a possible serious problem when considering future development. Also, the clean-up routines designed to be executed when shutting down were unreachable as designed and this has been fixed. Servers built on this code will shutdown gracefully in a few seconds. In original version, long sleep times in certain threads were preventing a polite systemd shutdown and this has been fixed. The C++ warning flag, -W has been turned on and a significant number of warning have been fixed. For thread management, the standard thread (std::thread) library calls have been replaced with std::future. Futures don't need static functions and this elimintates the need for passing *this* pointers to the thead. All heap memory is now managed with smart pointers, so all calls to *delete* have been removed.
 
-Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Also, by default, ambed and xlxd or xrfd are built without gdb support. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding XLX reflector or tri-mode XRF reflector.
+Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Also, by default, ambed and urfd or xrfd are built without gdb support. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding XLX reflector or tri-mode XRF reflector.
 
 ## Usage
 
@@ -44,8 +44,8 @@ sudo apt install php-mysql mariadb-server mariadb-client
 ### Download the repository and enter the directory
 
 ```bash
-git clone https://github.com/n7tae/new-xlxd.git
-cd new-xlxd
+git clone https://github.com/n7tae/new-urfd.git
+cd new-urfd
 ```
 
 ### Create and edit your blacklist, whitelist and linking files
@@ -53,19 +53,19 @@ cd new-xlxd
 If you are building an XLX reflector:
 
 ```bash
-cp ../config/xlxd.blacklist .
-cp ../config/xlxd.whitelist .
-cp ../config/xlxd.interlink .
-cp ../config/xlxd.terminal .
+cp ../config/urfd.blacklist .
+cp ../config/urfd.whitelist .
+cp ../config/urfd.interlink .
+cp ../config/urfd.terminal .
 ```
 
 If you are building an XRF reflector (please note the name changes, especially for the interlink file):
 
 ```bash
-cp ../config/xlxd.blacklist xrfd.blacklist
-cp ../config/xlxd.whitelist xrfd.whitelist
-cp ../config/xlxd.interlink xrfd.interlink
-cp ../config/xlxd.terminal xrfd.terminal
+cp ../config/urfd.blacklist xrfd.blacklist
+cp ../config/urfd.whitelist xrfd.whitelist
+cp ../config/urfd.interlink xrfd.interlink
+cp ../config/urfd.terminal xrfd.terminal
 ```
 
 If you are not going to support G3 linking, you don't need to copy the .terminal file. Use your favorite editor to modify each of these files. If you want a totally open network, the blacklist and whitelist files are ready to go. The blacklist determine which callsigns can't use the reflector. The whitelist determines which callsigns can use the reflector. The interlink file sets up the XLX<--->XLX inter-linking and/or out-going XRF peer linking.
@@ -99,7 +99,7 @@ Use this command to compile and install your system. It can also be used to unin
 ### Stoping and starting the services manually
 
 ```bash
-sudo systemctl stop xlxd # (or xrfd)
+sudo systemctl stop urfd # (or xrfd)
 sudo systemctl stop ambed
 ```
 
@@ -110,7 +110,7 @@ You can start each component by replacing `stop` with `start`, or you can restar
 There are two supplied, one for XRF systems and one for XLX systems.
 
 ```bash
-sudo cp -r ~/xlxd/dashboard.xlx /var/www/db     # or dashboard.xrf
+sudo cp -r ~/urfd/dashboard.xlx /var/www/db     # or dashboard.xrf
 ```
 
 Please note that your www root directory might be some place else. There is one file that needs configuration. Edit the copied files, not the ones from the repository:
@@ -123,7 +123,7 @@ If you have configured support of hot-spot frequency registation, recursively co
 sudo mysql < configure.sql
 ```
 
-## Updating xlxd and ambed
+## Updating urfd and ambed
 
 Updating can be performed entirely in the radmin script, but just in case there is a new version of the radmin script, you can start first with a simple `git pull`. If any .h or .cpp fiiles have updates, you can then start radmin and do a clean and compile and then uninstall and install: `cl, co, us, is`. Follow that with a `rl` to watch the reflector log, or an `rt` to watch the transcoder while it comes up.
 
