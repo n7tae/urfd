@@ -1,0 +1,406 @@
+#!/bin/bash
+#
+# Copyright (c) 2021 by Thomas A. Early N7TAE
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+SetBooleanValue ()
+{
+	local dvname
+	local cv
+	if [ -z $2 ]; then
+		if [ -z ${!1+x} ]; then
+			if [[ "$1" == module_[abc]_* ]]; then
+				echo matches
+				dvname=${1//_[abc]_/_x_}
+			else
+				echo does not match
+				dvname=${1}_d
+			fi
+			cv=${!dvname}
+		else
+			cv=${!1}
+		fi
+		if [[ $cv == [tT]* ]]; then
+			eval ${1}=false
+		else
+			eval ${1}=true
+		fi
+	elif [[ "$2" == [tT]* ]]; then
+		eval ${1}=true
+	else
+		eval ${1}=false
+	fi
+}
+
+EvaluateVar ()
+{
+	if [ -z ${!1+x} ]; then
+		if [ -z "${!2}" ]; then
+			echo "'' <DEFAULT>"
+		else
+			echo "${!2} <DEFAULT>"
+		fi
+	else
+		if [ -z "${!1}" ]; then
+			echo "''"
+		else
+			echo "${!1}"
+		fi
+	fi
+}
+
+WriteMemFile ()
+{
+	local file
+	file="$rcfg"
+	echo "# created on `date`"                                  > $file
+	[ -z ${callsign+x}    ] || echo    "callsign='$callsign'"  >> $file
+	[ -z ${modules+x}     ] || echo     "modules='$modules'"   >> $file
+	[ -z ${ip4addr+x}     ] || echo     "ip4addr='$ip4addr'"   >> $file
+	[ -z ${ip6addr+x}     ] || echo     "ip6addr='$ip6addr'"   >> $file
+	[ -z ${tcaddress+x}   ] || echo   "tcaddress='$tcaddress'" >> $file
+	[ -z ${tcmodules+x}   ] || echo   "tcmodules='$tcmodules'" >> $file
+	[ -z ${ysfautolink+x} ] || echo "ysfautolink=$ysfautolink" >> $file
+	[ -z ${ysfmodule+x}   ] || echo   "ysfmodule='$ysfmodule'" >> $file
+	[ -z ${ysflocaldb+x}  ] || echo  "ysflocaldb=$ysflocaldb"  >> $file
+	[ -z ${ysfdbname+x}   ] || echo   "ysfdbname='$ysfdbname'" >> $file
+	[ -z ${ysfdbuser+x}   ] || echo   "ysfdbuser='$ysfdbuser'" >> $file
+	[ -z ${ysfdbpw+x}     ] || echo     "ysfdbpw='$ysfdbpw'"   >> $file
+	[ -z ${g3support+x}   ] || echo   "g3support=$g3support"   >> $file
+	[ -z ${dbsupport+x}   ] || echo   "dbsupport=$dbsupport"   >> $file
+}
+
+WriteSRCHFile ()
+{
+	local file m
+	file="$srch"
+	echo "// Created on `date`" > $file
+	echo "#define CALLSIGN \"${callsign}\"" >> $file
+	if [[ "$callsign" == XRF* ]]; then
+		echo "#define NO_XLX" >> $file
+	fi
+	if [ -z ${modules+x} ]; then
+		echo "#define ACTIVE_MODULES \"${modules_d}\"" >> $file
+	else
+		echo "#define ACTIVE_MODULES \"${modules}\"" >> $file
+	fi
+	if [ ! -z ${ip4addr+x} ]; then
+		echo "#define LISTEN_IPV4 \"${ip4addr}\"" >> $file
+	fi
+	if [ ! -z ${ip6addr+x} ]; then
+		echo "#define LISTEN_IPV6 \"${ip6addr}\"" >> $file
+	fi
+	if [ -z ${ysfautolink+x} ]; then
+		echo "#define YSF_AUTOLINK_ENABLE ${ysfautolink_d}" >> $file
+	else
+		echo "#define YSF_AUTOLINK_ENABLE ${ysfautolink}" >> $file
+	fi
+	if [ -z ${ysfmodule+x} ]; then
+		echo "#define YSF_AUTOLINK_MODULE '${ysfmodule_d}'" >> $file
+	else
+		echo "#define YSF_AUTOLINK_MODULE '${ysfmodule}'" >> $file
+	fi
+	if [[ "$ysflocaldb" == true ]]; then
+		echo '#define YSF_DB_SUPPORT true' >> $file
+		echo "#define YSF_DB_NAME \"$ysfdbname\"" >> $file
+		echo "#define YSF_DB_USER \"$ysfdbuser\"" >> $file
+		echo "#define YSF_DB_PASSWORD \"$ysfdbpw\"" >> $file
+	else
+		echo '#define YSF_DB_SUPPORT false' >> $file
+	fi
+	if [ ! -z ${tcaddress+x} ]; then
+		echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
+		if [ -z ${tcmodules+x} ]; then
+			echo "#define TRANSCODED_MODULES \"${tcmodules_d}\"" >> $file
+		else
+			echo "#define TRANSCODED_MODULES \"${tcmodules}\"" >> $file
+		fi
+	fi
+	if [ -z ${g3support+x} ]; then
+		m=${g3support_d}
+	else
+		m=${g3support}
+	fi
+	if [[ "$m" != true ]]; then
+		echo "#define NO_G3" >> $file
+	fi
+}
+
+WriteSRCMKFile ()
+{
+	local file
+	file="$srcm"
+	echo "# Created on `date`" > $file
+	if [[ "$callsign" == XLX* ]]; then
+		echo "is_xlx = true" >> $file
+	else
+		echo "is_xlx = false" >> $file
+	fi
+	[ -z ${ip4addr+x} ] || echo "ipv4 = $ip4addr" >> $file
+	[ -z ${ip6addr+x} ] || echo "ipv6 = $ip6addr" >> $file
+	[ -z ${tcaddress+x} ] || echo "tc_ip = $tcaddress" >> $file
+	if [ -z ${g3support+x} ]; then
+		echo "use_g3 = $g3support_d" >> $file
+	else
+		echo "use_g3 = $g3support" >> $file
+	fi
+	if [ -z ${dbsupport+x} ]; then
+		echo "debug = $dbsupport_d" >> $file
+	else
+		echo "debug = $dbsupport" >> $file
+	fi
+	if [ -z ${ysflocaldb+x} ]; then
+		echo "ysf_db = $ysflocaldb_d" >> $file
+	else
+		echo "ysf_db = $ysflocaldb" >> $file
+	fi
+}
+
+WriteTranscoderHFile ()
+{
+	local file
+	file="$tcdh"
+	echo "// Created on `date`" > $file
+	echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
+}
+
+WriteTranscoderMKFile ()
+{
+	local file
+	file="$tcdm"
+	echo "# created on `date`" > $file
+	if [ -z ${dbsupport+x} ]; then
+		echo "debug = $dbsupport_d" >> $file
+	else
+		echo "debug = $dbsupport" >> $file
+	fi
+}
+
+WriteCfgPhpFile ()
+{
+	cat << EOF > $ysfs
+<?php
+define('DB_SERVER', 'localhost');
+define('DB_USERNAME', '${ysfdbuser}');
+define('DB_PASSWORD', '${ysfdbpw}');
+define('DB_NAME', '${ysfdbname}');
+// Attempt to connect to MySQL database
+\$link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+// Check connection
+if (\$link === false) { die("ERROR: Could not connect. " . mysqli_connect_error()); }
+?>
+EOF
+}
+
+WriteDBCreateFile ()
+{
+	cat << EOF > $dbcr
+CREATE DATABASE IF NOT EXISTS ${ysfdbname};
+USE ${ysfdbname};
+CREATE TABLE IF NOT EXISTS ysfnodes (
+	callsign VARCHAR(7) PRIMARY KEY,
+	password VARCHAR(255) NOT NULL,
+	txfreq INT NOT NULL DEFAULT 445500000,
+	rxfreq INT NOT NULL DEFAULT 445500000,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE USER IF NOT EXISTS '${ysfdbuser}'@'localhost' IDENTIFIED BY '${ysfdbpw}';
+GRANT ALL PRIVILEGES ON $ysfdbname . ysfnodes TO '${ysfdbuser}'@'localhost';
+FLUSH PRIVILEGES;
+EOF
+}
+
+WriteCFGFiles ()
+{
+	WriteMemFile
+	WriteSRCHFile
+	WriteSRCMKFile
+	if [ -z ${tcaddress+x} ]; then
+		rm -f $tcdh $tcdm
+	else
+		WriteTranscoderHFile
+		WriteTranscoderMKFile
+	fi
+	if [[ "$ysflocaldb" == true ]]; then
+		WriteCfgPhpFile
+		WriteDBCreateFile
+	else
+		rm -f $ysfs $dbcr
+	fi
+}
+
+ListCFGFiles ()
+{
+	echo "===========${rcfg}============="
+	cat $rcfg
+	echo "===========${srch}============="
+	cat $srch
+	echo "===========${srcm}============="
+	cat $srcm
+	if [ ! -z ${tcaddress+x} ]; then
+		echo "===========${tcdh}============="
+		cat $tcdh
+		echo "===========${tcdm}============="
+		cat $tcdm
+	fi
+	if [[ "$ysflocaldb" ==  true ]]; then
+		echo "===========${ysfs}============="
+		cat $ysfs
+		echo "===========${dbcr}============="
+		cat $dbcr
+	fi
+}
+
+# Execution starts here!
+# file locations
+rcfg='reflector.cfg'
+srch='reflector/configure.h'
+srcm='reflector/configure.mk'
+tcdh='../tcd/configure.h'
+tcdm='../tcd/configure.mk'
+ysfs='wiresx/configure.php'
+dbcr='configure.sql'
+xlxserv='/etc/systemd/system/xlxd.service'
+xrfserv='/etc/systemd/system/xrfd.service'
+# default values
+callsign_d='CHNGME'
+modules_d='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ip4addr_d='none'
+ip6addr_d='none'
+tcaddress_d='none'
+tcmodules_d='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ysfautolink_d=false
+ysfmodule_d='D'
+g3support_d=false
+dbsupport_d=false
+ysflocaldb_d=false
+ysfdbname_d=''
+ysfdbuser_d=''
+ysfdbpw_d=''
+
+# expert mode
+if [[ "$1" == ex* ]]; then
+	expertmode="expertMode"
+fi
+
+if [ -e reflector.cfg ]; then
+	source reflector.cfg
+else
+	echo 'No configuration file found...'
+	sleep 1
+fi
+
+if [ -z ${expertmode+x} ]; then
+	if [ -e $xlxserv ] || [ -e $xrfserv ]; then
+		echo -n "You cannot change the configuration right now beacuse there is an "
+		if [ -e $xlxserv ]; then
+			echo "XLX server running."
+		else
+			echo "XRF server running."
+		fi;
+		echo "===========${rcfg}============="
+		cat $rcfg
+		echo
+		echo "Please use radmin to uninstall the running server before attempting to modify the configuration."
+		exit 1
+	fi
+fi
+
+key='x'
+# main loop
+while [[ "$key" != q* ]]
+do
+	clear
+	echo
+	echo "        Reflector Configuration, Version #211204"
+	echo
+	echo    "     ******* REFLECTOR ********"
+	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}
+	echo -n "am : Active Modules         = "; EvaluateVar modules{,_d}
+	echo -n "g3 : Icom G3 Support        = "; EvaluateVar g3support{,_d}
+	echo    "     ******* ADDRESSES ********"
+	echo -n "i4 : IPv4 Listen Address    = "; EvaluateVar ip4addr{,_d}
+	echo -n "i6 : IPv6 Listen Address    = "; EvaluateVar ip6addr{,_d}
+	echo    "     ******* TRANSCODER ********"
+	echo -n "tc : Transcoder Address     = "; EvaluateVar tcaddress{,_d}
+	if [ ! -z ${tcaddress+x} ]; then
+		echo -n "tm : Transcoder Modules     = "; EvaluateVar tcmodules{,_d}
+	fi
+	echo    "     ******* SYSTEM FUSION ********"
+	echo -n "ye : YSF Autolink Enable    = "; EvaluateVar ysfautolink{,_d}
+	if [ ! -z ${ysfautolink+x} ]; then
+		if [[ "$ysfautolink" == true ]]; then
+			echo -n "ym : YSF Autolink Module    = "; EvaluateVar ysfmodule{,_d}
+		fi
+	fi
+	echo -n "yl : YSF Local Database     = "; EvaluateVar ysflocaldb{,_d}
+	if [[ "$ysflocaldb" == true ]]; then
+		echo -n "yd : YSF Database Name      = "; EvaluateVar ysfdbname{,_d}
+		echo -n "yu : YSF Database User      = "; EvaluateVar ysfdbuser{,_d}
+		echo -n "yp : YSF Database Password  = "; EvaluateVar ysfdbpw{,_d}
+	fi
+	echo    "     ******* DEBUGGING ********"
+	echo -n "db : Debugging Support      = "; EvaluateVar dbsupport{,_d}
+	echo
+	if [[ "$callsign" == URF* ]]; then
+		echo    "w  : Write configuration files (overwrites any existing files) and quit"
+	fi
+	echo    "q  : Quit without saving"
+	echo    "u  : Unset the value of <key> (revert to the default value)."
+	echo
+	read -p "Please input <key> <value> - omit value to toggle a true/false : " key value garbage
+
+	if   [[ "$key" == cs*  && ${value^^} == URF* ]]; then
+		callsign="${value^^}"
+		callsign="${callsign:0:6}"
+		unset tcaddress tcmodules ysf{autolink,module,localdb,dbname,dbuser,dbpw}
+	elif [[ "$key" == am* ]]; then modules="${value^^}"
+	elif [[ "$key" == i4* ]]; then ip4addr="$value"
+	elif [[ "$key" == i6* ]]; then ip6addr="$value"
+	elif [[ "$key" == tc* ]]; then tcaddress="$value"
+	elif [[ "$key" == tm* ]]; then tcmodules="${value^^}"
+	elif [[ "$key" == ye* ]]; then SetBooleanValue ysfautolink "$value"
+	elif [[ "$key" == ym* ]]; then
+		ysfmodule="${value^^}"
+		ysfmodule="${ysfmodule:0:1}"
+	elif [[ "$key" == g3* ]]; then SetBooleanValue g3support "$value"
+	elif [[ "$key" == db* ]]; then SetBooleanValue dbsupport "$value"
+	elif [[ "$key" == yl* ]]; then SetBooleanValue ysflocaldb "$value"
+	elif [[ "$key" == yd* ]]; then ysfdbname="$value"
+	elif [[ "$key" == yu* ]]; then ysfdbuser="$value"
+	elif [[ "$key" == yp* ]]; then ysfdbpw="$value"
+	elif [[ "$key" == w* ]]; then
+		WriteCFGFiles
+		ListCFGFiles
+		exit 0
+	elif [[ "$key" == u* ]]; then
+		if   [[ "$value" == cs* ]]; then unset callsign
+		elif [[ "$value" == am* ]]; then unset modules
+		elif [[ "$value" == i4* ]]; then unset ip4addr
+		elif [[ "$value" == i6* ]]; then unset ip6addr
+		elif [[ "$value" == tc* ]]; then unset tcaddress
+		elif [[ "$value" == tm* ]]; then unset tcmodules
+		elif [[ "$value" == ye* ]]; then unset ysfautolink ysfmodule
+		elif [[ "$value" == ym* ]]; then unset ysfmodule
+		elif [[ "$value" == g3* ]]; then unset g3support
+		elif [[ "$value" == db* ]]; then unset dbsupport
+		elif [[ "$value" == yl* ]]; then unset ysflocaldb ysfdbname ysfdbuser ysfdbpw
+		elif [[ "$value" == yd* ]]; then unset ysfdbname
+		elif [[ "$value" == yu* ]]; then unset ysfdbuser
+		elif [[ "$value" == yp* ]]; then unset ysfdbpw
+		fi
+	fi
+done
+exit 0
