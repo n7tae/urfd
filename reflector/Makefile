@@ -49,7 +49,7 @@ ifeq ($(ysf_db), true)
 LDFLAGS += `mysql_config --libs`
 endif
 
-ifdef need_tc
+ifdef tc_ip
 SRCS += CodecStream.cpp UnixDgramSocket.cpp
 endif
 
