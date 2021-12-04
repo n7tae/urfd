@@ -1,0 +1,190 @@
+#!/bin/bash
+#
+# Copyright (c) 2021 by Thomas A. Early N7TAE
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+trap ControlC INT
+
+ControlC () {
+	echo "caught SIGINT"
+}
+
+UninstallReflector () {
+	if [ -e $urfserv ]; then
+		pushd reflector
+		sudo make uninstall
+		popd
+	fi
+	if [ -e $tcserv ]; then
+		pushd ../tcd
+		sudo make uninstall
+		popd
+	fi
+}
+
+InstallReflector () {
+	pushd reflector
+	if [ ! -e urfd.whitelist ]; then
+		cp ../config/urfd.whitelist .
+	fi
+	if [ ! -e urfd.blacklist ]; then
+		cp ../config/urfd.blacklist .
+	fi
+	if [ ! -e urfd.interlink ]; then
+		cp ../config/urfd.interlink .
+	fi
+	if [[ "$g3support" == true ]] && [ ! -e urfd.terminal ]; then
+		cp ../config/urfd.terminal .
+	fi
+	sudo make install || read -p "<Enter> to continue: " ans
+	popd
+	if [ "$tcaddress" != none ]; then
+		pushd ../tcd
+		sudo make install || read -p "<Enter> to continue: " ans
+		popd
+	fi
+}
+
+Clean () {
+	pushd reflector
+	make clean
+	popd
+	pushd ../tcd
+	make clean
+	popd
+}
+
+Compile () {
+	local np
+	np=`getconf _NPROCESSORS_ONLN`
+	pushd reflector
+	make -j$np || read -p "<Enter to continue: " ans
+	popd
+	if [[ [[ "$tcaddress" != none ]]; then
+		pushd ../tcd
+		make -j$np || read -p "<Enter to continue: " ans
+		popd
+	fi
+}
+
+# Execution starts here!
+
+# service file locations
+urfserv='/etc/systemd/system/urfd.service'
+tcserv='/etc/systemd/system/ambed.service'
+
+# default values, we only need a few
+tcaddress='none'
+g3support=false
+
+if [ -e reflector.cfg ]; then
+	source reflector.cfg
+else
+	echo 'No configuration file found...'
+	exit 1
+fi
+key='x'
+# main loop
+while [[ "$key" != q* ]]
+do
+	clear
+	pcount=$(ps -aux | grep -e urfd -e tcd | wc -l)
+	if [ "$pcount" -gt 1 ]; then
+		echo
+		ps -aux | head -1
+		ps -aux | grep -e urfd -e tcd | grep -v grep
+	fi
+	echo
+	echo "        Reflector Administration, Version #211204"
+	echo
+	git status | head -1
+	echo
+	echo "ls : List the configuration file"
+	echo "cl : Clean (remove) compiled objects and executables"
+	echo "gp : Pull the latest software from the repo"
+	echo "br : Change git branch to <value>"
+	echo "co : Compile the system executable(s)"
+	if [ -e $urfserv ]; then
+		if [ -e $urfserv ]; then
+			echo "us : Uninstall the XLX reflector"
+			echo "rl : Reflector log"
+			if [ -e $tcserv ]; then
+				echo "tl : Transcoder log"
+			fi
+		fi
+		echo "rr : Reflector restart"
+		if [ -e $tcserv ]; then
+			echo "tr : Transcoder restart"
+		fi
+	else
+		if [[ "$callsign" == URF* ]]; then
+			if [ -e reflector/urfd ]; then
+				if [[ "$tcaddress" == none ]]; then
+					echo "is : Install URF reflector without transcoder"
+				else
+					if [ -e ../tcd/tcd ]; then
+						echo "is : Install XLX reflector and transcoder"
+					fi
+				fi
+			fi
+		fi
+	fi
+	echo
+	echo    "q  : Quit"
+	echo
+	read -p "Please input <key> <value> - omit value to toggle a true/false : " key value garbage
+
+	if   [[ "$key" == ls* ]]; then
+		cat reflector.cfg;
+		echo
+		read -p "<Enter> to return to main menu: " ans
+	elif [[ "$key" == us* ]]; then
+		if   [ -e $urfserv ]; then
+			UninstallReflector
+		fi
+	elif [[ "$key" == is* ]]; then
+		if [ -e reflector/urfd ] && [ ! -e $urfserv ]; then
+			InstallReflector
+		fi
+	elif [[ "$key" == gp* ]]; then
+		echo
+		git pull
+		echo
+		read -p "<Enter> to continue: " ans
+		pushd ../tcd
+		git pull
+		echo
+		read -p "<Enter> to continue: " ans
+		popd
+	elif [[ "$key" == br* ]]; then
+		echo
+		git checkout "$value"
+		echo
+		read -p "<Enter> to continue: " ans
+	elif [[ "$key" == rr* ]]; then
+		if   [ -e $urfserv ]; then
+			sudo systemctl restart urfd
+		fi
+	elif [[ "$key" == tr* ]] && [ -e $tcserv ]; then sudo systemctl restart tcd
+	elif [[ "$key" == cl* ]]; then Clean
+	elif [[ "$key" == co* ]]; then Compile
+	elif [[ "$key" == tl* ]] && [ -e $tcserv ]; then sudo journalctl -u tcd -f
+	elif [[ "$key" == rl* ]]; then
+		if [ -e $urfserv ]; then
+			sudo journalctl -u urfd -f
+		fi
+	fi
+done
+exit 0
