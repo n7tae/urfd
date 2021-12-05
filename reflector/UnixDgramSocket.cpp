@@ -1,4 +1,3 @@
-// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -64,7 +63,7 @@ bool CUnixDgramReader::Receive(STCPacket *pack, unsigned timeout) const
 {
 	// socket valid ?
 	if ( 0 > fd )
-		return true;
+		return false;
 
 	// control socket
 	fd_set FdSet;
@@ -79,16 +78,16 @@ bool CUnixDgramReader::Receive(STCPacket *pack, unsigned timeout) const
 		if (rval < 0) {
 			std::cerr << "select() error on transcoder socket: " << strerror(errno) << std::endl;
 		}
-		return true;
+		return false;
 	}
 
 	auto len = read(fd, pack, sizeof(STCPacket));
 	if (len != sizeof(STCPacket)) {
 		std::cerr << "Received transcoder packet is wrong size: " << len << " but should be " << sizeof(STCPacket) << std::endl;
-		return true;
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void CUnixDgramReader::Close()

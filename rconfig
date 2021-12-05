@@ -173,7 +173,10 @@ WriteTranscoderHFile ()
 	local file
 	file="$tcdh"
 	echo "// Created on `date`" > $file
-	echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
+	if [ -n ${tcaddress+x} ] && [[ "$tcaddress" != "local" ]]; then
+		echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
+	fi
+
 }
 
 WriteTranscoderMKFile ()
@@ -275,11 +278,11 @@ dbcr='configure.sql'
 urfserv='/etc/systemd/system/urfd.service'
 # default values
 callsign_d='CHNGME'
-modules_d='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+modules_d='ABCF'
 ip4addr_d='none'
 ip6addr_d='none'
 tcaddress_d='none'
-tcmodules_d='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+tcmodules_d='ABC'
 ysfautolink_d=false
 ysfmodule_d='D'
 g3support_d=false
@@ -323,7 +326,7 @@ while [[ "$key" != q* ]]
 do
 	clear
 	echo
-	echo "        Reflector Configuration, Version #211204"
+	echo "        Reflector Configuration, Version #211205"
 	echo
 	echo    "     ******* REFLECTOR ********"
 	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}

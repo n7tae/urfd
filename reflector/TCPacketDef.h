@@ -1,6 +1,5 @@
 #pragma once
 
-// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
@@ -18,6 +17,7 @@
 
 #include <cstdint>
 
+// unix socket names
 #define TC2REF "TC2URFMod"
 #define REF2TC "URF2TC"
 

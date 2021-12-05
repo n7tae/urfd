@@ -108,7 +108,7 @@ void CCodecStream::Task(void)
 	STCPacket pack;
 
 	// any packet from transcoder
-	if ( ! m_TCReader->Receive(&pack, 5) )
+	if (m_TCReader->Receive(&pack, 5))
 	{
 		// tickle
 		m_TimeoutTimer.start();
