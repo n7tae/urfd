@@ -128,7 +128,7 @@ void CM17Protocol::Task(void)
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, Callsign) )
 		{
-			//std::cout << "M17 keepalive packet from " << Callsign << " at " << Ip << std::endl;
+			std::cout << "M17 keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find all clients with that callsign & ip and keep them alive
 			CClients *clients = g_Reflector.GetClients();
@@ -295,9 +295,7 @@ void CM17Protocol::HandleKeepalives(void)
 		else if ( !client->IsAlive() )
 		{
 			// no, disconnect
-			CBuffer disconnect;
-			disconnect.Set("DISC");
-			Send(disconnect, client->GetIp());
+			Send("DISC", client->GetIp());
 
 			// remove it
 			std::cout << "M17 client " << client->GetCallsign() << " keepalive timeout" << std::endl;
