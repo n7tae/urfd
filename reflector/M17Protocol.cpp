@@ -73,8 +73,9 @@ void CM17Protocol::Task(void)
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
+				auto secondFrame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(*Frame.get()));
 				OnDvFramePacketIn(Frame, &Ip);
-				OnDvFramePacketIn(Frame, &Ip); // push two packet because we need a packet every 20 ms
+				OnDvFramePacketIn(secondFrame, &Ip); // push two packet because we need a packet every 20 ms
 			}
 		}
 		else if ( IsValidConnectPacket(Buffer, Callsign, ToLinkModule) )
