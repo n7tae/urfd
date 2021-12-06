@@ -60,7 +60,7 @@ CClient::CClient(const CClient &client)
 
 void CClient::Alive(void)
 {
-	m_LastKeepaliveTime.time();
+	m_LastKeepaliveTime.start();
 }
 
 
