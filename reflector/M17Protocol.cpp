@@ -351,8 +351,8 @@ bool CM17Protocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHea
 {
 	uint8_t tag[] = { 'M', '1', '7', ' ' };
 
-	if ( (Buffer.size() == sizeof(SM17Frame)) && (0 == Buffer.Compare(tag, sizeof(tag))) && (0x4U == (0x1CU & Buffer[13])) )
-	// Buffer[13] is the lsb byte of the frametype. 0x4 means payload contains Codec2 voice data and there is no encryption.
+	if ( (Buffer.size() == sizeof(SM17Frame)) && (0 == Buffer.Compare(tag, sizeof(tag))) && (0x4U == (0x1CU & Buffer[19])) )
+	// Buffer[19] is the lsb byte of the frametype. 0x4 means payload contains Codec2 voice data and there is no encryption.
 	// the 0x1CU mask just lets us see the encryptions bytes (must be zero) and the msb of the payload type (must be set)
 	{
 		// Make the M17 header
