@@ -136,6 +136,7 @@ void CM17Protocol::Task(void)
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::m17, it)) != nullptr )
 			{
+				std::cout << "marking " << Callsign << " @ " << Ip << " Alive!" << std::endl;
 				client->Alive();
 			}
 			g_Reflector.ReleaseClients();
