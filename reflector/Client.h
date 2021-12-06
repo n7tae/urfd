@@ -44,12 +44,12 @@ public:
 	const CCallsign &GetCallsign(void) const            { return m_Callsign; }
 	const CIp &GetIp(void) const                        { return m_Ip; }
 	bool HasModule(void) const                          { return m_Callsign.HasModule(); }
-	char GetModule(void) const                          { return m_Callsign.GetModule(); }
+	char GetCSModule(void) const                          { return m_Callsign.GetCSModule(); }
 	bool HasReflectorModule(void) const                 { return m_ReflectorModule != ' '; }
 	char GetReflectorModule(void) const                 { return m_ReflectorModule; }
 
 	// set
-	void SetModule(char c)                              { m_Callsign.SetModule(c); }
+	void SetCSModule(char c)                              { m_Callsign.SetCSModule(c); }
 	void SetReflectorModule(char c)                     { m_ReflectorModule = c; }
 
 	// identity

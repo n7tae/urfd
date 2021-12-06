@@ -41,7 +41,7 @@ const CCallsign &CM17Packet::GetSourceCallsign() const
 
 char CM17Packet::GetDestModule() const
 {
-	return destination.GetModule();
+	return destination.GetCSModule();
 }
 
 uint16_t CM17Packet::GetFrameNumber() const

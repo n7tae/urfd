@@ -106,7 +106,7 @@ void CDextraProtocol::Task(void)
 					// is this an ack for a link request?
 					CPeerCallsignList *list = g_GateKeeper.GetPeerList();
 					CCallsignListItem *item = list->FindListItem(Callsign);
-					if ( item != nullptr && Callsign.GetModule() == item->GetModules()[1] && ToLinkModule == item->GetModules()[0] )
+					if ( item != nullptr && Callsign.GetCSModule() == item->GetModules()[1] && ToLinkModule == item->GetModules()[0] )
 					{
 						std::cout << "DExtra ack packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << std::endl;
 
@@ -245,7 +245,7 @@ void CDextraProtocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::dextra, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
 				{
 					// no, send the packet
 					int n = packet->IsDvHeader() ? 5 : 1;
@@ -427,7 +427,7 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 				// the module the client is linked to
 				auto m = client->GetReflectorModule();
 				Header->SetRpt2Module(m);
-				rpt2.SetModule(m);
+				rpt2.SetCSModule(m);
 			}
 			// and try to open the stream
 			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
@@ -454,7 +454,7 @@ bool CDextraProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign &cal
 	if ((Buffer.size() == 11) && (Buffer.data()[9] != ' '))
 	{
 		callsign.SetCallsign(Buffer.data(), 8);
-		callsign.SetModule(Buffer.data()[8]);
+		callsign.SetCSModule(Buffer.data()[8]);
 		module = Buffer.data()[9];
 		valid = (callsign.IsValid() && IsLetter(module));
 		// detect revision
@@ -480,7 +480,7 @@ bool CDextraProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *
 	if ((Buffer.size() == 11) && (Buffer.data()[9] == ' '))
 	{
 		callsign->SetCallsign(Buffer.data(), 8);
-		callsign->SetModule(Buffer.data()[8]);
+		callsign->SetCSModule(Buffer.data()[8]);
 		valid = callsign->IsValid();
 	}
 	return valid;

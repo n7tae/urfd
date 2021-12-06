@@ -48,7 +48,7 @@ public:
 	void SetCallsign(const uint8_t *, int, bool = true);
 	void SetDmrid(uint32_t, bool = true);
 	void SetDmrid(const uint8_t *, bool = true);
-	void SetModule(char);
+	void SetCSModule(char);
 	void SetSuffix(const char *);
 	void SetSuffix(const uint8_t *, int);
 
@@ -61,7 +61,7 @@ public:
 	const std::string GetCS(unsigned len = 9) const;
 	uint32_t GetDmrid(void) const             { return m_uiDmrid; }
 	void GetSuffix(uint8_t *) const;
-	char GetModule(void) const              { return m_Module; }
+	char GetCSModule(void) const              { return m_Module; }
 
 	// compare
 	bool HasSameCallsign(const CCallsign &) const;

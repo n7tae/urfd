@@ -231,7 +231,7 @@ void CURFProtocol::HandleQueue(void)
 				while ( (client = clients->FindNextClient(EProtocol::xlx, it)) != nullptr )
 				{
 					// is this client busy ?
-					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
+					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
 					{
 						// no, send the packet
 						// this is protocol revision dependent

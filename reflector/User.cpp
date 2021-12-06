@@ -66,7 +66,7 @@ void CUser::WriteXml(std::ofstream &xmlFile)
 	xmlFile << "<STATION>" << std::endl;
 	xmlFile << "\t<Callsign>" << m_My << "</Callsign>" << std::endl;
 	xmlFile << "\t<Via node>" << m_Rpt1 << "</Via node>" << std::endl;
-	xmlFile << "\t<On module>" << m_Rpt2.GetModule() << "</On module>" << std::endl;
+	xmlFile << "\t<On module>" << m_Rpt2.GetCSModule() << "</On module>" << std::endl;
 	xmlFile << "\t<Via peer>" << m_Xlx << "</Via peer>" << std::endl;
 
 	char mbstr[100];
@@ -92,7 +92,7 @@ void CUser::GetJsonObject(char *Buffer)
 		::sprintf(sz, "{\"callsign\":\"%s\",\"node\":\"%s\",\"module\":\"%c\",\"time\":\"%s\"}",
 				  my,
 				  rpt1,
-				  m_Rpt1.GetModule(),
+				  m_Rpt1.GetCSModule(),
 				  mbstr);
 		::strcat(Buffer, sz);
 	}

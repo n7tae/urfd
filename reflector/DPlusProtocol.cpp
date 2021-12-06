@@ -185,7 +185,7 @@ void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// first, check module is valid
-		if ( g_Reflector.IsValidModule(rpt2.GetModule()) )
+		if ( g_Reflector.IsValidModule(rpt2.GetCSModule()) )
 		{
 			// find this client
 			std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dplus);
@@ -199,7 +199,7 @@ void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header
 				// now we know its module, let's update it
 				if ( !client->HasModule() )
 				{
-					client->SetModule(rpt1.GetModule());
+					client->SetCSModule(rpt1.GetCSModule());
 				}
 				// get client callsign
 				rpt1 = client->GetCallsign();
@@ -236,7 +236,7 @@ void CDplusProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		const auto mod = packet->GetModule();
+		const auto mod = packet->GetPacketModule();
 
 		// check if it's header and update cache
 		if ( packet->IsDvHeader() )

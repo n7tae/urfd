@@ -174,7 +174,7 @@ std::shared_ptr<CClient> CClients::FindClient(const CCallsign &Callsign, char mo
 	// find client
 	for ( auto it=begin(); it!=end(); it++ )
 	{
-		if ( (*it)->GetCallsign().HasSameCallsign(Callsign) && ((*it)->GetModule() == module) && ((*it)->GetIp() == Ip)  && ((*it)->GetProtocol() == Protocol) )
+		if ( (*it)->GetCallsign().HasSameCallsign(Callsign) && ((*it)->GetCSModule() == module) && ((*it)->GetIp() == Ip)  && ((*it)->GetProtocol() == Protocol) )
 		{
 			return *it;
 		}

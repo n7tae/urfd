@@ -260,7 +260,7 @@ void CG3Protocol::ConfigTask(void)
 
 			if (isRepeaterCall)
 			{
-				if ((Call.HasSameCallsign(GetReflectorCallsign())) && (g_Reflector.IsValidModule(Call.GetModule())))
+				if ((Call.HasSameCallsign(GetReflectorCallsign())) && (g_Reflector.IsValidModule(Call.GetCSModule())))
 				{
 					Buffer.data()[3] = 0x00; // ok
 				}
@@ -276,7 +276,7 @@ void CG3Protocol::ConfigTask(void)
 				Buffer.data()[3] = 0x01; // reject
 			}
 
-			char module = Call.GetModule();
+			char module = Call.GetCSModule();
 
 			if (!strchr(m_Modules.c_str(), module) && !strchr(m_Modules.c_str(), '*'))
 			{
@@ -299,7 +299,7 @@ void CG3Protocol::ConfigTask(void)
 
 			if (isRepeaterCall)
 			{
-				Buffer.Append((uint8_t)Call.GetModule());
+				Buffer.Append((uint8_t)Call.GetCSModule());
 			}
 			else
 			{
@@ -460,7 +460,7 @@ void CG3Protocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
 				{
 					// not busy, send the packet
 					int n = packet->IsDvHeader() ? 5 : 1;
@@ -545,9 +545,9 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 			// move it to the proper module
 			if (m_ReflectorCallsign.HasSameCallsign(rpt2))
 			{
-				if (client->GetReflectorModule() != rpt2.GetModule())
+				if (client->GetReflectorModule() != rpt2.GetCSModule())
 				{
-					auto new_module = rpt2.GetModule();
+					auto new_module = rpt2.GetCSModule();
 					if (strchr(m_Modules.c_str(), '*') || strchr(m_Modules.c_str(), new_module))
 					{
 						client->SetReflectorModule(new_module);

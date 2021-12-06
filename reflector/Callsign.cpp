@@ -219,7 +219,7 @@ void CCallsign::SetDmrid(const uint8_t *buffer, bool UpdateCallsign)
 	SetDmrid((uint32_t)::strtol(sz, nullptr, 16), UpdateCallsign);
 }
 
-void CCallsign::SetModule(char c)
+void CCallsign::SetCSModule(char c)
 {
 	m_Module = c;
 	CSIn();

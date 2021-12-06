@@ -59,16 +59,16 @@ public:
 	uint8_t      GetYsfPacketId(void) const      { return m_uiYsfPacketId; }
 	uint8_t      GetYsfPacketSubId(void) const   { return m_uiYsfPacketSubId; }
 	uint8_t      GetYsfPacketFrameId(void) const { return m_uiYsfPacketFrameId; }
-	char         GetModule(void) const           { return m_cModule; }
+	char         GetPacketModule(void) const     { return m_cModule; }
 	bool         IsLocalOrigin(void) const       { return (m_eOrigin == EOrigin::local); }
 	bool         IsSecond(void) const            { return m_bIsSecond; }
 	ECodecType   GetCodecIn(void) const          { return m_eCodecIn; }
 
 	// set
 	void UpdatePids(const uint32_t);
-	void SetModule(char cMod)      { m_cModule = cMod; }
-	void SetLocalOrigin(void)      { m_eOrigin = EOrigin::local; }
-	void SetRemotePeerOrigin(void) { m_eOrigin = EOrigin::peer; }
+	void SetPacketModule(char cMod) { m_cModule = cMod; }
+	void SetLocalOrigin(void)       { m_eOrigin = EOrigin::local; }
+	void SetRemotePeerOrigin(void)  { m_eOrigin = EOrigin::peer; }
 
 protected:
 	// data

@@ -227,7 +227,7 @@ void CDmrplusProtocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		const auto mod = packet->GetModule();
+		const auto mod = packet->GetPacketModule();
 
 		// encode
 		CBuffer buffer;
@@ -274,7 +274,7 @@ void CDmrplusProtocol::HandleQueue(void)
 			while ( (client = clients->FindNextClient(EProtocol::dmrplus, it)) != nullptr )
 			{
 				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetModule()) )
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
 				{
 					// no, send the packet
 					Send(buffer, client->GetIp());
@@ -365,7 +365,7 @@ bool CDmrplusProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *ca
 		sz[8] = 0;
 		uint32_t dmrid = atoi(sz);
 		callsign->SetDmrid(dmrid, true);
-		callsign->SetModule(DMRPLUS_MODULE_ID);
+		callsign->SetCSModule(DMRPLUS_MODULE_ID);
 		memcpy(sz, &Buffer.data()[8], 4);
 		sz[4] = 0;
 		*reflectormodule = DmrDstIdToModule(atoi(sz));
@@ -388,7 +388,7 @@ bool CDmrplusProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign 
 		sz[8] = 0;
 		uint32_t dmrid = atoi(sz);
 		callsign->SetDmrid(dmrid, true);
-		callsign->SetModule(DMRPLUS_MODULE_ID);
+		callsign->SetCSModule(DMRPLUS_MODULE_ID);
 		*reflectormodule = Buffer.data()[11] - '0' + 'A';
 		valid = (callsign->IsValid() && std::isupper(*reflectormodule));
 	}
@@ -415,9 +415,9 @@ bool CDmrplusProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffe
 			// build DVHeader
 			CCallsign csMY =  CCallsign("", uiSrcId);
 			CCallsign rpt1 = CCallsign("", uiSrcId);
-			rpt1.SetModule(DMRPLUS_MODULE_ID);
+			rpt1.SetCSModule(DMRPLUS_MODULE_ID);
 			CCallsign rpt2 = m_ReflectorCallsign;
-			rpt2.SetModule(DmrDstIdToModule(uiDstId));
+			rpt2.SetCSModule(DmrDstIdToModule(uiDstId));
 			uint32_t uiStreamId = IpToStreamId(Ip);
 
 			// and packet

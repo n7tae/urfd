@@ -218,7 +218,7 @@ void CM17Protocol::HandleQueue(void)
 		auto packet = m_Queue.pop();
 
 		// get our sender's id
-		const auto module = packet->GetModule();
+		const auto module = packet->GetPacketModule();
 
 		// check if it's header and update cache
 		if ( packet->IsDvHeader() )
@@ -387,7 +387,7 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 	// first, the dest and src callsigns
 	Header.GetRpt2Callsign().CodeOut(frame.lich.addr_dst);
 	CCallsign from = g_Reflector.GetCallsign();
-	from.SetModule(Header.GetModule());
+	from.SetCSModule(Header.GetPacketModule());
 	from.CodeOut(frame.lich.addr_src);
 	// then the frame type, if the incoming frame is NOT an M17 1600, then it will be Voice only
 	frame.lich.frametype = htons((ECodecType::c2_1600==codec_in) ? 0x7U : 0x5U);

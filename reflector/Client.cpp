@@ -108,7 +108,7 @@ void CClient::GetJsonObject(char *Buffer)
 
 		::sprintf(sz, "{\"callsign\":\"%s\",\"module\":\"%c\",\"linkedto\":\"%c\",\"time\":\"%s\"}",
 				  cs,
-				  m_Callsign.GetModule(),
+				  m_Callsign.GetCSModule(),
 				  m_ReflectorModule,
 				  mbstr);
 		::strcat(Buffer, sz);

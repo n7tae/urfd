@@ -182,7 +182,7 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 	}
 
 	// get the module's queue
-	char module = DvHeader->GetModule();
+	char module = DvHeader->GetPacketModule();
 	auto stream = GetStream(module);
 	if ( stream == nullptr )
 	{
@@ -289,7 +289,7 @@ void CReflector::RouterThread(const char ThisModule)
 		if ( packet != nullptr )
 		{
 			// set origin
-			packet->SetModule(ThisModule);
+			packet->SetPacketModule(ThisModule);
 
 			// iterate on all protocols
 			m_Protocols.Lock();
@@ -303,7 +303,7 @@ void CReflector::RouterThread(const char ThisModule)
 				{
 					// get our callsign
 					CCallsign csRPT = (*it)->GetReflectorCallsign();
-					csRPT.SetModule(ThisModule);
+					csRPT.SetCSModule(ThisModule);
 					(dynamic_cast<CDvHeaderPacket *>(packetClone.get()))->SetRpt2Callsign(csRPT);
 				}
 
