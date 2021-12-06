@@ -128,15 +128,12 @@ void CM17Protocol::Task(void)
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, Callsign) )
 		{
-			std::cout << "M17 keepalive packet from " << Callsign << " at " << Ip << std::endl;
-
 			// find all clients with that callsign & ip and keep them alive
 			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::m17, it)) != nullptr )
 			{
-				std::cout << "marking " << Callsign << " @ " << Ip << " Alive!" << std::endl;
 				client->Alive();
 			}
 			g_Reflector.ReleaseClients();

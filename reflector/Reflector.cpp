@@ -156,11 +156,22 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 {
 	// check sid is not zero
 	if ( 0U == DvHeader->GetStreamId() )
+	{
+		std::cerr << "StreamId for client " << client->GetCallsign() << " is zero!" << std::endl;
 		return nullptr;
+	}
 
 	// check if client is valid candidate
-	if ( ! m_Clients.IsClient(client) || client->IsAMaster() )
+	if ( ! m_Clients.IsClient(client) )
+	{
+		std::cerr << "Client " << client->GetCallsign() << " is not a client!" << std::endl;
 		return nullptr;
+	}
+	if ( client->IsAMaster() )
+	{
+		std::cerr << "Client " << client->GetCallsign() << " is already a master!" << std::endl;
+		return nullptr;
+	}
 
 	// check if no stream with same streamid already open
 	// to prevent loops
@@ -174,7 +185,10 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 	char module = DvHeader->GetModule();
 	auto stream = GetStream(module);
 	if ( stream == nullptr )
+	{
+		std::cerr << "Can't find module '" << module << "' for Client " << client->GetCallsign() << std::endl;
 		return nullptr;
+	}
 
 	stream->Lock();
 	// is it available ?
