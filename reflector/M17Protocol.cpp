@@ -88,8 +88,7 @@ void CM17Protocol::Task(void)
 				if ( g_Reflector.IsValidModule(ToLinkModule) )
 				{
 					// acknowledge the request
-					Buffer.Set("ACKN");
-					Send(Buffer, Ip);
+					Send("ACKN", Ip);
 
 					// create the client and append
 					g_Reflector.GetClients()->AddClient(std::make_shared<CM17Client>(Callsign, Ip, ToLinkModule));
@@ -100,15 +99,13 @@ void CM17Protocol::Task(void)
 					std::cout << "M17 node " << Callsign << " connect attempt on non-existing module" << std::endl;
 
 					// deny the request
-					Buffer.Set("NACK");
-					Send(Buffer, Ip);
+					Send("NACK", Ip);
 				}
 			}
 			else
 			{
 				// deny the request
-				Buffer.Set("NACK");
-				Send(Buffer, Ip);
+				Send("NACK", Ip);
 			}
 
 		}
@@ -124,8 +121,7 @@ void CM17Protocol::Task(void)
 				// remove it
 				clients->RemoveClient(client);
 				// and acknowledge the disconnect
-				Buffer.Set("DISC");
-				Send(Buffer, Ip);
+				Send("DISC", Ip);
 			}
 			g_Reflector.ReleaseClients();
 		}
