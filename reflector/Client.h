@@ -55,7 +55,6 @@ public:
 	// identity
 	virtual EProtocol GetProtocol(void) const            { return EProtocol::none; }
 	virtual EProtoRev GetProtocolRevision(void) const    { return EProtoRev::ambe; }
-	virtual ECodecType GetCodec(void) const              { return ECodecType::none; }
 	virtual const char *GetProtocolName(void) const      { return "none"; }
 	virtual bool IsNode(void) const                      { return false; }
 	virtual bool IsPeer(void) const                      { return false; }

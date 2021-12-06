@@ -35,7 +35,6 @@ public:
 	EProtocol GetProtocol(void) const         { return EProtocol::urf; }
 	EProtoRev GetProtocolRevision(void) const { return m_ProtRev; }
 	const char *GetProtocolName(void) const   { return "URF"; }
-	ECodecType GetCodec(void) const           { return ECodecType::none; }
 	bool IsPeer(void) const                   { return true; }
 
 	// status

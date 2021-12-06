@@ -42,7 +42,6 @@ public:
 	EProtocol GetProtocol(void) const           { return EProtocol::dextra; }
 	EProtoRev GetProtocolRevision(void) const   { return m_ProtRev; }
 	const char *GetProtocolName(void) const     { return "DExtra"; }
-	ECodecType GetCodec(void) const             { return ECodecType::dstar; }
 	bool IsNode(void) const                     { return true; }
 
 	// status

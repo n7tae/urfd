@@ -34,7 +34,6 @@ public:
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::dmrplus; }
 	const char *GetProtocolName(void) const     { return "DMRplus"; }
-	ECodecType GetCodec(void) const             { return ECodecType::dmr; }
 	bool IsNode(void) const                     { return true; }
 
 	// status

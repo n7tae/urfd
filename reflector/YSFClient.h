@@ -33,7 +33,6 @@ public:
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::ysf; }
 	const char *GetProtocolName(void) const     { return "YSF"; }
-	ECodecType GetCodec(void) const             { return ECodecType::dmr; }
 	bool IsNode(void) const                     { return true; }
 
 	// status

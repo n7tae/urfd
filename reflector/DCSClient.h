@@ -34,7 +34,6 @@ public:
 	// identity
 	EProtocol GetProtocol(void) const           { return EProtocol::dcs; }
 	const char *GetProtocolName(void) const     { return "DCS"; }
-	ECodecType GetCodec(void) const             { return ECodecType::dstar; }
 	bool IsNode(void) const                     { return true; }
 
 	// status

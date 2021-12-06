@@ -39,6 +39,7 @@ public:
 	// identity
 	const char *GetProtocolName(void) const     { return "M17"; }
 	bool IsNode(void) const                     { return true; }
+	EProtocol GetProtocol(void) const           { return EProtocol::m17; }
 
 	// status
 	bool IsAlive(void) const;
