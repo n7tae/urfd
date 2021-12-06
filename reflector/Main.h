@@ -180,7 +180,8 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdv
 #endif
 
 // system paths -------------------------------------------------
-#define XML_PATH                        "/var/log/urfd.xml"
+//#define XML_PATH                        "/var/log/urfd.xml"
+#define XML_PATH                        "./urfd.xml"
 #define WHITELIST_PATH                  "/usr/local/etc/urfd.whitelist"
 #define BLACKLIST_PATH                  "/usr/local/etc/urfd.blacklist"
 #define INTERLINKLIST_PATH              "/usr/local/etc/urfd.interlink"
