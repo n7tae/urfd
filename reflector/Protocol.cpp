@@ -133,7 +133,8 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 	auto stream = GetStream(Frame->GetStreamId(), Ip);
 	if ( stream )
 	{
-		//std::cout << "DV frame" << "from "  << *Ip << std::endl;
+		// set the packet module, the transcoder needs this
+		Frame->SetPacketModule(stream->GetRpt2Module());
 		// and push
 		stream->Lock();
 		stream->Push(std::move(Frame));

@@ -65,9 +65,9 @@ void CPacketStream::ClosePacketStream(void)
 	// update status
 	m_bOpen = false;
 	m_uiStreamId = 0;
-	m_OwnerClient = nullptr;
+	m_OwnerClient.reset();
 #ifdef TRANSCODED_MODULES
-	m_CodecStream = nullptr;
+	m_CodecStream.reset();
 #endif
 }
 
