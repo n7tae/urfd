@@ -156,7 +156,7 @@ std::shared_ptr<CPacketStream> CProtocol::GetStream(uint16_t uiStreamId, const C
 	if (it == m_Streams.end())
 		return nullptr;
 
-	if (it->second->GetOwnerIp() != nullptr)
+	if (Ip != nullptr && it->second->GetOwnerIp() != nullptr)
 	{
 		if (*Ip == *it->second->GetOwnerIp())
 		{
