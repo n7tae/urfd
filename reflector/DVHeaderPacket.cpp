@@ -86,7 +86,8 @@ CDvHeaderPacket::CDvHeaderPacket(const CM17Packet &m17) : CPacket(m17)
 	m_uiFlag1 = m_uiFlag2 = m_uiFlag3 = 0;
 	m_uiCrc = 0;
 	m_csUR = CCallsign("CQCQCQ");
-	m_csMY = m_csRPT1 = m_csRPT2 = m17.GetSourceCallsign();
+	m_csMY = m17.GetSourceCallsign();
+	m_csRPT1 = m_csRPT2 = m17.GetDestCallsign();
 	m_csRPT1.SetCSModule('G');
 }
 

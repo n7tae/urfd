@@ -134,7 +134,7 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 	if ( stream )
 	{
 		// set the packet module, the transcoder needs this
-		Frame->SetPacketModule(stream->GetRpt2Module());
+		Frame->SetPacketModule(stream->GetOwnerClient()->GetReflectorModule());
 		// and push
 		stream->Lock();
 		stream->Push(std::move(Frame));
