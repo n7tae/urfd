@@ -54,7 +54,7 @@ public:
 	bool             IsOpen(void) const             { return m_bOpen; }
 	uint16_t         GetStreamId(void) const        { return m_uiStreamId; }
 	const CCallsign &GetUserCallsign(void) const    { return m_DvHeader.GetMyCallsign(); }
-	const char       GetRpt2Module(void) const      { return m_DvHeader.GetRpt2Module(); }
+	char             GetRpt2Module(void) const      { return m_DvHeader.GetRpt2Module(); }
 
 protected:
 	// data
