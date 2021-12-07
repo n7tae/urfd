@@ -55,6 +55,22 @@ CCodecStream::~CCodecStream()
 	{
 		m_Future.get();
 	}
+
+	// display stats
+	if (m_fPingMin >= 0.0)
+	{
+		double min = m_fPingMin * 1000.0;
+		double max = m_fPingMax * 1000.0;
+		double ave = (m_fPingCount > 0) ? m_fPingSum / m_fPingCount * 1000.0 : 0.0;
+		auto prec = std::cout.precision();
+		std::cout.precision(1);
+		std::cout << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
+		std::cout.precision(prec);
+	}
+	if (m_uiTimeoutPackets)
+	{
+		std::cout << m_uiTimeoutPackets << " of " << m_uiTotalPackets << " packets timed out" << std::endl;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -85,21 +101,6 @@ void CCodecStream::Thread()
 	while (keep_running)
 	{
 		Task();
-	}
-	// display stats
-	if (m_fPingMin >= 0.0)
-	{
-		double min = m_fPingMin * 1000.0;
-		double max = m_fPingMax * 1000.0;
-		double ave = (m_fPingCount > 0) ? m_fPingSum / m_fPingCount * 1000.0 : 0.0;
-		auto prec = std::cout.precision();
-		std::cout.precision(1);
-		std::cout << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
-		std::cout.precision(prec);
-	}
-	if (m_uiTimeoutPackets)
-	{
-		std::cout << m_uiTimeoutPackets << " of " << m_uiTotalPackets << " packets timed out" << std::endl;
 	}
 }
 

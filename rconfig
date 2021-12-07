@@ -136,6 +136,11 @@ WriteSRCHFile ()
 	if [[ "$m" != true ]]; then
 		echo "#define NO_G3" >> $file
 	fi
+	if [ -n ${dbsupport+x} ]; then
+		if [ "$dbsupport" == true ]; then
+			echo "#define DEBUG" >> $file
+		fi
+	fi
 }
 
 WriteSRCMKFile ()
@@ -176,7 +181,11 @@ WriteTranscoderHFile ()
 	if [ -n ${tcaddress+x} ] && [[ "$tcaddress" != "local" ]]; then
 		echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
 	fi
-
+	if [ -n ${dbsupport+x} ]; then
+		if [ "$dbsupport" == true ]; then
+			echo "#define DEBUG" >> $file
+		fi
+	fi
 }
 
 WriteTranscoderMKFile ()
@@ -326,7 +335,7 @@ while [[ "$key" != q* ]]
 do
 	clear
 	echo
-	echo "        Reflector Configuration, Version #211205"
+	echo "        Reflector Configuration, Version #211207"
 	echo
 	echo    "     ******* REFLECTOR ********"
 	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}

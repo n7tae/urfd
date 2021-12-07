@@ -183,7 +183,6 @@ void CM17Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign my(Header->GetMyCallsign());
 		CCallsign rpt1(Header->GetRpt1Callsign());
 		CCallsign rpt2(Header->GetRpt2Callsign());
-		std::cout << "New Header: my=" << my << " Rpt1=" << rpt1 << " Rpt2=" << rpt2 << std::endl;
 
 		// find this client
 		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::m17);
@@ -192,7 +191,6 @@ void CM17Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 			// get client callsign
 			rpt1 = client->GetCallsign();
 			// and try to open the stream
-			std::cout << "Client has c/s=" << rpt1 << std::endl;
 			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
