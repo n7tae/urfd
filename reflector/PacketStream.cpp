@@ -87,7 +87,9 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 {
 	// update stream dependent packet data
 	m_LastPacketTime.start();
-	Packet->UpdatePids(m_uiPacketCntr++);
+	Packet->UpdatePids(m_uiPacketCntr);
+	if (Packet->IsDvFrame())
+		m_uiPacketCntr++;
 	// transcoder avaliable ?
 #ifdef TRANSCODED_MODULES
 	if ( m_CodecStream != nullptr )
