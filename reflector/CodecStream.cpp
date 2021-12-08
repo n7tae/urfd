@@ -110,6 +110,9 @@ void CCodecStream::Task(void)
 	// any packet from transcoder
 	if (m_TCReader->Receive(&pack, 5))
 	{
+#ifdef DEBUG
+		std::cout << "Got a packet from the Transcoder for module '" << pack.module << "'" << std::endl;
+#endif
 		// tickle
 		m_TimeoutTimer.start();
 
@@ -175,6 +178,9 @@ void CCodecStream::Task(void)
 		m_StatsTimer.start();
 		m_uiTotalPackets++;
 		m_TCWriter.Send(Frame->GetCodecPacket());
+#ifdef debug
+		std::cout << "Sent a packet to the transcoder from module '" << Frame->GetCodecPacket().module << "'" << std::endl;
+#endif
 
 		// and push to our local queue
 		m_LocalQueue.push(Packet);
