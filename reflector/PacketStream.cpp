@@ -39,8 +39,6 @@ CPacketStream::CPacketStream(std::shared_ptr<CUnixDgramReader> reader)
 
 bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::shared_ptr<CClient>client)
 {
-	bool ok = false;
-
 	// not already open?
 	if ( !m_bOpen )
 	{
@@ -52,12 +50,23 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_OwnerClient = client;
 		m_LastPacketTime.start();
 #ifdef TRANSCODED_MODULES
-		if (std::string::npos != std::string(TRANSCODED_MODULES).find(DvHeader.GetRpt2Module()))
-			m_CodecStream = std::make_shared<CCodecStream>(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader);
+		auto mod = DvHeader.GetRpt2Module();
+		if (std::string::npos != std::string(TRANSCODED_MODULES).find(mod))
+		{
+			m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader));
+			return true;
+		}
+		else
+		{
+			std::cerr << "Could not find module '" << mod << " in the transcoded list, '" << TRANSCODED_MODULES << "'" << std::endl;
+			return false;
+		}
+#else
+		return true;
 #endif
-		ok = true;
 	}
-	return ok;
+
+	return false;
 }
 
 void CPacketStream::ClosePacketStream(void)

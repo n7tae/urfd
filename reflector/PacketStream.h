@@ -66,6 +66,6 @@ protected:
 	std::shared_ptr<CClient> m_OwnerClient;
 #ifdef TRANSCODED_MODULES
 	std::shared_ptr<CUnixDgramReader> m_TCReader;
-	std::shared_ptr<CCodecStream> m_CodecStream;
+	std::unique_ptr<CCodecStream> m_CodecStream;
 #endif
 };

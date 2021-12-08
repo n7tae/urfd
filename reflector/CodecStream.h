@@ -35,9 +35,6 @@ public:
 	// destructor
 	virtual ~CCodecStream();
 
-	// initialization
-	bool Init();
-
 	// get
 	uint16_t GetStreamId(void) const          { return m_uiStreamId; }
 	bool     IsEmpty(void) const;
@@ -47,6 +44,8 @@ public:
 	void Task(void);
 
 protected:
+	// initialization
+	void InitCodecStream(void);
 	// data
 	uint16_t        m_uiStreamId;
 	uint16_t        m_uiPort;

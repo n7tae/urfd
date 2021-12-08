@@ -204,13 +204,15 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 		client->Heard();
 
 		// report
-		std::cout << "Opening stream on module " << module << " for client " << client->GetCallsign() << " with sid " << DvHeader->GetStreamId() << " by user " << DvHeader->GetMyCallsign() << std::endl;
+		std::cout << std::showbase << std::hex;
+		std::cout << "Opening stream on module " << module << " for client " << client->GetCallsign() << " with sid " << ntohs(DvHeader->GetStreamId()) << " by user " << DvHeader->GetMyCallsign() << std::endl;
+		std::cout << std::noshowbase << std::dec;
 
 		// and push header packet
 		stream->Push(std::move(DvHeader));
 
 		// notify
-		g_Reflector.OnStreamOpen(stream->GetUserCallsign());
+		OnStreamOpen(stream->GetUserCallsign());
 
 	}
 	stream->Unlock();

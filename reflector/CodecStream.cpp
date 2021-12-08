@@ -39,6 +39,7 @@ CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECode
 	m_uiTimeoutPackets = 0;
 	m_PacketStream = PacketStream;
 	m_TCReader = reader;
+	InitCodecStream();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -76,13 +77,11 @@ CCodecStream::~CCodecStream()
 ////////////////////////////////////////////////////////////////////////////////////////
 // initialization
 
-bool CCodecStream::Init()
+void CCodecStream::InitCodecStream(void)
 {
 	m_TCWriter.SetUp(REF2TC);
 	keep_running = true;
 	m_Future = std::async(std::launch::async, &CCodecStream::Thread, this);
-
-	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
