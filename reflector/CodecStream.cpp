@@ -178,9 +178,6 @@ void CCodecStream::Task(void)
 		m_StatsTimer.start();
 		m_uiTotalPackets++;
 		m_TCWriter.Send(Frame->GetCodecPacket());
-#ifdef DEBUG
-		std::cout << "Sent a packet to the transcoder from module '" << Frame->GetCodecPacket()->module << "'" << std::endl;
-#endif
 
 		// and push to our local queue
 		m_LocalQueue.push(Packet);

@@ -73,8 +73,16 @@ void CM17Protocol::Task(void)
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
+				// xrf needs a voice frame every 20 ms and an M17 frame is 40 ms, so we need a duplicate
 				auto secondFrame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(*Frame.get()));
+
+				// This is a "first" packet, so clear the last packet status, since the real last packet it the secondFrame
+				if (Frame->IsLastPacket())
+					Frame->SetLastPacket(false);
+
+				// push the "first" packet
 				OnDvFramePacketIn(Frame, &Ip);
+				// push the "second" packet
 				OnDvFramePacketIn(secondFrame, &Ip); // push two packet because we need a packet every 20 ms
 			}
 		}
