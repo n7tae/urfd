@@ -48,7 +48,7 @@ CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECode
 CCodecStream::~CCodecStream()
 {
 	// close socket
-	m_TCReader->Close();
+	//m_TCReader->Close();
 
 	// kill threads
 	keep_running = false;
@@ -185,5 +185,6 @@ void CCodecStream::Task(void)
 	{
 		//std::cout << "transcoder packet timeout" << std::endl;
 		m_uiTimeoutPackets++;
+		m_TimeoutTimer.start();
 	}
 }

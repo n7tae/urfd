@@ -56,6 +56,7 @@ CReflector::~CReflector()
 	}
 	m_RouterFuture.clear();
 	m_Stream.clear();
+	m_TCReader.clear();
 }
 
 
