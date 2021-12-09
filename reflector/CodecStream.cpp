@@ -65,7 +65,7 @@ CCodecStream::~CCodecStream()
 		double ave = (m_fPingCount > 0) ? m_fPingSum / m_fPingCount * 1000.0 : 0.0;
 		auto prec = std::cout.precision();
 		std::cout.precision(1);
-		std::cout << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
+		std::cout << std::fixed << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
 		std::cout.precision(prec);
 	}
 	if (m_uiTimeoutPackets)
@@ -110,9 +110,6 @@ void CCodecStream::Task(void)
 	// any packet from transcoder
 	if (m_TCReader->Receive(&pack, 5))
 	{
-#ifdef DEBUG
-		std::cout << "Got a packet from the Transcoder for module '" << pack.module << "'" << std::endl;
-#endif
 		// tickle
 		m_TimeoutTimer.start();
 
