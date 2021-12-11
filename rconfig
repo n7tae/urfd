@@ -14,6 +14,88 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#!/bin/bash
+
+CharCount () {
+	local haystack=$1
+	local test="\${haystack//[^$2]}"
+	eval local result=$test
+	return ${#result}
+}
+
+RemoveDupes () {
+	local -n s=$1
+	local i j
+	for (( i=0; i<${#s}-1; i++)); do
+		for (( j=$i+1; j<${#s}; j++)); do
+			if [[ ${s:$i:1} != "." ]]; then
+				if [[ ${s:$i:1} == ${s:$j:1} ]]; then
+					local l=$(($j + 1))
+					s="${s:0:$j}.${s:$l}"
+				fi
+			fi
+		done
+	done
+	s=${s//.}
+}
+
+CheckModules () {
+	# only A through Z
+	modules=${1//[^A-Z]}
+	if (( ${#modules} < 1 )); then
+		unset modules
+		clear
+		echo "ERROR: You must specify at least one module, A to Z!"
+		echo
+		read -p "<Enter> to continue: " ans
+		return
+	fi
+
+	RemoveDupes modules
+	tcmodules=${modules:0:1}
+}
+
+CheckTranscodedModules () {
+	local tc=${1//[^A-Z]}
+	local tcorig=$tc
+	if (( ${#tc} < 1 )); then
+		tcmodules=${modules:0:1}
+		clear
+		echo "ERROR: You must specify at least one module!"
+		echo "If you aren't using a transcoder, set the transcoder"
+		echo "address value to the default 'none'!"
+		echo
+		read -p "<Enter> to continue: " ans
+		return
+	fi
+
+	RemoveDupes tc
+
+	local m=$modules_d
+	if [ ! -z ${modules+x} ]; then
+		m=$modules
+	fi
+
+	local i
+	for ((i=0; i<${#tc}; i++)); do
+		CharCount $m ${tc:$i:1}
+		local count=$?
+		if (( $count < 1 )); then
+			local j=$((i+1))
+			tc="${tc:0:$i}.${tc:$j}"
+		fi
+	done
+	tc=${tc//.}
+
+	if (( ${#tc} < 1 )); then
+		echo "ERROR: Module(s), '$tcorig', are not in the configure modules, '$m'!"
+		echo
+		read -p "<Enter> to continue: " ans
+		tcmodules=${modules:0:1}
+		return
+	fi
+	tcmodules=$tc
+}
 
 SetBooleanValue ()
 {
@@ -122,11 +204,7 @@ WriteSRCHFile ()
 	fi
 	if [ ! -z ${tcaddress+x} ]; then
 		echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
-		if [ -z ${tcmodules+x} ]; then
-			echo "#define TRANSCODED_MODULES \"${tcmodules_d}\"" >> $file
-		else
-			echo "#define TRANSCODED_MODULES \"${tcmodules}\"" >> $file
-		fi
+		echo "#define TRANSCODED_MODULES \"${tcmodules}\"" >> $file
 	fi
 	if [ -z ${g3support+x} ]; then
 		m=${g3support_d}
@@ -291,7 +369,6 @@ modules_d='ABCF'
 ip4addr_d='none'
 ip6addr_d='none'
 tcaddress_d='none'
-tcmodules_d='ABC'
 ysfautolink_d=false
 ysfmodule_d='D'
 g3support_d=false
@@ -335,7 +412,7 @@ while [[ "$key" != q* ]]
 do
 	clear
 	echo
-	echo "        Reflector Configuration, Version #211207"
+	echo "        Reflector Configuration, Version #211211"
 	echo
 	echo    "     ******* REFLECTOR ********"
 	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}
@@ -377,11 +454,11 @@ do
 		callsign="${value^^}"
 		callsign="${callsign:0:6}"
 		unset tcaddress tcmodules ysf{autolink,module,localdb,dbname,dbuser,dbpw}
-	elif [[ "$key" == am* ]]; then modules="${value^^}"
+	elif [[ "$key" == am* ]]; then CheckModules "${value^^}"
 	elif [[ "$key" == i4* ]]; then ip4addr="$value"
 	elif [[ "$key" == i6* ]]; then ip6addr="$value"
 	elif [[ "$key" == tc* ]]; then tcaddress="$value"
-	elif [[ "$key" == tm* ]]; then tcmodules="${value^^}"
+	elif [[ "$key" == tm* ]]; then CheckTranscodedModules "${value^^}"
 	elif [[ "$key" == ye* ]]; then SetBooleanValue ysfautolink "$value"
 	elif [[ "$key" == ym* ]]; then
 		ysfmodule="${value^^}"
@@ -402,7 +479,7 @@ do
 		elif [[ "$value" == i4* ]]; then unset ip4addr
 		elif [[ "$value" == i6* ]]; then unset ip6addr
 		elif [[ "$value" == tc* ]]; then unset tcaddress
-		elif [[ "$value" == tm* ]]; then unset tcmodules
+		elif [[ "$value" == tm* ]]; then tcmodules=${modules:0:1}
 		elif [[ "$value" == ye* ]]; then unset ysfautolink ysfmodule
 		elif [[ "$value" == ym* ]]; then unset ysfmodule
 		elif [[ "$value" == g3* ]]; then unset g3support

@@ -47,10 +47,7 @@ CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECode
 
 CCodecStream::~CCodecStream()
 {
-	// close socket
-	//m_TCReader->Close();
-
-	// kill threads
+	// kill the thread
 	keep_running = false;
 	if ( m_Future.valid() )
 	{
