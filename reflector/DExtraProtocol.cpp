@@ -607,7 +607,10 @@ bool CDextraProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer 
 
 	Buffer->Set(tag, sizeof(tag));
 	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
+	uint8_t id = Packet.GetDstarPacketId() % 21;
+	if (Packet.IsLastPacket())
+		id |= 0x40U;
+	Buffer->Append(id);
 	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
 	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
 
