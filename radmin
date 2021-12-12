@@ -27,7 +27,7 @@ UninstallReflector () {
 		sudo make uninstall
 		popd
 	fi
-	if [ -e $tcserv ]; then
+	if [ -e $tcdserv ]; then
 		pushd ../tcd
 		sudo make uninstall
 		popd
@@ -83,7 +83,7 @@ Compile () {
 
 # service file locations
 urfserv='/etc/systemd/system/urfd.service'
-tcserv='/etc/systemd/system/ambed.service'
+tcdserv='/etc/systemd/system/ambed.service'
 
 # default values, we only need a few
 tcaddress='none'
@@ -120,12 +120,12 @@ do
 		if [ -e $urfserv ]; then
 			echo "us : Uninstall the XLX reflector"
 			echo "rl : Reflector log"
-			if [ -e $tcserv ]; then
+			if [ -e $tcdserv ]; then
 				echo "tl : Transcoder log"
 			fi
 		fi
 		echo "rr : Reflector restart"
-		if [ -e $tcserv ]; then
+		if [ -e $tcdserv ]; then
 			echo "tr : Transcoder restart"
 		fi
 	else
@@ -173,18 +173,20 @@ do
 		git checkout "$value"
 		echo
 		read -p "<Enter> to continue: " ans
+		pushd ../tcd
+		git checkout "$value"
+		echo
+		read -p "<Enter> to continue: " ans
+		popd
 	elif [[ "$key" == rr* ]]; then
 		if   [ -e $urfserv ]; then
 			sudo systemctl restart urfd
 		fi
-	elif [[ "$key" == tr* ]] && [ -e $tcserv ]; then sudo systemctl restart tcd
+	elif [[ "$key" == tr* ]] && [ -e $tcdserv ]; then sudo systemctl restart tcd
 	elif [[ "$key" == cl* ]]; then Clean
 	elif [[ "$key" == co* ]]; then Compile
-	elif [[ "$key" == tl* ]] && [ -e $tcserv ]; then sudo journalctl -u tcd -f
-	elif [[ "$key" == rl* ]]; then
-		if [ -e $urfserv ]; then
-			sudo journalctl -u urfd -f
-		fi
+	elif [[ "$key" == tl* ]] && [ -e $tcdserv ]; then sudo journalctl -u tcd -f
+	elif [[ "$key" == rl* ]] && [ -e $urfserv ]; then sudo journalctl -u urfd -f
 	fi
 done
 exit 0

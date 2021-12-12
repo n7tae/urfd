@@ -243,11 +243,11 @@ void CM17Protocol::HandleQueue(void)
 			memcpy(frame.magic, "M17 ", 4);
 			if ( packet->IsLastPacket() )
 			{
-				EncodeLastM17Packet(frame, m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+				EncodeLastM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
 			}
 			else if ( packet->IsDvFrame() )
 			{
-				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
 			}
 
 			// push it to all our clients linked to the module and who are not streaming in
@@ -357,8 +357,11 @@ bool CM17Protocol::IsValidDvPacket(const CBuffer &Buffer, std::unique_ptr<CDvHea
 	uint8_t tag[] = { 'M', '1', '7', ' ' };
 
 	if ( (Buffer.size() == sizeof(SM17Frame)) && (0 == Buffer.Compare(tag, sizeof(tag))) && (0x4U == (0x1CU & Buffer[19])) )
-	// Buffer[19] is the lsb byte of the frametype. 0x4 means payload contains Codec2 voice data and there is no encryption.
-	// the 0x1CU mask just lets us see the encryptions bytes (must be zero) and the msb of the payload type (must be set)
+	// Buffer[19] is the low-order byte of the uint16_t frametype.
+	// the 0x1CU mask (00011100 binary) just lets us see:
+	// 1. the encryptions bytes (mask 0x18U) which must be zero, and
+	// 2. the msb of the 2-bit payload type (mask 0x4U) which must be set. This bit set means it's voice or voice+data.
+	// An masked result of 0x4U means the payload contains Codec2 voice data and there is no encryption.
 	{
 		// Make the M17 header
 		CM17Packet m17(Buffer.data());
