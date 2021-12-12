@@ -243,7 +243,7 @@ void CG3Protocol::ConfigTask(void)
 		{
 			if (memcmp(&Buffer.data()[8], "        ", 8) == 0)
 			{
-				Call.SetCallsign(GetReflectorCallsign(), 8);
+				Call = GetReflectorCallsign();
 			}
 			else
 			{
