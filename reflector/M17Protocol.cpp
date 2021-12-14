@@ -417,5 +417,5 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 void CM17Protocol::EncodeLastM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
 {
 	EncodeM17Packet(frame, Header, DvFrame, iSeq);
-	frame.framenumber |= 0x8000U;
+	frame.framenumber = htons(ntohs(frame.framenumber) | 0x8000U);
 }
