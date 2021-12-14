@@ -262,9 +262,8 @@ void CM17Protocol::HandleQueue(void)
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == module) )
 				{
-					CBuffer Buffer(frame.magic, sizeof(SM17Frame));
 					// no, send the packet
-					Send(Buffer, client->GetIp());
+					Send(frame, client->GetIp());
 
 				}
 			}

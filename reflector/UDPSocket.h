@@ -57,6 +57,7 @@ public:
 	void Send(const char    *, const CIp &) const;
 	void Send(const CBuffer &, const CIp &, uint16_t) const;
 	void Send(const char    *, const CIp &, uint16_t) const;
+	void Send(const u_int8_t *, size_t size, const CIp &) const;
 
 protected:
 	// data

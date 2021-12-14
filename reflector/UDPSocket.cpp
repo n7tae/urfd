@@ -173,3 +173,8 @@ void CUdpSocket::Send(const char *Buffer, const CIp &Ip, uint16_t destport) cons
 	temp.SetPort(destport);
 	sendto(m_fd, Buffer, ::strlen(Buffer), 0, temp.GetCPointer(), temp.GetSize());
 }
+
+void CUdpSocket::Send(const uint8_t *data, size_t size, const CIp &Ip) const
+{
+	sendto(m_fd, data, size, 0, Ip.GetCPointer(), Ip.GetSize());
+}
