@@ -133,4 +133,8 @@ protected:
 
 	// debug
 	CTimer      m_DebugTimer;
+
+#ifdef DEBUG
+	void Dump(const char *title, const uint8_t *pointer, int length);
+#endif
 };

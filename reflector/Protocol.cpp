@@ -336,3 +336,46 @@ void CProtocol::Send(const char *buf, const CIp &Ip, uint16_t port) const
 		break;
 	}
 }
+
+#ifdef DEBUG
+void CProtocol::Dump(const char *title, const uint8_t *data, int length)
+{
+	std::cout << title << std::endl;
+
+	unsigned int offset = 0U;
+
+	while (length > 0) {
+
+		unsigned int bytes = (length > 16) ? 16U : length;
+
+		for (unsigned i = 0U; i < bytes; i++) {
+			if (i)
+				std::cout << " ";
+			std::cout << std::hex << std::setw(2) << std::right << std::setfill('0') << int(data[offset + i]);
+		}
+
+		for (unsigned int i = bytes; i < 16U; i++)
+			std::cout << "   ";
+
+		std::cout << "   *";
+
+		for (unsigned i = 0U; i < bytes; i++) {
+			unsigned char c = data[offset + i];
+
+			if (::isprint(c))
+				std::cout << c;
+			else
+				std::cout << '.';
+		}
+
+		std::cout << '*' << std::endl;
+
+		offset += 16U;
+
+		if (length >= 16)
+			length -= 16;
+		else
+			length = 0;
+	}
+}
+#endif

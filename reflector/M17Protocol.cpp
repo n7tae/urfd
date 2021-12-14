@@ -248,6 +248,9 @@ void CM17Protocol::HandleQueue(void)
 			else if ( packet->IsDvFrame() )
 			{
 				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+#ifdef DEBUG
+				Dump("Last M17 Packet:", frame.magic, sizeof(SM17Frame));
+#endif
 			}
 
 			// push it to all our clients linked to the module and who are not streaming in
