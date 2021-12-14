@@ -67,7 +67,6 @@ protected:
 	// packet encoding helpers
 	void EncodeKeepAlivePacket(CBuffer &);
 	void EncodeM17Packet(SM17Frame &, const CDvHeaderPacket &, const CDvFramePacket &, uint32_t) const;
-	void EncodeLastM17Packet(SM17Frame &, const CDvHeaderPacket &, const CDvFramePacket &, uint32_t) const;
 
 protected:
 	// for keep alive

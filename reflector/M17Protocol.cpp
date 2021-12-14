@@ -236,22 +236,16 @@ void CM17Protocol::HandleQueue(void)
 			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
 			m_StreamsCache[module].m_iSeqCounter = 0;
 		}
-		else if (packet->IsSecond() || packet->IsLastPacket())
+		else if ( packet->IsDvFrame() && (packet->IsSecond() || packet->IsLastPacket()))
 		{
 			// encode it
 			SM17Frame frame;
-			memcpy(frame.magic, "M17 ", 4);
-			if ( packet->IsLastPacket() )
-			{
-				EncodeLastM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
-			}
-			else if ( packet->IsDvFrame() )
-			{
-				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+
+			EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+
 #ifdef DEBUG
-				Dump("Last M17 Packet:", frame.magic, sizeof(SM17Frame));
+			Dump("M17 Packet:", frame.magic, sizeof(SM17Frame));
 #endif
-			}
 
 			// push it to all our clients linked to the module and who are not streaming in
 			CClients *clients = g_Reflector.GetClients();
@@ -409,15 +403,12 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 	// now the main part of the packet
 	memcpy(frame.magic, "M17 ", 4);
 	// the frame number comes from the stream sequence counter
-	frame.framenumber = htons(iSeq % 0x8000U);
+	uint16_t fn = iSeq % 0x8000U;
+	if (DvFrame.IsLastPacket())
+		fn |= 0x8000U;
+	frame.framenumber = htons(fn);
 	memcpy(frame.payload, DvFrame.GetCodecData(codec_in), 16);
 	frame.streamid = Header.GetStreamId();	// no host<--->network byte swapping since we never do any math on this value
 	// finally, calcualte the m17 CRC value and load it
 	frame.crc = htons(m17crc.CalcCRC(frame.magic, sizeof(SM17Frame)-2));
-}
-
-void CM17Protocol::EncodeLastM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
-{
-	EncodeM17Packet(frame, Header, DvFrame, iSeq);
-	frame.framenumber = htons(ntohs(frame.framenumber) | 0x8000U);
 }
