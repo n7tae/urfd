@@ -81,6 +81,11 @@ bool CUnixDgramReader::Receive(STCPacket *pack, unsigned timeout) const
 		return false;
 	}
 
+	return Read(pack);
+}
+
+bool CUnixDgramReader::Read(STCPacket *pack) const
+{
 	auto len = read(fd, pack, sizeof(STCPacket));
 	if (len != sizeof(STCPacket)) {
 		std::cerr << "Received transcoder packet is wrong size: " << len << " but should be " << sizeof(STCPacket) << std::endl;

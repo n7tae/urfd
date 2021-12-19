@@ -28,6 +28,7 @@ public:
 	CUnixDgramReader();
 	~CUnixDgramReader();
 	bool Open(const char *path);
+	bool Read(STCPacket *pack) const;
 	bool Receive(STCPacket *pack, unsigned timeout) const;
 	void Close();
 	int GetFD() const;
