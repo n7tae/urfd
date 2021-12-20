@@ -87,9 +87,10 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 {
 	// update stream dependent packet data
 	m_LastPacketTime.start();
-	Packet->UpdatePids(m_uiPacketCntr);
 	if (Packet->IsDvFrame())
-		m_uiPacketCntr++;
+	{
+		Packet->UpdatePids(m_uiPacketCntr++);
+	}
 	// transcoder avaliable ?
 #ifdef TRANSCODED_MODULES
 	if ( m_CodecStream != nullptr )
@@ -98,7 +99,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 		m_CodecStream->Lock();
 		{
 			// transcoder ready & frame need transcoding ?
-			if (Packet->HasTranscodableData())
+			if (Packet->IsDvFrame())
 			{
 				// yes, push packet to trancoder queue
 				// trancoder will push it after transcoding
@@ -107,7 +108,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 			}
 			else
 			{
-				// no, just bypass tarnscoder
+				// no, just bypass transcoder
 				push(Packet);
 			}
 		}

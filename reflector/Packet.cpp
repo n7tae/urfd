@@ -46,7 +46,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 	m_uiYsfPacketId = 0xFF;
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
-	m_uiM17FrameNumber = 0x8000U;
+	m_uiM17FrameNumber = 0xFFFFFFFFU;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dstar;
@@ -63,7 +63,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid, bool lastpacket)
 	m_uiYsfPacketId = 0xFF;
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
-	m_uiM17FrameNumber = 0x8000U;
+	m_uiM17FrameNumber = 0xFFFFFFFFU;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
@@ -80,7 +80,7 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_uiDstarPacketId = 0xFF;
 	m_uiDmrPacketId = 0xFF;
 	m_uiDmrPacketSubid = 0xFF;
-	m_uiM17FrameNumber = 0x8000U;
+	m_uiM17FrameNumber = 0xFFFFFFFFU;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
@@ -97,7 +97,7 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 	m_uiYsfPacketId = ysfpid;
 	m_uiYsfPacketSubId = ysfsubpid;
 	m_uiYsfPacketFrameId = ysffrid;
-	m_uiM17FrameNumber = 0x8000U;
+	m_uiM17FrameNumber = 0xFFFFFFFFU;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = codecIn;
@@ -115,7 +115,7 @@ CPacket::CPacket(const CM17Packet &m17) : CPacket()
 	m_uiYsfPacketSubId = 0xFF;
 	m_uiYsfPacketFrameId = 0xFF;
 	m_eCodecIn = (0x6U == (0x6U & m17.GetFrameType())) ? ECodecType::c2_1600 : ECodecType::c2_3200;
-	m_uiM17FrameNumber = 0x7FFFU & m17.GetFrameNumber();
+	m_uiM17FrameNumber = 0xFFFFU & m17.GetFrameNumber();
 	m_bLastPacket = m17.IsLastPacket();
 }
 
@@ -148,10 +148,10 @@ void CPacket::UpdatePids(const uint32_t pid)
 		m_uiYsfPacketFrameId = ((pid / 5) & 0x7FU) << 1;
 	}
 	// m17 needs update?
-	if (m_uiM17FrameNumber == 0x8000U)
+	if (m_uiM17FrameNumber == 0xFFFFFFFFU)
 	{
 		// frames are every 20 milliseconds, so the m17 data will come every 40 milliseconds
-		m_uiM17FrameNumber = (pid % 2) % 0x7FFFU;
+		m_uiM17FrameNumber = (pid / 2) % 0x8000U;
 	}
 
 	// set the Is Second member used for M17 clients

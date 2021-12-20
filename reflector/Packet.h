@@ -45,7 +45,6 @@ public:
 	// identity
 	virtual bool IsDvHeader(void) const          { return false; }
 	virtual bool IsDvFrame(void) const           { return false; }
-	virtual bool HasTranscodableData(void) const { return false; }
 	bool IsLastPacket(void) const                { return m_bLastPacket; }
 
 	// get
@@ -79,7 +78,7 @@ protected:
 	bool       m_bIsSecond;
 	char       m_cModule;
 	uint16_t   m_uiStreamId;
-	uint16_t   m_uiM17FrameNumber;
+	uint32_t   m_uiM17FrameNumber;
 	uint8_t    m_uiDstarPacketId;
 	uint8_t    m_uiDmrPacketId;
 	uint8_t    m_uiDmrPacketSubid;
