@@ -147,12 +147,14 @@ void CDvFramePacket::SetCodecData(const STCPacket *pack)
 	memcpy(&m_TCPack, pack, sizeof(STCPacket));
 }
 
-void CDvFramePacket::SetTCParams()
+void CDvFramePacket::SetTCParams(uint32_t seq)
 {
+	m_TCPack.sequence = seq;
 	m_TCPack.streamid = m_uiStreamId;
 	m_TCPack.is_second = m_bIsSecond;
 	m_TCPack.is_last = m_bLastPacket;
 	m_TCPack.module = m_cModule;
+	m_TCPack.rt_timer.start();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

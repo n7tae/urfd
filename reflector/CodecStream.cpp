@@ -31,12 +31,11 @@ CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECode
 	m_uiStreamId = streamid;
 	m_uiPid = 0;
 	m_eCodecIn = type;
-	m_fPingMin = -1;
-	m_fPingMax = -1;
-	m_fPingSum = 0;
-	m_fPingCount = 0;
+	m_RTMin = -1;
+	m_RTMax = -1;
+	m_RTSum = 0;
+	m_RTCount = 0;
 	m_uiTotalPackets = 0;
-	m_uiTimeoutPackets = 0;
 	m_PacketStream = PacketStream;
 	m_TCReader = reader;
 	InitCodecStream();
@@ -55,19 +54,15 @@ CCodecStream::~CCodecStream()
 	}
 
 	// display stats
-	if (m_fPingMin >= 0.0)
+	if (m_RTMin >= 0.0)
 	{
-		double min = m_fPingMin * 1000.0;
-		double max = m_fPingMax * 1000.0;
-		double ave = (m_fPingCount > 0) ? m_fPingSum / m_fPingCount * 1000.0 : 0.0;
+		double min = m_RTMin * 1000.0;
+		double max = m_RTMax * 1000.0;
+		double ave = (m_RTCount > 0) ? m_RTSum / m_RTCount * 1000.0 : 0.0;
 		auto prec = std::cout.precision();
 		std::cout.precision(1);
 		std::cout << std::fixed << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
 		std::cout.precision(prec);
-	}
-	if (m_uiTimeoutPackets)
-	{
-		std::cout << m_uiTimeoutPackets << " of " << m_uiTotalPackets << " packets timed out" << std::endl;
 	}
 }
 
@@ -107,25 +102,22 @@ void CCodecStream::Task(void)
 	// any packet from transcoder
 	if (m_TCReader->Receive(&pack, 5))
 	{
-		// tickle
-		m_TimeoutTimer.start();
-
 		// update statistics
-		double ping = m_StatsTimer.time();
-		if ( m_fPingMin == -1 )
+		double rt = pack.rt_timer.time();
+		if ( m_RTMin == -1 )
 		{
-			m_fPingMin = ping;
-			m_fPingMax = ping;
+			m_RTMin = rt;
+			m_RTMax = rt;
 
 		}
 		else
 		{
-			m_fPingMin = MIN(m_fPingMin, ping);
-			m_fPingMax = MAX(m_fPingMax, ping);
+			m_RTMin = MIN(m_RTMin, rt);
+			m_RTMax = MAX(m_RTMax, rt);
 
 		}
-		m_fPingSum += ping;
-		m_fPingCount += 1;
+		m_RTSum += rt;
+		m_RTCount += 1;
 
 		if ( m_LocalQueue.empty() )
 		{
@@ -136,13 +128,19 @@ void CCodecStream::Task(void)
 			// pop the original packet
 			auto Packet = m_LocalQueue.pop();
 			auto Frame = (CDvFramePacket *)Packet.get();
-			// todo: check the PID
+
+			// do things look okay?
+			if (pack.sequence != Frame->GetCodecPacket()->sequence)
+				std::cerr << "Sequence mismatch: this voice frame=" << Frame->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
+			if (pack.streamid != Frame->GetCodecPacket()->streamid)
+				std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Frame->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
+
 			// update content with transcoded data
 			Frame->SetCodecData(&pack);
 			// mark the DStar sync frames if the source isn't dstar
 			if (ECodecType::dstar!=Frame->GetCodecIn() && 0==Frame->GetPacketId()%21)
 			{
-				const uint8_t DStarSync[] = { 0x55,0x2D,0x16 };
+				const uint8_t DStarSync[] = { 0x55, 0x2D, 0x16 };
 				Frame->SetDvData(DStarSync);
 			}
 
@@ -163,25 +161,16 @@ void CCodecStream::Task(void)
 		auto Frame = (CDvFramePacket *)Packet.get();
 
 		// update important stuff in Frame->m_TCPack for the transcoder
-		Frame->SetTCParams();
+		Frame->SetTCParams(m_uiTotalPackets);
 
 		// now send to transcoder
 		// this assume that thread pushing the Packet
 		// have verified that the CodecStream is connected
 		// and that the packet needs transcoding
-		m_StatsTimer.start();
 		m_uiTotalPackets++;
 		m_TCWriter.Send(Frame->GetCodecPacket());
 
 		// and push to our local queue
 		m_LocalQueue.push(Packet);
-	}
-
-	// handle timeout
-	if ( !m_LocalQueue.empty() && (m_TimeoutTimer.time() >= (TRANSCODER_AMBEPACKET_TIMEOUT/1000.0f)) )
-	{
-		//std::cout << "transcoder packet timeout" << std::endl;
-		m_uiTimeoutPackets++;
-		m_TimeoutTimer.start();
 	}
 }

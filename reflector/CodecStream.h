@@ -63,14 +63,11 @@ protected:
 	// thread
 	std::atomic<bool> keep_running;
 	std::future<void> m_Future;
-	CTimer          m_TimeoutTimer;
-	CTimer          m_StatsTimer;
 
 	// statistics
-	double          m_fPingMin;
-	double          m_fPingMax;
-	double          m_fPingSum;
-	double          m_fPingCount;
+	double          m_RTMin;
+	double          m_RTMax;
+	double          m_RTSum;
+	double          m_RTCount;
 	uint32_t        m_uiTotalPackets;
-	uint32_t        m_uiTimeoutPackets;
 };
