@@ -29,7 +29,7 @@ using STCPacket = struct tcpacket_tag {
 	CTimer rt_timer;
 	uint32_t sequence;
 	char module;
-	bool is_second, is_last;
+	bool is_last;
 	uint16_t streamid;
 	ECodecType codec_in;
 	uint8_t dstar[9];

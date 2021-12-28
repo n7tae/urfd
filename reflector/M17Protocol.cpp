@@ -236,7 +236,7 @@ void CM17Protocol::HandleQueue(void)
 			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
 			m_StreamsCache[module].m_iSeqCounter = 0;
 		}
-		else if ( packet->IsDvFrame() && (packet->IsSecond() || packet->IsLastPacket()))
+		else if ( packet->IsDvFrame() && ((1 == m_StreamsCache[module].m_iSeqCounter % 2) || packet->IsLastPacket()))
 		{
 			// encode it
 			SM17Frame frame;
