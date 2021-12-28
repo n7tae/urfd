@@ -236,13 +236,13 @@ void CM17Protocol::HandleQueue(void)
 			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
 			m_StreamsCache[module].m_iSeqCounter = 0;
 		}
-		else if ( packet->IsDvFrame() && ((1 == m_StreamsCache[module].m_iSeqCounter % 2) || packet->IsLastPacket()))
+		else if ( packet->IsDvFrame() && ((1 == m_StreamsCache[module].m_iSeqCounter++ % 2) || packet->IsLastPacket()))
 		{
 			// encode it
 			SM17Frame frame;
 			auto dvFrame = (CDvFramePacket *)packet.get();
-std::cout << "m_StreamsCache[" << module << "].m_iSeqCounter=" << m_StreamsCache[module].m_iSeqCounter << " packet.sequence=" << dvFrame->GetCodecPacket()->sequence << std::endl;
-			EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++);
+std::cout << "m_StreamsCache[" << module << "].m_iSeqCounter=" << m_StreamsCache[module].m_iSeqCounter-1 << " packet.sequence=" << dvFrame->GetCodecPacket()->sequence << std::endl;
+			EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter-1);
 
 			// push it to all our clients linked to the module and who are not streaming in
 			CClients *clients = g_Reflector.GetClients();
