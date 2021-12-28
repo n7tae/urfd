@@ -54,14 +54,14 @@ CCodecStream::~CCodecStream()
 	}
 
 	// display stats
-	if (m_RTMin >= 0.0)
+	if (m_RTCount > 0)
 	{
-		double min = m_RTMin * 1000.0;
-		double max = m_RTMax * 1000.0;
-		double ave = (m_RTCount > 0) ? m_RTSum / m_RTCount * 1000.0 : 0.0;
+		double min = 1000.0 * m_RTMin;
+		double max = 1000.0 * m_RTMax;
+		double ave = 1000.0 * m_RTSum / double(m_RTCount);
 		auto prec = std::cout.precision();
 		std::cout.precision(1);
-		std::cout << std::fixed << "Transcoder Stats (ms): " << min << "/" << ave << "/" << max << std::endl;
+		std::cout << std::fixed << "TC round-trip time(ms): " << min << "/" << ave << "/" << max << ", " << m_RTCount << " total packets" << std::endl;
 		std::cout.precision(prec);
 	}
 }
@@ -103,7 +103,7 @@ void CCodecStream::Task(void)
 	if (m_TCReader->Receive(&pack, 5))
 	{
 		// update statistics
-		double rt = pack.rt_timer.time();
+		double rt = pack.rt_timer.time();	// the round-trip time
 		if ( m_RTMin == -1 )
 		{
 			m_RTMin = rt;
@@ -117,7 +117,7 @@ void CCodecStream::Task(void)
 
 		}
 		m_RTSum += rt;
-		m_RTCount += 1;
+		m_RTCount++;
 
 		if ( m_LocalQueue.empty() )
 		{

@@ -65,9 +65,9 @@ protected:
 	std::future<void> m_Future;
 
 	// statistics
-	double          m_RTMin;
-	double          m_RTMax;
-	double          m_RTSum;
-	double          m_RTCount;
-	uint32_t        m_uiTotalPackets;
+	double       m_RTMin;
+	double       m_RTMax;
+	double       m_RTSum;
+	unsigned int m_RTCount;
+	uint32_t     m_uiTotalPackets;
 };

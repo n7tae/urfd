@@ -236,32 +236,36 @@ void CM17Protocol::HandleQueue(void)
 			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
 			m_StreamsCache[module].m_iSeqCounter = 0;
 		}
-		else if ( packet->IsDvFrame() && ((1 == m_StreamsCache[module].m_iSeqCounter++ % 2) || packet->IsLastPacket()))
+		else if (packet->IsDvFrame())
 		{
-			// encode it
-			SM17Frame frame;
-
-			EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket *)packet.get(), m_StreamsCache[module].m_iSeqCounter-1);
-
-			// push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Reflector.GetClients();
-			auto it = clients->begin();
-			std::shared_ptr<CClient>client = nullptr;
-			while ( (client = clients->FindNextClient(EProtocol::m17, it)) != nullptr )
+			if ((1 == m_StreamsCache[module].m_iSeqCounter % 2) || packet->IsLastPacket())
 			{
-				// is this client busy ?
-				if ( !client->IsAMaster() && (client->GetReflectorModule() == module) )
-				{
-					// set the destination
-					client->GetCallsign().CodeOut(frame.lich.addr_dst);
-					// set the crc
-					frame.crc = htons(m17crc.CalcCRC(frame.magic, sizeof(SM17Frame)-2));
-					// now send the packet
-					Send(frame, client->GetIp());
+				// encode it
+				SM17Frame frame;
 
+				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket *)packet.get(), m_StreamsCache[module].m_iSeqCounter);
+
+				// push it to all our clients linked to the module and who are not streaming in
+				CClients *clients = g_Reflector.GetClients();
+				auto it = clients->begin();
+				std::shared_ptr<CClient>client = nullptr;
+				while ( (client = clients->FindNextClient(EProtocol::m17, it)) != nullptr )
+				{
+					// is this client busy ?
+					if ( !client->IsAMaster() && (client->GetReflectorModule() == module) )
+					{
+						// set the destination
+						client->GetCallsign().CodeOut(frame.lich.addr_dst);
+						// set the crc
+						frame.crc = htons(m17crc.CalcCRC(frame.magic, sizeof(SM17Frame)-2));
+						// now send the packet
+						Send(frame, client->GetIp());
+
+					}
 				}
+				g_Reflector.ReleaseClients();
 			}
-			g_Reflector.ReleaseClients();
+			m_StreamsCache[module].m_iSeqCounter++;
 		}
 	}
 	m_Queue.Unlock();
