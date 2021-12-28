@@ -240,9 +240,8 @@ void CM17Protocol::HandleQueue(void)
 		{
 			// encode it
 			SM17Frame frame;
-			auto dvFrame = (CDvFramePacket *)packet.get();
-std::cout << "m_StreamsCache[" << module << "].m_iSeqCounter=" << m_StreamsCache[module].m_iSeqCounter-1 << " packet.sequence=" << dvFrame->GetCodecPacket()->sequence << std::endl;
-			EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter-1);
+
+			EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket *)packet.get(), m_StreamsCache[module].m_iSeqCounter-1);
 
 			// push it to all our clients linked to the module and who are not streaming in
 			CClients *clients = g_Reflector.GetClients();
@@ -386,7 +385,7 @@ void CM17Protocol::EncodeKeepAlivePacket(CBuffer &Buffer)
 	g_Reflector.GetCallsign().CodeOut(Buffer.data() + 4);
 }
 
-void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq) const
+void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket *DvFrame, uint32_t iSeq) const
 {
 	ECodecType codec_in = Header.GetCodecIn();  // We'll need this
 
@@ -398,16 +397,16 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 	from.CodeOut(frame.lich.addr_src);
 	// then the frame type, if the incoming frame is M17 1600, then it will be Voice+Data only, otherwise Voice-Only
 	frame.lich.frametype = htons((ECodecType::c2_1600==codec_in) ? 0x7U : 0x5U);
-	memcpy(frame.lich.nonce, DvFrame.GetNonce(), 14);
+	memcpy(frame.lich.nonce, DvFrame->GetNonce(), 14);
 
 	// now the main part of the packet
 	memcpy(frame.magic, "M17 ", 4);
 	// the frame number comes from the stream sequence counter
 	uint16_t fn = (iSeq / 2) % 0x8000U;
-	if (DvFrame.IsLastPacket())
+	if (DvFrame->IsLastPacket())
 		fn |= 0x8000U;
 	frame.framenumber = htons(fn);
-	memcpy(frame.payload, DvFrame.GetCodecData(ECodecType::c2_3200), 16);
+	memcpy(frame.payload, DvFrame->GetCodecData(ECodecType::c2_3200), 16);
 	frame.streamid = Header.GetStreamId();	// no host<--->network byte swapping since we never do any math on this value
 	// the CRC will be set in HandleQueue, after lich.dest is set
 }
