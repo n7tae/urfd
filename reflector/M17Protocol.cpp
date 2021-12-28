@@ -252,7 +252,11 @@ void CM17Protocol::HandleQueue(void)
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == module) )
 				{
-					// no, send the packet
+					// set the destination
+					client->GetCallsign().CodeOut(frame.lich.addr_dst);
+					// set the crc
+					frame.crc = htons(m17crc.CalcCRC(frame.magic, sizeof(SM17Frame)-2));
+					// now send the packet
 					Send(frame, client->GetIp());
 
 				}
@@ -387,8 +391,7 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 
 
 	// do the lich structure first
-	// first, the dest and src callsigns
-	Header.GetRpt2Callsign().CodeOut(frame.lich.addr_dst);
+	// first, the src callsign (the dest will be set HandleQueue)
 	CCallsign from = g_Reflector.GetCallsign();
 	from.SetCSModule(Header.GetPacketModule());
 	from.CodeOut(frame.lich.addr_src);
@@ -405,6 +408,5 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 	frame.framenumber = htons(fn);
 	memcpy(frame.payload, DvFrame.GetCodecData(codec_in), 16);
 	frame.streamid = Header.GetStreamId();	// no host<--->network byte swapping since we never do any math on this value
-	// finally, calcualte the m17 CRC value and load it
-	frame.crc = htons(m17crc.CalcCRC(frame.magic, sizeof(SM17Frame)-2));
+	// the CRC will be set in HandleQueue, after lich.dest is set
 }
