@@ -259,6 +259,9 @@ WriteTranscoderHFile ()
 	if [ -n ${tcaddress+x} ] && [[ "$tcaddress" != "local" ]]; then
 		echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
 	fi
+	if [ -n ${tcmodules+x} ]; then
+		echo "#define TRANSCODED_MODULES \"${tcmodules}\"" >> $file
+	fi
 	if [ -n ${dbsupport+x} ]; then
 		if [ "$dbsupport" == true ]; then
 			echo "#define DEBUG" >> $file
@@ -302,8 +305,8 @@ USE ${ysfdbname};
 CREATE TABLE IF NOT EXISTS ysfnodes (
 	callsign VARCHAR(7) PRIMARY KEY,
 	password VARCHAR(255) NOT NULL,
-	txfreq INT NOT NULL DEFAULT 445500000,
-	rxfreq INT NOT NULL DEFAULT 445500000,
+	txfreq INT NOT NULL DEFAULT 446500000,
+	rxfreq INT NOT NULL DEFAULT 446500000,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 CREATE USER IF NOT EXISTS '${ysfdbuser}'@'localhost' IDENTIFIED BY '${ysfdbpw}';
@@ -412,7 +415,7 @@ while [[ "$key" != q* ]]
 do
 	clear
 	echo
-	echo "        Reflector Configuration, Version #211211"
+	echo "        Reflector Configuration, Version #211229"
 	echo
 	echo    "     ******* REFLECTOR ********"
 	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}
