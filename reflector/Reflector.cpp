@@ -163,14 +163,8 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 	}
 
 	// check if client is valid candidate
-	if ( ! m_Clients.IsClient(client) )
+	if ( ! m_Clients.IsClient(client) || client->IsAMaster() )
 	{
-		std::cerr << "Client " << client->GetCallsign() << " is not a client!" << std::endl;
-		return nullptr;
-	}
-	if ( client->IsAMaster() )
-	{
-		std::cerr << "Client " << client->GetCallsign() << " is already a master!" << std::endl;
 		return nullptr;
 	}
 

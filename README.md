@@ -176,7 +176,7 @@ It has nothing to do with the regular YSFReflector network, hence you don’t ne
 
 ## To-dos
 
-I will eventually support a remote transcoder option, so that you can, for example, run urfd in a data center, and then run the transcoder somewhere you have physical access to it so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary, and variable, latency to your reflector.
+I will eventually support a remote transcoder option, so that you can, for example, run urfd in a data center, and then run the transcoder somewhere you have physical access to it so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
 
 ## Copyright
 
