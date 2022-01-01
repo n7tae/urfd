@@ -61,7 +61,7 @@
 
 // version -----------------------------------------------------
 
-#define VERSION_MAJOR                   1
+#define VERSION_MAJOR                   0
 #define VERSION_MINOR                   0
 #define VERSION_REVISION                0
 
@@ -180,13 +180,12 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdv
 #endif
 
 // system paths -------------------------------------------------
-//#define XML_PATH                        "/var/log/urfd.xml"
+//#define XML_PATH                        "/var/log/xlxd.xml"
 #define XML_PATH                        "./urfd.xml"
 #define WHITELIST_PATH                  "/usr/local/etc/urfd.whitelist"
 #define BLACKLIST_PATH                  "/usr/local/etc/urfd.blacklist"
 #define INTERLINKLIST_PATH              "/usr/local/etc/urfd.interlink"
 #define TERMINALOPTIONS_PATH            "/usr/local/etc/urfd.terminal"
-#define DEBUGDUMP_PATH                  "/var/log/urfd.debug"
 #define PIDFILE_PATH                    "/var/run/urfd.pid"
 
 

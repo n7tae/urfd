@@ -21,11 +21,6 @@
 #include "Packet.h"
 #include "Client.h"
 
-////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////
-// CPacketQueue
-
 class CClient;
 
 class CPacketQueue
@@ -35,13 +30,33 @@ public:
 	virtual ~CPacketQueue() {}
 
 	// lock
-	void Lock()   { m_Mutex.lock(); }
-	void Unlock() { m_Mutex.unlock(); }
+	void Lock()
+	{
+		m_Mutex.lock();
+	}
+
+	void Unlock()
+	{
+		m_Mutex.unlock();
+	}
 
 	// pass thru
-	std::unique_ptr<CPacket> pop()              { auto pack = std::move(queue.front()); queue.pop(); return std::move(pack); }
-	bool empty() const                          { return queue.empty(); }
-	void push(std::unique_ptr<CPacket> &packet) { queue.push(std::move(packet)); }
+	std::unique_ptr<CPacket> pop()
+	{
+		auto pack = std::move(queue.front());
+		queue.pop();
+		return std::move(pack);
+	}
+
+	bool empty() const
+	{
+		return queue.empty();
+	}
+
+	void push(std::unique_ptr<CPacket> &packet)
+	{
+		queue.push(std::move(packet));
+	}
 
 protected:
 	// status
@@ -50,6 +65,6 @@ protected:
 	std::mutex  m_Mutex;
 
 	// owner
-	CClient              *m_Client;
+	CClient    *m_Client;
 	std::queue<std::unique_ptr<CPacket>> queue;
 };
