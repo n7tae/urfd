@@ -186,7 +186,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdv
 #define BLACKLIST_PATH                  "/usr/local/etc/urfd.blacklist"
 #define INTERLINKLIST_PATH              "/usr/local/etc/urfd.interlink"
 #define TERMINALOPTIONS_PATH            "/usr/local/etc/urfd.terminal"
-#define PIDFILE_PATH                    "/var/run/urfd.pid"
+#define PIDFILE_PATH                    "/var/run/xlxd.pid"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
