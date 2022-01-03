@@ -72,7 +72,7 @@ Compile () {
 	pushd reflector
 	make -j$np || read -p "<Enter to continue: " ans
 	popd
-	if [[ [[ "$tcaddress" != none ]]; then
+	if [[ "$tcaddress" != none ]]; then
 		pushd ../tcd
 		make -j$np || read -p "<Enter to continue: " ans
 		popd

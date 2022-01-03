@@ -24,7 +24,6 @@ include configure.mk
 # in the main.h file as well as the systemd service file.
 BINDIR = /usr/local/bin
 CFGDIR = /usr/local/etc
-DATADIR = /var/lib/urfd
 
 CC = g++
 
@@ -36,11 +35,11 @@ endif
 
 LDFLAGS=-pthread
 
-XRFSRCS = Buffer.cpp Callsign.cpp CallsignList.cpp CallsignListItem.cpp Client.cpp Clients.cpp DCSClient.cpp DCSProtocol.cpp DExtraClient.cpp DExtraPeer.cpp DExtraProtocol.cpp DPlusClient.cpp DPlusProtocol.cpp DVFramePacket.cpp DVHeaderPacket.cpp GateKeeper.cpp IP.cpp Notification.cpp Packet.cpp PacketStream.cpp PeerCallsignList.cpp Peer.cpp Peers.cpp Protocol.cpp Protocols.cpp Reflector.cpp SEProtocol.cpp UDPSocket.cpp User.cpp Users.cpp Version.cpp Main.cpp
-XLXSRCS = BMClient.cpp BMPeer.cpp BMProtocol.cpp BPTC19696.cpp CRC.cpp DMRIdDir.cpp DMRIdDirFile.cpp DMRIdDirHttp.cpp DMRMMDVMClient.cpp DMRMMDVMProtocol.cpp DMRPlusClient.cpp DMRPlusProtocol.cpp Golay2087.cpp Golay24128.cpp Hamming.cpp M17Client.cpp M17CRC.cpp M17Packet.cpp M17Client.cpp M17Protocol.cpp QR1676.cpp RS129.cpp Semaphore.cpp Utils.cpp WiresXCmd.cpp WiresXCmdHandler.cpp WiresXInfo.cpp URFClient.cpp URFProtocol.cpp URFPeer.cpp YSFClient.cpp YSFConvolution.cpp YSFFich.cpp YSFNode.cpp YSFNodeDir.cpp YSFNodeDirFile.cpp YSFNodeDirHttp.cpp YSFPayload.cpp YSFProtocol.cpp YSFUtils.cpp
+URFSRCS = Buffer.cpp Callsign.cpp CallsignList.cpp CallsignListItem.cpp Client.cpp Clients.cpp DCSClient.cpp DCSProtocol.cpp DExtraClient.cpp DExtraPeer.cpp DExtraProtocol.cpp DPlusClient.cpp DPlusProtocol.cpp DVFramePacket.cpp DVHeaderPacket.cpp GateKeeper.cpp IP.cpp Notification.cpp Packet.cpp PacketStream.cpp PeerCallsignList.cpp Peer.cpp Peers.cpp Protocol.cpp Protocols.cpp Reflector.cpp SEProtocol.cpp UDPSocket.cpp User.cpp Users.cpp Version.cpp Main.cpp BMClient.cpp BMPeer.cpp BMProtocol.cpp BPTC19696.cpp CRC.cpp DMRIdDir.cpp DMRIdDirFile.cpp DMRIdDirHttp.cpp DMRMMDVMClient.cpp DMRMMDVMProtocol.cpp DMRPlusClient.cpp DMRPlusProtocol.cpp Golay2087.cpp Golay24128.cpp Hamming.cpp M17Client.cpp M17CRC.cpp M17Packet.cpp M17Client.cpp M17Protocol.cpp QR1676.cpp RS129.cpp Semaphore.cpp Utils.cpp WiresXCmd.cpp WiresXCmdHandler.cpp WiresXInfo.cpp URFClient.cpp URFProtocol.cpp URFPeer.cpp YSFClient.cpp YSFConvolution.cpp YSFFich.cpp YSFNode.cpp YSFNodeDir.cpp YSFNodeDirFile.cpp YSFNodeDirHttp.cpp YSFPayload.cpp YSFProtocol.cpp YSFUtils.cpp
+
 G3SRCS = G3Client.cpp G3Protocol.cpp RawSocket.cpp UDPMsgSocket.cpp
 
-SRCS = $(XRFSRCS) $(XLXSRCS)
+SRCS = $(URFSRCS)
 ifeq ($(use_g3), true)
 SRCS += $(G3SRCS)
 endif
@@ -72,15 +71,14 @@ clean :
 -include $(DEPS)
 
 install :
-	ln -s $(shell pwd)/$(EXE).blacklist $(CFGDIR)/$(EXE).blacklist
-	ln -s $(shell pwd)/$(EXE).whitelist $(CFGDIR)/$(EXE).whitelist
-	ln -s $(shell pwd)/$(EXE).interlink $(CFGDIR)/$(EXE).interlink
+	ln -f -s $(shell pwd)/$(EXE).blacklist $(CFGDIR)/$(EXE).blacklist
+	ln -f -s $(shell pwd)/$(EXE).whitelist $(CFGDIR)/$(EXE).whitelist
+	ln -f -s $(shell pwd)/$(EXE).interlink $(CFGDIR)/$(EXE).interlink
 ifeq ($(use_g3), true)
-	ln -s $(shell pwd)/$(EXE).terminal  $(CFGDIR)/$(EXE).terminal
+	ln -f -s $(shell pwd)/$(EXE).terminal  $(CFGDIR)/$(EXE).terminal
 endif
 	cp -f ../systemd/$(EXE).service /etc/systemd/system/
 	cp -f $(EXE) $(BINDIR)
-	mkdir -p $(DATADIR)
 	systemctl enable $(EXE).service
 	systemctl daemon-reload
 	systemctl start $(EXE)
