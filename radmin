@@ -35,6 +35,11 @@ UninstallReflector () {
 }
 
 InstallReflector () {
+	if [ "$tcaddress" != none ]; then
+		pushd ../tcd
+		sudo make install || read -p "<Enter> to continue: " ans
+		popd
+	fi
 	pushd reflector
 	if [ ! -e urfd.whitelist ]; then
 		cp ../config/urfd.whitelist .
@@ -50,11 +55,6 @@ InstallReflector () {
 	fi
 	sudo make install || read -p "<Enter> to continue: " ans
 	popd
-	if [ "$tcaddress" != none ]; then
-		pushd ../tcd
-		sudo make install || read -p "<Enter> to continue: " ans
-		popd
-	fi
 }
 
 Clean () {
@@ -118,7 +118,7 @@ do
 	echo "co : Compile the system executable(s)"
 	if [ -e $urfserv ]; then
 		if [ -e $urfserv ]; then
-			echo "us : Uninstall the XLX reflector"
+			echo "us : Uninstall the URF reflector"
 			echo "rl : Reflector log"
 			if [ -e $tcdserv ]; then
 				echo "tl : Transcoder log"
@@ -135,7 +135,7 @@ do
 					echo "is : Install URF reflector without transcoder"
 				else
 					if [ -e ../tcd/tcd ]; then
-						echo "is : Install XLX reflector and transcoder"
+						echo "is : Install URF reflector and transcoder"
 					fi
 				fi
 			fi
