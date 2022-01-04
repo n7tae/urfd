@@ -83,7 +83,7 @@ Compile () {
 
 # service file locations
 urfserv='/etc/systemd/system/urfd.service'
-tcdserv='/etc/systemd/system/ambed.service'
+tcdserv='/etc/systemd/system/tcd.service'
 
 # default values, we only need a few
 tcaddress='none'
