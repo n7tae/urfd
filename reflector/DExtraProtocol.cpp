@@ -374,18 +374,18 @@ void CDextraProtocol::HandlePeerLinks(void)
 	// if not, connect or reconnect
 	for ( auto it=list->begin(); it!=list->end(); it++ )
 	{
-		if ( !(*it).GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
+		if ( !it->GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
 			continue;
-		if ( strlen((*it).GetModules()) != 2 )
+		if ( strlen(it->GetModules()) != 2 )
 			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::dextra) == nullptr )
+		if ( peers->FindPeer(it->GetCallsign(), EProtocol::dextra) == nullptr )
 		{
 			// resolve again peer's IP in case it's a dynamic IP
-			(*it).ResolveIp();
+			it->ResolveIp();
 			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, (*it).GetModules());
-			Send(buffer, (*it).GetIp(), DEXTRA_PORT);
-			std::cout << "Sending connect packet to XRF peer " << (*it).GetCallsign() << " @ " << (*it).GetIp() << " for module " << (*it).GetModules()[1] << " (module " << (*it).GetModules()[0] << ")" << std::endl;
+			EncodeConnectPacket(&buffer, it->GetModules());
+			Send(buffer, it->GetIp(), DEXTRA_PORT);
+			std::cout << "Sending connect packet to XRF peer " << it->GetCallsign() << " @ " << it->GetIp() << " for module " << it->GetModules()[1] << " (module " << it->GetModules()[0] << ")" << std::endl;
 		}
 	}
 

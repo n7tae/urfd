@@ -284,7 +284,7 @@ void CBMProtocol::HandleKeepalives(void)
 			Send(disconnect, peer->GetIp());
 
 			// remove it
-			std::cout << "XLX peer " << peer->GetCallsign() << " keepalive timeout" << std::endl;
+			std::cout << "BM peer " << peer->GetCallsign() << " keepalive timeout" << std::endl;
 			peers->RemovePeer(peer);
 		}
 	}
@@ -313,7 +313,7 @@ void CBMProtocol::HandlePeerLinks(void)
 			// send disconnect packet
 			EncodeDisconnectPacket(&buffer);
 			Send(buffer, peer->GetIp());
-			std::cout << "Sending disconnect packet to XLX peer " << peer->GetCallsign() << std::endl;
+			std::cout << "Sending disconnect packet to BM peer " << peer->GetCallsign() << std::endl;
 			// remove client
 			peers->RemovePeer(peer);
 		}
@@ -323,16 +323,15 @@ void CBMProtocol::HandlePeerLinks(void)
 	// if not, connect or reconnect
 	for ( auto it=list->begin(); it!=list->end(); it++ )
 	{
-		if ( (*it).GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
-			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::bm) == nullptr )
+		CCallsign cs = it->GetCallsign();
+		if (cs.HasSameCallsignWithWildcard(CCallsign("BM*")) && (nullptr==peers->FindPeer(cs, EProtocol::bm)))
 		{
 			// resolve again peer's IP in case it's a dynamic IP
-			(*it).ResolveIp();
+			it->ResolveIp();
 			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, (*it).GetModules());
-			Send(buffer, (*it).GetIp(), XLX_PORT);
-			std::cout << "Sending connect packet to BM peer " << (*it).GetCallsign() << " @ " << (*it).GetIp() << " for modules " << (*it).GetModules() << std::endl;
+			EncodeConnectPacket(&buffer, it->GetModules());
+			Send(buffer, it->GetIp(), XLX_PORT);
+			std::cout << "Sending connect packet to BM peer " << cs << " @ " << it->GetIp() << " for modules " << it->GetModules() << std::endl;
 		}
 	}
 

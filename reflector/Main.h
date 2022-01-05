@@ -98,7 +98,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define DCS_KEEPALIVE_PERIOD            1                                   // in seconds
 #define DCS_KEEPALIVE_TIMEOUT           (DCS_KEEPALIVE_PERIOD*30)           // in seconds
 
-// XLX
+// XLX, used for BM
 #define XLX_PORT                        10002                               // UDP port
 #define XLX_KEEPALIVE_PERIOD            1                                   // in seconds
 #define XLX_KEEPALIVE_TIMEOUT           (XLX_KEEPALIVE_PERIOD*30)           // in seconds

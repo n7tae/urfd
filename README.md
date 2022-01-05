@@ -85,7 +85,7 @@ cp ../config/urfd.interlink .
 cp ../config/urfd.terminal .
 ```
 
-If you are not going to support G3 linking, you don't need to copy the .terminal file. Use your favorite editor to modify each of these files. If you want a totally open network, the blacklist and whitelist files are ready to go. The blacklist determine which callsigns can't use the reflector. The whitelist determines which callsigns can use the reflector. The interlink file sets up the XLX<--->XLX inter-linking and/or out-going XRF peer linking.
+If you are not going to support G3 linking, you don't need to copy the .terminal file. Use your favorite editor to modify each of these files. If you want a totally open network, the blacklist and whitelist files are ready to go. The blacklist determine which callsigns can't use the reflector. The whitelist determines which callsigns can use the reflector. The interlink file sets up the URF<--->URF inter-linking and/or out-going XRF peer linking.
 
 When you are done with the configuration files and ready to start the installation process, you can return to the main repository directory:
 
@@ -105,9 +105,9 @@ There are only a few things that need to be specified. Most important are, the r
 
 You can configure any modules, from **A** to **Z**. They don't have to be contigious. If your reflector is configured with a transcoder, you can specify which configured modules will be transcoded. Up to three modules can be transcoded. There are also true/false flags to prevent G3 support and so that you can build executables that will support gdb debugging.
 
-You can support your own YSF frequency database. This is very useful for hot-spots that use YSF linking. These linked hot-spots can then use the *WiresX* command on their radios to be able to connect to any configured XLX module. Users can register their TX and RX frequency (typically the same for most hot-spot configurations) on http:<*xlx url*>/wiresx/login.php. Once their hot-spot is registered, XLX will return the correct frequency for their hot-spot when a *WiresX* command is sent to the reflector. You'll need to enable YSF auto-linking, specify a default module and define a database name, user and user password. When you write you XLX configuration, a database **configure.sql** script will be built to not only create the database and database user, but also the table for the hot-spot frequency data.
+You can support your own YSF frequency database. This is very useful for hot-spots that use YSF linking. These linked hot-spots can then use the *WiresX* command on their radios to be able to connect to any configured URF module. Users can register their TX and RX frequency (typically the same for most hot-spot configurations) on http:<*urf url*>/wiresx/login.php. Once their hot-spot is registered, URF will return the correct frequency for their hot-spot when a *WiresX* command is sent to the reflector. You'll need to enable YSF auto-linking, specify a default module and define a database name, user and user password. When you write you URF configuration, a database **configure.sql** script will be built to not only create the database and database user, but also the table for the hot-spot frequency data.
 
-Be sure to write out the configuration files and look over the up to seven different configration files that are created. The first file, reflector.cfg is the memory file for rconfig so that if you start that script again, it will remember how you left things. There are one or two `.h` files for the reflector and tcd and there are one or two `.mk` files for the reflector and tcd makefiles. You should **not** modify these files by hand unless you really know exactly how they work. The rconfig script will not start if it detects that an XLX or XRF server is already running. You can override this behavior in expert mode: `./rconfig expert`. If you do change the configuration after you have already compiled the code, it is safest if you clean the repo and then recompile.
+Be sure to write out the configuration files and look over the up to seven different configration files that are created. The first file, reflector.cfg is the memory file for rconfig so that if you start that script again, it will remember how you left things. There are one or two `.h` files for the reflector and tcd and there are one or two `.mk` files for the reflector and tcd makefiles. You should **not** modify these files by hand unless you really know exactly how they work. The rconfig script will not start if it detects that an URF server is already running. You can override this behavior in expert mode: `./rconfig expert`. If you do change the configuration after you have already compiled the code, it is safest if you clean the repo and then recompile.
 
 ### Compling and installing your system
 
@@ -130,10 +130,10 @@ You can start each component by replacing `stop` with `start`, or you can restar
 
 ### Copy dashboard to /var/www
 
-There are two supplied, one for XRF systems and one for XLX systems.
+There are two supplied, one for XRF systems and one for URF systems.
 
 ```bash
-sudo cp -r ~/urfd/dashboard.xlx /var/www/db     # or dashboard.xrf
+sudo cp -r ~/urfd/dashboard /var/www/db     # or dashboard.xrf
 ```
 
 Please note that your www root directory might be some place else. There is one file that needs configuration. Edit the copied files, not the ones from the repository:
@@ -156,10 +156,10 @@ If you change any configuration after your reflector has been compiled, be sure 
 
 ## Firewall settings
 
-XLX Server requires the following ports to be open and forwarded properly for in- and outgoing network traffic:
+URF Server requires the following ports to be open and forwarded properly for in- and outgoing network traffic:
 
 - TCP port 80            (http) optional TCP port 443 (https)
-- UDP port 10002         (XLX interlink)
+- UDP port 10002         (XLX interlink, used for BM connections)
 - UDP port 42000         (YSF protocol)
 - UDP port 30001         (DExtra protocol)
 - UPD port 20001         (DPlus protocol)
@@ -171,12 +171,14 @@ XLX Server requires the following ports to be open and forwarded properly for in
 
 ## YSF Master Server
 
-Pay attention, the XLX Server acts as an YSF Master, which provides 26 wires-x rooms.
-It has nothing to do with the regular YSFReflector network, hence you don’t need to register your XLX at ysfreflector.de !
+Pay attention, the URF Server acts as an YSF Master, which provides 26 wires-x rooms.
+It has nothing to do with the regular YSFReflector network, hence you don’t need to register your URF at ysfreflector.de !
 
 ## To-dos
 
 I will eventually support a remote transcoder option, so that you can, for example, run urfd in a data center, and then run the transcoder somewhere you have physical access to it so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
+
+There is also much to for the dashboard...
 
 ## Copyright
 

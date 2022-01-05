@@ -226,11 +226,6 @@ WriteSRCMKFile ()
 	local file
 	file="$srcm"
 	echo "# Created on `date`" > $file
-	if [[ "$callsign" == XLX* ]]; then
-		echo "is_xlx = true" >> $file
-	else
-		echo "is_xlx = false" >> $file
-	fi
 	[ -z ${ip4addr+x} ] || echo "ipv4 = $ip4addr" >> $file
 	[ -z ${ip6addr+x} ] || echo "ipv6 = $ip6addr" >> $file
 	[ -z ${tcaddress+x} ] || echo "tc_ip = $tcaddress" >> $file
@@ -397,9 +392,7 @@ if [ -z ${expertmode+x} ]; then
 	if [ -e $urfserv ]; then
 		echo -n "You cannot change the configuration right now beacuse there is an "
 		if [ -e $urfserv ]; then
-			echo "XLX server running."
-		else
-			echo "XRF server running."
+			echo "URFD server running."
 		fi;
 		echo "===========${rcfg}============="
 		cat $rcfg

@@ -80,7 +80,7 @@ void CURFProtocol::Task(void)
 		}
 		else if ( IsValidConnectPacket(Buffer, &Callsign, Modules, &Version) )
 		{
-			std::cout << "XLX (" << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision() << ") connect packet for modules " << Modules << " from " << Callsign <<  " at " << Ip << std::endl;
+			std::cout << "URF (" << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision() << ") connect packet for modules " << Modules << " from " << Callsign <<  " at " << Ip << std::endl;
 
 			// callsign authorized?
 			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::urf, Modules) )
@@ -115,7 +115,7 @@ void CURFProtocol::Task(void)
 		}
 		else if ( IsValidAckPacket(Buffer, &Callsign, Modules, &Version)  )
 		{
-			std::cout << "XLX ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
+			std::cout << "URF ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
 			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::urf, Modules) )
@@ -137,7 +137,7 @@ void CURFProtocol::Task(void)
 		}
 		else if ( IsValidDisconnectPacket(Buffer, &Callsign) )
 		{
-			std::cout << "XLX disconnect packet from " << Callsign << " at " << Ip << std::endl;
+			std::cout << "URF disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
@@ -153,11 +153,11 @@ void CURFProtocol::Task(void)
 		}
 		else if ( IsValidNackPacket(Buffer, &Callsign) )
 		{
-			std::cout << "XLX nack packet from " << Callsign << " at " << Ip << std::endl;
+			std::cout << "URF nack packet from " << Callsign << " at " << Ip << std::endl;
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, &Callsign) )
 		{
-			//std::cout << "XLX keepalive packet from " << Callsign << " at " << Ip << std::endl;
+			//std::cout << "URF keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
@@ -171,7 +171,7 @@ void CURFProtocol::Task(void)
 		}
 		else
 		{
-			std::string title("Unknown XLX packet from ");
+			std::string title("Unknown URF packet from ");
 			title += Ip.GetAddress();
 			Buffer.Dump(title);
 		}
@@ -217,7 +217,7 @@ void CURFProtocol::HandleQueue(void)
 
 		// check if origin of packet is local
 		// if not, do not stream it out as it will cause
-		// network loop between linked XLX peers
+		// network loop between linked URF peers
 		if ( packet->IsLocalOrigin() )
 		{
 			// encode it
@@ -283,7 +283,7 @@ void CURFProtocol::HandleKeepalives(void)
 			Send(disconnect, peer->GetIp());
 
 			// remove it
-			std::cout << "XLX peer " << peer->GetCallsign() << " keepalive timeout" << std::endl;
+			std::cout << "URF peer " << peer->GetCallsign() << " keepalive timeout" << std::endl;
 			peers->RemovePeer(peer);
 		}
 	}
@@ -312,7 +312,7 @@ void CURFProtocol::HandlePeerLinks(void)
 			// send disconnect packet
 			EncodeDisconnectPacket(&buffer);
 			Send(buffer, peer->GetIp());
-			std::cout << "Sending disconnect packet to XLX peer " << peer->GetCallsign() << std::endl;
+			std::cout << "Sending disconnect packet to URF peer " << peer->GetCallsign() << std::endl;
 			// remove client
 			peers->RemovePeer(peer);
 		}
@@ -322,16 +322,19 @@ void CURFProtocol::HandlePeerLinks(void)
 	// if not, connect or reconnect
 	for ( auto it=list->begin(); it!=list->end(); it++ )
 	{
-		if ( (*it).GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
+		if ( it->GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
 			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::urf) == nullptr )
+		if ( it->GetCallsign().HasSameCallsignWithWildcard(CCallsign("BM*")) )
+			continue;
+		CCallsign cs = it->GetCallsign();
+		if (cs.HasSameCallsignWithWildcard(CCallsign("URF*")) && (nullptr==peers->FindPeer(cs, EProtocol::urf)))
 		{
 			// resolve again peer's IP in case it's a dynamic IP
-			(*it).ResolveIp();
+			it->ResolveIp();
 			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, (*it).GetModules());
-			Send(buffer, (*it).GetIp(), URF_PORT);
-			std::cout << "Sending connect packet to XLX peer " << (*it).GetCallsign() << " @ " << (*it).GetIp() << " for modules " << (*it).GetModules() << std::endl;
+			EncodeConnectPacket(&buffer, it->GetModules());
+			Send(buffer, it->GetIp(), URF_PORT);
+			std::cout << "Sending connect packet to URF peer " << cs << " @ " << it->GetIp() << " for modules " << it->GetModules() << std::endl;
 		}
 	}
 
@@ -348,7 +351,7 @@ void CURFProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 {
 	CCallsign peer;
 
-	// todo: verify Packet.GetModuleId() is in authorized list of XLX of origin
+	// todo: verify Packet.GetModuleId() is in authorized list of URF of origin
 	// todo: do the same for DVFrame and DVLAstFrame packets
 
 	// tag packet as remote peer origin
