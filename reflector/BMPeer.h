@@ -40,7 +40,7 @@ public:
 	bool IsAlive(void) const;
 
 	// identity
-	EProtocol GetProtocol(void) const           { return EProtocol::xlx; }
+	EProtocol GetProtocol(void) const           { return EProtocol::bm; }
 	const char *GetProtocolName(void) const     { return "XLX"; }
 
 	// revision helper

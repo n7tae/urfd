@@ -63,7 +63,7 @@ bool CProtocols::Init(void)
 			return false;
 
 		m_Protocols.emplace_back(std::unique_ptr<CBMProtocol>(new CBMProtocol));
-		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::xlx, XLX_PORT, DMR_IPV4, DMR_IPV6))
+		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::bm, XLX_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
 
 		m_Protocols.emplace_back(std::unique_ptr<CDmrplusProtocol>(new CDmrplusProtocol));

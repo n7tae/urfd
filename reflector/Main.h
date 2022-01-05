@@ -79,7 +79,7 @@
 #ifndef NO_G3
 enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdvm, ysf, m17, g3 };
 #else
-enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdvm, ysf, m17 };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17 };
 #endif
 
 // DExtra
@@ -180,8 +180,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdv
 #endif
 
 // system paths -------------------------------------------------
-//#define XML_PATH                        "/var/log/xlxd.xml"
-#define XML_PATH                        "./urfd.xml"
+#define XML_PATH                        "/var/log/xlxd.xml"
 #define WHITELIST_PATH                  "/usr/local/etc/urfd.whitelist"
 #define BLACKLIST_PATH                  "/usr/local/etc/urfd.blacklist"
 #define INTERLINKLIST_PATH              "/usr/local/etc/urfd.interlink"

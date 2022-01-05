@@ -91,7 +91,7 @@ void CURFProtocol::Task(void)
 				{
 					// already connected ?
 					CPeers *peers = g_Reflector.GetPeers();
-					if ( peers->FindPeer(Callsign, Ip, EProtocol::xlx) == nullptr )
+					if ( peers->FindPeer(Callsign, Ip, EProtocol::urf) == nullptr )
 					{
 						// acknowledge the request
 						EncodeConnectAckPacket(&Buffer, Modules);
@@ -118,11 +118,11 @@ void CURFProtocol::Task(void)
 			std::cout << "XLX ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::xlx, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::urf, Modules) )
 			{
 				// already connected ?
 				CPeers *peers = g_Reflector.GetPeers();
-				if ( peers->FindPeer(Callsign, Ip, EProtocol::xlx) == nullptr )
+				if ( peers->FindPeer(Callsign, Ip, EProtocol::urf) == nullptr )
 				{
 					// create the new peer
 					// this also create one client per module
@@ -141,7 +141,7 @@ void CURFProtocol::Task(void)
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::xlx);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::urf);
 			if ( peer != nullptr )
 			{
 				// remove it from reflector peer list
@@ -161,7 +161,7 @@ void CURFProtocol::Task(void)
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::xlx);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::urf);
 			if ( peer != nullptr )
 			{
 				// keep it alive
@@ -228,7 +228,7 @@ void CURFProtocol::HandleQueue(void)
 				CClients *clients = g_Reflector.GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
-				while ( (client = clients->FindNextClient(EProtocol::xlx, it)) != nullptr )
+				while ( (client = clients->FindNextClient(EProtocol::urf, it)) != nullptr )
 				{
 					// is this client busy ?
 					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
@@ -263,7 +263,7 @@ void CURFProtocol::HandleKeepalives(void)
 	CPeers *peers = g_Reflector.GetPeers();
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::xlx, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::urf, pit)) != nullptr )
 	{
 		// send keepalive
 		Send(keepalive, peer->GetIp());
@@ -305,7 +305,7 @@ void CURFProtocol::HandlePeerLinks(void)
 	// if not, disconnect
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::xlx, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::urf, pit)) != nullptr )
 	{
 		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
 		{
@@ -324,7 +324,7 @@ void CURFProtocol::HandlePeerLinks(void)
 	{
 		if ( (*it).GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
 			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::xlx) == nullptr )
+		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::urf) == nullptr )
 		{
 			// resolve again peer's IP in case it's a dynamic IP
 			(*it).ResolveIp();
@@ -369,7 +369,7 @@ void CURFProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 		// no stream open yet, open a new one
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::xlx, Header->GetRpt2Module());
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::urf, Header->GetRpt2Module());
 		if ( client )
 		{
 			// and try to open the stream

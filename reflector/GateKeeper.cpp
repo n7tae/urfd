@@ -97,7 +97,8 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 		// todo: then apply any protocol specific authorisation for the operation
 		break;
 
-	// XLX interlinks
+	// URF and BM interlinks
+	case EProtocol::bm:
 	case EProtocol::urf:
 		ok &= IsPeerListedOk(callsign, ip, modules);
 		break;
@@ -142,8 +143,9 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EP
 		// todo: then apply any protocol specific authorisation for the operation
 		break;
 
-	// XLX interlinks
+	// URF interlinks
 	case EProtocol::urf:
+	case EProtocol::bm:
 		ok = ok && IsPeerListedOk(callsign, ip, module);
 		break;
 
@@ -284,6 +286,8 @@ const std::string CGateKeeper::ProtocolName(const EProtocol p) const
 			return "URF";
 		case EProtocol::ysf:
 			return "YSF";
+		case EProtocol::bm:
+			return "Brandmeister";
 #ifndef NO_G3
 		case EProtocol::g3:
 			return "Icom G3";

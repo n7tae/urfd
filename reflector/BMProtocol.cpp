@@ -83,7 +83,7 @@ void CBMProtocol::Task(void)
 			std::cout << "XLX (" << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision() << ") connect packet for modules " << Modules << " from " << Callsign <<  " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::xlx, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::bm, Modules) )
 			{
 				// acknowledge the request
 				EncodeConnectAckPacket(&Buffer, Modules);
@@ -101,11 +101,11 @@ void CBMProtocol::Task(void)
 			std::cout << "XLX ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::xlx, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::bm, Modules) )
 			{
 				// already connected ?
 				CPeers *peers = g_Reflector.GetPeers();
-				if ( peers->FindPeer(Callsign, Ip, EProtocol::xlx) == nullptr )
+				if ( peers->FindPeer(Callsign, Ip, EProtocol::bm) == nullptr )
 				{
 					// create the new peer
 					// this also create one client per module
@@ -124,7 +124,7 @@ void CBMProtocol::Task(void)
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::xlx);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::bm);
 			if ( peer != nullptr )
 			{
 				// remove it from reflector peer list
@@ -144,7 +144,7 @@ void CBMProtocol::Task(void)
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::xlx);
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::bm);
 			if ( peer != nullptr )
 			{
 				// keep it alive
@@ -218,7 +218,7 @@ void CBMProtocol::HandleQueue(void)
 				CClients *clients = g_Reflector.GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
-				while ( (client = clients->FindNextClient(EProtocol::xlx, it)) != nullptr )
+				while ( (client = clients->FindNextClient(EProtocol::bm, it)) != nullptr )
 				{
 					// is this client busy ?
 					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
@@ -264,7 +264,7 @@ void CBMProtocol::HandleKeepalives(void)
 	CPeers *peers = g_Reflector.GetPeers();
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::xlx, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::bm, pit)) != nullptr )
 	{
 		// send keepalive
 		Send(keepalive, peer->GetIp());
@@ -306,7 +306,7 @@ void CBMProtocol::HandlePeerLinks(void)
 	// if not, disconnect
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::xlx, pit)) != nullptr )
+	while ( (peer = peers->FindNextPeer(EProtocol::bm, pit)) != nullptr )
 	{
 		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
 		{
@@ -325,7 +325,7 @@ void CBMProtocol::HandlePeerLinks(void)
 	{
 		if ( (*it).GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
 			continue;
-		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::xlx) == nullptr )
+		if ( peers->FindPeer((*it).GetCallsign(), EProtocol::bm) == nullptr )
 		{
 			// resolve again peer's IP in case it's a dynamic IP
 			(*it).ResolveIp();
@@ -370,7 +370,7 @@ void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 		CCallsign rpt2(Header->GetRpt2Callsign());
 		// no stream open yet, open a new one
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::xlx, Header->GetRpt2Module());
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::bm, Header->GetRpt2Module());
 		if ( client )
 		{
 			// and try to open the stream

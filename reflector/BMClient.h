@@ -32,7 +32,7 @@ public:
 	virtual ~CBmClient() {};
 
 	// identity
-	EProtocol GetProtocol(void) const            { return EProtocol::xlx; }
+	EProtocol GetProtocol(void) const            { return EProtocol::bm; }
 	EProtoRev GetProtocolRevision(void) const    { return EProtoRev::ambe; }
 	const char *GetProtocolName(void) const      { return "XLX"; }
 	bool IsPeer(void) const                      { return true; }
