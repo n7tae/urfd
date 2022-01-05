@@ -551,7 +551,7 @@ void CDextraProtocol::EncodeConnectAckPacket(CBuffer *Buffer, EProtoRev ProtRev)
 		uint8_t rm = (Buffer->data())[8];
 		uint8_t lm = (Buffer->data())[9];
 		Buffer->clear();
-		Buffer->Set((uint8_t *)(const char *)GetReflectorCallsign(), CALLSIGN_LEN);
+		Buffer->Set((uint8_t *)m_ReflectorCallsign.GetCS().c_str(), CALLSIGN_LEN);
 		Buffer->Append(lm);
 		Buffer->Append(rm);
 		Buffer->Append((uint8_t)0);
