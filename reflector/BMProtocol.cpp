@@ -332,7 +332,7 @@ void CBMProtocol::HandlePeerLinks(void)
 			// send connect packet to re-initiate peer link
 			EncodeConnectPacket(&buffer, (*it).GetModules());
 			Send(buffer, (*it).GetIp(), XLX_PORT);
-			std::cout << "Sending connect packet to XLX peer " << (*it).GetCallsign() << " @ " << (*it).GetIp() << " for modules " << (*it).GetModules() << std::endl;
+			std::cout << "Sending connect packet to BM peer " << (*it).GetCallsign() << " @ " << (*it).GetIp() << " for modules " << (*it).GetModules() << std::endl;
 		}
 	}
 
@@ -520,11 +520,11 @@ void CBMProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->Set(tag, sizeof(tag));
 	// our callsign
 	Buffer->resize(Buffer->size()+8);
-	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
-	// our version
-	Buffer->Append((uint8_t)VERSION_MAJOR);
-	Buffer->Append((uint8_t)VERSION_MINOR);
-	Buffer->Append((uint8_t)VERSION_REVISION);
+	m_ReflectorCallsign.GetCallsign(Buffer->data()+1);
+	// our version, fake it
+	Buffer->Append((uint8_t)2);
+	Buffer->Append((uint8_t)4);
+	Buffer->Append((uint8_t)31);
 	// the modules we share
 	Buffer->Append(Modules);
 	Buffer->resize(39);
@@ -538,7 +538,7 @@ void CBMProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 	Buffer->Set(tag, sizeof(tag));
 	// our callsign
 	Buffer->resize(Buffer->size()+8);
-	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
+	m_ReflectorCallsign.GetCallsign(Buffer->data()+1);
 	Buffer->Append((uint8_t)0);
 }
 
@@ -550,11 +550,11 @@ void CBMProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 	Buffer->Set(tag, sizeof(tag));
 	// our callsign
 	Buffer->resize(Buffer->size()+8);
-	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
-	// our version
-	Buffer->Append((uint8_t)VERSION_MAJOR);
-	Buffer->Append((uint8_t)VERSION_MINOR);
-	Buffer->Append((uint8_t)VERSION_REVISION);
+	m_ReflectorCallsign.GetCallsign(Buffer->data()+1);
+	// our version, fake it
+	Buffer->Append((uint8_t)2);
+	Buffer->Append((uint8_t)4);
+	Buffer->Append((uint8_t)31);
 	// the modules we share
 	Buffer->Append(Modules);
 	Buffer->resize(39);
@@ -568,7 +568,7 @@ void CBMProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 	Buffer->Set(tag, sizeof(tag));
 	// our callsign
 	Buffer->resize(Buffer->size()+8);
-	g_Reflector.GetCallsign().GetCallsign(Buffer->data()+1);
+	m_ReflectorCallsign.GetCallsign(Buffer->data()+1);
 	Buffer->Append((uint8_t)0);
 }
 

@@ -77,7 +77,7 @@
 // protocols ---------------------------------------------------
 
 #ifndef NO_G3
-enum class EProtocol { any, none, dextra, dplus, dcs, xlx, urf, dmrplus, dmrmmdvm, ysf, m17, g3 };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3 };
 #else
 enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17 };
 #endif
