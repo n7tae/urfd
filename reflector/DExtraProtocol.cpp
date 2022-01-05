@@ -468,7 +468,7 @@ bool CDextraProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign &cal
 		}
 		else
 		{
-			EProtoRev::original;
+			protrev = EProtoRev::original;
 		}
 	}
 	return valid;
