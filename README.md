@@ -181,9 +181,11 @@ It has nothing to do with the regular YSFReflector network, hence you don’t ne
 
 ## To-dos
 
+I have *not* had a chance to test URF-URF interlinking. If you are the first one to discover a bug in that area, congratulations! Please report this, with appropriate logs and, if possible, a gdb backtrace, if it caused a crash. I am a very slow programmer, so please be patient while waiting for a fix. Thanks for your understanding.
+
 I will eventually support a remote transcoder option, so that you can, for example, run urfd in a data center, and then run the transcoder somewhere you have physical access to it so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
 
-The M17 team will be working on big changes for the dashboard.
+The M17 team will be working on big changes for the dashboard. I can't wait to see what they come up with!
 
 ## Copyright
 
