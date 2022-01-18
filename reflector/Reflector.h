@@ -127,7 +127,11 @@ protected:
 
 	// queues
 	std::unordered_map<char, std::shared_ptr<CPacketStream>> m_Stream;
+#ifndef TRANSCODER_IP
+#ifdef TRANSCODED_MODULES
 	std::unordered_map<char, std::shared_ptr<CUnixDgramReader>> m_TCReader;
+#endif
+#endif
 
 	// threads
 	std::atomic<bool> keep_running;

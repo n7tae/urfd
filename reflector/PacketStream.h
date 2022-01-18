@@ -21,7 +21,9 @@
 #include "PacketQueue.h"
 #include "Timer.h"
 #include "DVHeaderPacket.h"
+#ifdef TRANSCODED_MODULES
 #include "UnixDgramSocket.h"
+#endif
 #include "CodecStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,11 @@ class CPacketStream : public CPacketQueue
 {
 public:
 	// constructor
+#ifdef TRANSCODED_MODULES
 	CPacketStream(std::shared_ptr<CUnixDgramReader>);
+#else
+	CPacketStream();
+#endif
 
 	// open / close
 	bool OpenPacketStream(const CDvHeaderPacket &, std::shared_ptr<CClient>);

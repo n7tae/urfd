@@ -56,7 +56,11 @@ CReflector::~CReflector()
 	}
 	m_RouterFuture.clear();
 	m_Stream.clear();
+
+#ifdef TRANSCODED_MODULES
 	m_TCReader.clear();
+#endif
+
 }
 
 
@@ -87,6 +91,7 @@ bool CReflector::Start(void)
 	// start one thread per reflector module
 	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
+#ifdef TRANSCODED_MODULES
 		m_TCReader[*it] = std::make_shared<CUnixDgramReader>();
 		std::string readername(TC2REF);
 		readername.append(1, *it);
@@ -97,6 +102,9 @@ bool CReflector::Start(void)
 			return false;
 		}
 		m_Stream[*it] = std::make_shared<CPacketStream>(m_TCReader[*it]);
+#else
+		m_Stream[*it] = std::make_shared<CPacketStream>();
+#endif
 		m_RouterFuture[*it] = std::async(std::launch::async, &CReflector::RouterThread, this, *it);
 	}
 

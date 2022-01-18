@@ -22,7 +22,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
+#ifdef TRANSCODED_MODULES
 CPacketStream::CPacketStream(std::shared_ptr<CUnixDgramReader> reader)
+#else
+CPacketStream::CPacketStream()
+#endif
 {
 	m_bOpen = false;
 	m_uiStreamId = 0;
