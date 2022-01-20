@@ -1,11 +1,10 @@
 *.o
 *.d
 .vscode
-./*.blacklist
-./*.whitelist
-./*.interlink
-./*.terminal
-./*.service
+reflector/urfd.blacklist
+reflector/urfd.whitelist
+reflector/urfd.interlink
+reflector/urfd.terminal
 configure.mk
 configure.h
 configure.sql

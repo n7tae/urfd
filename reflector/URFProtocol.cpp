@@ -157,7 +157,7 @@ void CURFProtocol::Task(void)
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, &Callsign) )
 		{
-			//std::cout << "URF keepalive packet from " << Callsign << " at " << Ip << std::endl;
+			std::cout << "URF keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find peer
 			CPeers *peers = g_Reflector.GetPeers();
@@ -407,9 +407,10 @@ void CURFProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, c
 bool CURFProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *callsign)
 {
 	bool valid = false;
-	if (Buffer.size() == 9)
+	uint8_t magic[] = { 'P','I','N','G' };
+	if ((10 == Buffer.size()) && (0 == Buffer.Compare(magic, 4)))
 	{
-		callsign->SetCallsign(Buffer.data(), 8);
+		callsign->CodeIn(Buffer.data()+4);
 		valid = callsign->IsValid();
 	}
 	return valid;
@@ -426,7 +427,7 @@ bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 		valid = callsign->IsValid();
 		*version = CVersion(Buffer.at(37), Buffer.at(38), Buffer.at(39));
 		memcpy(modules, Buffer.data()+10, 27);
-		for ( unsigned i = 0; i < ::strlen(modules), valid; i++ )
+		for ( unsigned i = 0; i < strlen(modules); i++ )
 		{
 			valid &= (nullptr != strchr(ACTIVE_MODULES, modules[i]));
 		}
@@ -456,7 +457,7 @@ bool CURFProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, 
 		valid = callsign->IsValid();
 		*version = CVersion(Buffer.at(37), Buffer.at(38), Buffer.at(39));
 		memcpy(modules, Buffer.data()+10, 27);
-		for ( unsigned i = 0; i < ::strlen(modules), valid; i++ )
+		for ( unsigned i = 0; i < strlen(modules); i++ )
 		{
 			valid &= (nullptr != strchr(ACTIVE_MODULES, modules[i]));
 		}
