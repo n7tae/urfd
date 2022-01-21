@@ -89,16 +89,9 @@ void CURFProtocol::Task(void)
 				// following is version dependent
 				if (EProtoRev::original == CURFPeer::GetProtocolRevision(Version))
 				{
-					// already connected ?
-					CPeers *peers = g_Reflector.GetPeers();
-					if ( peers->FindPeer(Callsign, Ip, EProtocol::urf) == nullptr )
-					{
-						// acknowledge the request
-						EncodeConnectAckPacket(&Buffer, Modules);
-						Send(Buffer, Ip);
-					}
-					g_Reflector.ReleasePeers();
-
+					// acknowledge the request
+					EncodeConnectAckPacket(&Buffer, Modules);
+					Send(Buffer, Ip);
 				}
 				else
 				{
