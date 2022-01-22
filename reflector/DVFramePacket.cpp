@@ -146,9 +146,9 @@ void CDvFramePacket::EncodeInterlinkPacket(CBuffer &buf) const
 	buf.resize(GetNetworkSize());
 	auto data = buf.data();
 	auto off = CPacket::GetNetworkSize();
-	data[off++] = (m_TCPack.sequence / 0x1000000u) & 0xffu;
-	data[off++] = (m_TCPack.sequence / 0x10000u) & 0xffu;
-	data[off++] = (m_TCPack.sequence / 0x100u) & 0xffu;
+	data[off++] = (m_TCPack.sequence >> 24) & 0xffu;
+	data[off++] = (m_TCPack.sequence >> 16) & 0xffu;
+	data[off++] = (m_TCPack.sequence >>  8) & 0xffu;
 	data[off++] = m_TCPack.sequence & 0xffu;
 	memcpy(data+off, m_uiDvData,      3); off += 3;
 	memcpy(data+off, m_uiDvSync,      7); off += 7;

@@ -75,10 +75,10 @@ void CPacket::EncodeInterlinkPacket(const char *magic, CBuffer &buf) const
 	data[7]  = m_cModule;
 	data[8]  = m_uiStreamId / 0x100u;
 	data[9]  = m_uiStreamId % 0x100u;
-	data[10] = (m_uiM17FrameNumber / 0x1000000u) % 0x100u;
-	data[11] = (m_uiM17FrameNumber / 0x10000u) % 0x100u;
-	data[12] = (m_uiM17FrameNumber / 0x100u) % 0x100u;
-	data[13] = m_uiM17FrameNumber % 100u;
+	data[10] = (m_uiM17FrameNumber >> 24) & 0xffu;
+	data[11] = (m_uiM17FrameNumber >> 16) & 0xffu;
+	data[12] = (m_uiM17FrameNumber >>  8) & 0xffu;
+	data[13] = m_uiM17FrameNumber & 0xffu;
 	data[14] = m_uiDstarPacketId;
 	data[15] = m_uiDmrPacketId;
 	data[16] = m_uiDmrPacketSubid;
