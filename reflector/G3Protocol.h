@@ -99,9 +99,8 @@ protected:
 	bool IsValidDvFramePacket(const CBuffer &, std::unique_ptr<CDvFramePacket> &);
 
 	// packet encoding helpers
-	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
-	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
-	bool EncodeDvLastFramePacket(const CDvFramePacket &, CBuffer *) const;
+	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer &) const;
+	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer &) const;
 
 protected:
 	std::future<void> m_PresenceFuture, m_ConfigFuture, m_IcmpFuture;

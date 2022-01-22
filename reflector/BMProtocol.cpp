@@ -205,7 +205,7 @@ void CBMProtocol::HandleQueue(void)
 		{
 			// encode it
 			CBuffer buffer;
-			if ( EncodeDvPacket(*packet, &buffer) )
+			if ( EncodeDvPacket(*packet, buffer) )
 			{
 				// encode revision dependent version
 				CBuffer bufferLegacy = buffer;
@@ -571,57 +571,39 @@ void CBMProtocol::EncodeConnectNackPacket(CBuffer *Buffer)
 	Buffer->Append((uint8_t)0);
 }
 
-bool CBMProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
+bool CBMProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)0x80);
-	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	Buffer.Append((uint8_t)0x80);
+	Buffer.Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
-bool CBMProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CBMProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)(Packet.GetDstarPacketId() % 21));
-	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
-	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	auto pid = (uint8_t)(Packet.GetPacketId() % 21u);
+	if (Packet.IsLastPacket())
+		pid |= 0x40u;
+	Buffer.Append(pid);
+	Buffer.Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
+	Buffer.Append((uint8_t *)Packet.GetDvData(), 3);
 
-	Buffer->Append((uint8_t)Packet.GetDmrPacketId());
-	Buffer->Append((uint8_t)Packet.GetDmrPacketSubid());
-	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dmr), 9);
-	Buffer->Append((uint8_t *)Packet.GetDvSync(), 7);
-
-	return true;
-
-}
-
-bool CBMProtocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
-{
-	uint8_t tag[]         = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
-	uint8_t dstarambe[]   = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00 };
-	uint8_t dstardvdata[] = { 0x25,0x1A,0xC6 };
-
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
-	Buffer->Append(dstarambe, sizeof(dstarambe));
-	Buffer->Append(dstardvdata, sizeof(dstardvdata));
-
-
-	Buffer->Append((uint8_t)Packet.GetDmrPacketId());
-	Buffer->Append((uint8_t)Packet.GetDmrPacketSubid());
-	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dmr), 9);
-	Buffer->Append((uint8_t *)Packet.GetDvSync(), 7);
+	Buffer.Append((uint8_t)Packet.GetDmrPacketId());
+	Buffer.Append((uint8_t)Packet.GetDmrPacketSubid());
+	Buffer.Append((uint8_t *)Packet.GetCodecData(ECodecType::dmr), 9);
+	Buffer.Append((uint8_t *)Packet.GetDvSync(), 7);
 
 	return true;
+
 }

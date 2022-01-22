@@ -107,6 +107,57 @@ CDvFramePacket::CDvFramePacket(const CM17Packet &m17) : CPacket(m17)
 	}
 }
 
+// Network
+unsigned int CDvFramePacket::GetNetworkSize()
+{
+	return CPacket::GetNetworkSize() + 4 + 3 + 7 + 14 + 9 + 9 + 16;
+}
+
+CDvFramePacket::CDvFramePacket(const CBuffer &buf) : CPacket(buf)
+{
+	if (buf.size() >= GetNetworkSize())
+	{
+		auto data = buf.data();
+		auto off = CPacket::GetNetworkSize();
+		uint32_t seq = 0;
+		for (unsigned int i=0; i<4; i++)
+			seq = 0x100u * seq + data[off+i];
+		off += 4;
+		memcpy(m_uiDvData,		data+off, 3);	off += 3;
+		memcpy(m_uiDvSync,		data+off, 7);	off += 7;
+		memcpy(m_Nonce,			data+off, 14);	off += 14;
+		memcpy(m_TCPack.dstar,	data+off, 9);	off += 9;
+		memcpy(m_TCPack.dmr,	data+off, 9);	off += 9;
+		memcpy(m_TCPack.m17,	data+off, 16);	off += 16;
+		SetTCParams(seq);
+		m_TCPack.rt_timer.start();
+		m_TCPack.module = m_cModule;
+		m_TCPack.is_last = m_bLastPacket;
+		m_TCPack.streamid = m_uiStreamId;
+		m_TCPack.codec_in = m_eCodecIn;
+	}
+	else
+		std::cerr << "CBuffer is too small to initialize a CDvFramePacket" << std::endl;
+}
+
+void CDvFramePacket::EncodeInterlinkPacket(CBuffer &buf) const
+{
+	CPacket::EncodeInterlinkPacket("URFF", buf);
+	buf.resize(GetNetworkSize());
+	auto data = buf.data();
+	auto off = CPacket::GetNetworkSize();
+	data[off++] = (m_TCPack.sequence / 0x1000000u) & 0xffu;
+	data[off++] = (m_TCPack.sequence / 0x10000u) & 0xffu;
+	data[off++] = (m_TCPack.sequence / 0x100u) & 0xffu;
+	data[off++] = m_TCPack.sequence & 0xffu;
+	memcpy(data+off, m_uiDvData,      3); off += 3;
+	memcpy(data+off, m_uiDvSync,      7); off += 7;
+	memcpy(data+off, m_Nonce,        14); off += 14;
+	memcpy(data+off, m_TCPack.dstar,  9); off += 9;
+	memcpy(data+off, m_TCPack.dmr,    9); off += 9;
+	memcpy(data+off, m_TCPack.m17,   16);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // virtual duplication
 

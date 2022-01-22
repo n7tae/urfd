@@ -59,6 +59,11 @@ public:
 	CDvHeaderPacket(const CCallsign &, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t);
 	CDvHeaderPacket(const CM17Packet &);
 
+	// network
+	CDvHeaderPacket(const CBuffer &buf);
+	static unsigned int GetNetworkSize();
+	void EncodeInterlinkPacket(CBuffer &buf) const;
+
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;
 
@@ -89,9 +94,6 @@ public:
 
 	// operators
 	bool operator ==(const CDvHeaderPacket &) const;
-#ifdef IMPLEMENT_CDVHEADERPACKET_CONST_CHAR_OPERATOR
-	operator const char *() const;
-#endif
 
 protected:
 	// data
@@ -103,8 +105,4 @@ protected:
 	CCallsign   m_csRPT2;
 	CCallsign   m_csMY;
 	uint16_t    m_uiCrc;
-#ifdef IMPLEMENT_CDVHEADERPACKET_CONST_CHAR_OPERATOR
-	// buffer
-	char		m_sz[256];
-#endif
 };

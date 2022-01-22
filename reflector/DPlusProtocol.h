@@ -67,14 +67,12 @@ protected:
 	void EncodeLoginAckPacket(CBuffer *);
 	void EncodeLoginNackPacket(CBuffer *);
 	void EncodeDisconnectPacket(CBuffer *);
-	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
-	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
-	bool EncodeDvLastFramePacket(const CDvFramePacket &, CBuffer *) const;
-
+	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer &) const;
+	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer &) const;
 
 protected:
 	// for keep alive
-	CTimer          m_LastKeepaliveTime;
+	CTimer m_LastKeepaliveTime;
 
 	// for queue header caches
 	std::unordered_map<char, CDPlusStreamCacheItem> m_StreamsCache;

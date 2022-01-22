@@ -33,6 +33,53 @@ CDvHeaderPacket::CDvHeaderPacket()
 	m_uiCrc = 0;
 }
 
+// network
+CDvHeaderPacket::CDvHeaderPacket(const CBuffer &buf) : CPacket(buf)
+{
+	if (buf.size() >= GetNetworkSize())
+	{
+		auto o = CPacket::GetNetworkSize();
+		auto data = buf.data();
+		m_uiFlag1 = data[o++];
+		m_uiFlag2 = data[o++];
+		m_uiFlag3 = data[o++];
+		m_csUR.SetCallsign(data+o, CALLSIGN_LEN);
+		o += CALLSIGN_LEN;
+		m_csRPT1.SetCallsign(data+o, CALLSIGN_LEN);
+		o += CALLSIGN_LEN;
+		m_csRPT2.SetCallsign(data+o, CALLSIGN_LEN);
+		o += CALLSIGN_LEN;
+		m_csMY.SetCallsign(data+o, CALLSIGN_LEN);
+		o += CALLSIGN_LEN;
+		m_uiCrc = data[o] * 0x100u + data[o+1];
+	}
+	else
+	{
+		std::cerr << "CBuffer is too small to initialize a CDvHeaderPacket" << std::endl;
+	}
+}
+unsigned int CDvHeaderPacket::GetNetworkSize()
+{
+	return CPacket::GetNetworkSize() + (4 * CALLSIGN_LEN) + 5;
+}
+
+void CDvHeaderPacket::EncodeInterlinkPacket(CBuffer &buf) const
+{
+	CPacket::EncodeInterlinkPacket("URFH", buf);
+	buf.resize(GetNetworkSize());
+	auto data = buf.data();
+	auto off = CPacket::GetNetworkSize();
+	data[off++] = m_uiFlag1;
+	data[off++] = m_uiFlag2;
+	data[off++] = m_uiFlag3;
+	m_csUR.GetCallsign(data+off);	off += CALLSIGN_LEN;
+	m_csRPT1.GetCallsign(data+off);	off += CALLSIGN_LEN;
+	m_csRPT2.GetCallsign(data+off); off += CALLSIGN_LEN;
+	m_csMY.GetCallsign(data+off);	off += CALLSIGN_LEN;
+	data[off++] = (m_uiCrc / 0x100u) & 0xffu;
+	data[off]   = m_uiCrc & 0xffu;
+}
+
 // dstar constructor
 
 CDvHeaderPacket::CDvHeaderPacket(const struct dstar_header *buffer, uint16_t sid, uint8_t pid)

@@ -36,7 +36,58 @@ CPacket::CPacket()
 	m_bLastPacket = false;
 };
 
-// dstar contrsuctor
+// for the network
+unsigned int CPacket::GetNetworkSize()
+{
+	return 20u;
+}
+
+CPacket::CPacket(const CBuffer &buf)
+{
+	if (buf.size() > 19)
+	{
+		auto data = buf.data();
+		m_eCodecIn           = (ECodecType)data[4];
+		m_eOrigin            = (EOrigin)data[5];
+		m_bLastPacket        = data[6] ? true : false;
+		m_cModule            = data[7];
+		m_uiStreamId         = data[8]*0x100u + data[9];
+		m_uiM17FrameNumber   = data[10]*0x1000000u + data[11]*0x10000u + data[12]*0x100 + data[13];
+		m_uiDstarPacketId    = data[14];
+		m_uiDmrPacketId      = data[15];
+		m_uiDmrPacketSubid   = data[16];
+		m_uiYsfPacketId      = data[17];
+		m_uiYsfPacketSubId   = data[18];
+		m_uiYsfPacketFrameId = data[19];
+	}
+	else
+		std::cerr << "CPacket initialization failed because the buffer is too small!" << std::endl;
+}
+
+void CPacket::EncodeInterlinkPacket(const char *magic, CBuffer &buf) const
+{
+	buf.Set(magic);
+	buf.resize(20);
+	auto data = buf.data();
+	data[4]  = (uint8_t)m_eCodecIn;
+	data[5]  = (uint8_t)m_eOrigin;
+	data[6]  = m_bLastPacket ? 1 : 0;
+	data[7]  = m_cModule;
+	data[8]  = m_uiStreamId / 0x100u;
+	data[9]  = m_uiStreamId % 0x100u;
+	data[10] = (m_uiM17FrameNumber / 0x1000000u) % 0x100u;
+	data[11] = (m_uiM17FrameNumber / 0x10000u) % 0x100u;
+	data[12] = (m_uiM17FrameNumber / 0x100u) % 0x100u;
+	data[13] = m_uiM17FrameNumber % 100u;
+	data[14] = m_uiDstarPacketId;
+	data[15] = m_uiDmrPacketId;
+	data[16] = m_uiDmrPacketSubid;
+	data[17] = m_uiYsfPacketId;
+	data[18] = m_uiYsfPacketSubId;
+	data[19] = m_uiYsfPacketFrameId;
+}
+
+// dstar contstructor
 CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 {
 	m_uiStreamId = sid;

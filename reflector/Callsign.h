@@ -41,7 +41,7 @@ public:
 	// status
 	bool IsValid(void) const;
 	bool HasSuffix(void) const;
-	bool HasModule(void) const                { return m_Module != ' '; }
+	bool HasModule(void) const { return m_Module != ' '; }
 
 	// set
 	void SetCallsign(const char *, bool = true);
@@ -59,9 +59,9 @@ public:
 	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
 	const std::string GetCS(unsigned len = 9) const;
-	uint32_t GetDmrid(void) const             { return m_uiDmrid; }
+	uint32_t GetDmrid(void) const { return m_uiDmrid; }
 	void GetSuffix(uint8_t *) const;
-	char GetCSModule(void) const              { return m_Module; }
+	char GetCSModule(void) const { return m_Module; }
 
 	// compare
 	bool HasSameCallsign(const CCallsign &) const;

@@ -451,7 +451,7 @@ void CG3Protocol::HandleQueue(void)
 
 		// encode it
 		CBuffer buffer;
-		if ( EncodeDvPacket(*packet, &buffer) )
+		if ( EncodeDvPacket(*packet, buffer) )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
 			CClients *clients = g_Reflector.GetClients();
@@ -612,46 +612,43 @@ bool CG3Protocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CD
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet encoding helpers
 
-bool CG3Protocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
+bool CG3Protocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)0x80);
-	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	Buffer.Append((uint8_t)0x80);
+	Buffer.Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
-bool CG3Protocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CG3Protocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
-	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
-	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	if (Packet.IsLastPacket())
+	{
+		uint8_t tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
+
+		Buffer.Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
+		Buffer.Append(tag2, sizeof(tag2));
+	}
+	else
+	{
+		Buffer.Append((uint8_t)(Packet.GetPacketId() % 21));
+		Buffer.Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
+		Buffer.Append((uint8_t *)Packet.GetDvData(), 3);
+	}
 
 	return true;
 
-}
-
-bool CG3Protocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
-{
-	uint8_t tag1[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
-	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x1A,0xC6 };
-
-	Buffer->Set(tag1, sizeof(tag1));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
-	Buffer->Append(tag2, sizeof(tag2));
-
-	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -61,8 +61,8 @@ protected:
 	void EncodeDisconnectPacket(CBuffer *);
 	void EncodeConnectAckPacket(CBuffer *, const char *);
 	void EncodeConnectNackPacket(CBuffer *Buffer);
-	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const;
-	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const;
+	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer &) const;
+	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer &) const;
 
 protected:
 	// time

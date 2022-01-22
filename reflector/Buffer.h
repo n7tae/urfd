@@ -63,6 +63,7 @@ public:
 
 	// pass through
 	void clear() { m_data.clear(); }
+	void reserve(unsigned int size) { m_data.reserve(size); }
 	std::vector<uint8_t>::size_type size() const { return m_data.size(); }
 	uint8_t *data() { return m_data.data(); }
 	const uint8_t *data() const { return m_data.data(); }

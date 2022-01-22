@@ -236,7 +236,7 @@ void CDextraProtocol::HandleQueue(void)
 
 		// encode it
 		CBuffer buffer;
-		if ( EncodeDvPacket(*packet, &buffer) )
+		if ( EncodeDvPacket(*packet, buffer) )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
 			CClients *clients = g_Reflector.GetClients();
@@ -586,33 +586,33 @@ void CDextraProtocol::EncodeDisconnectedPacket(CBuffer *Buffer)
 	Buffer->Set(tag, sizeof(tag));
 }
 
-bool CDextraProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
+bool CDextraProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[]	= { 'D','S','V','T',0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)0x80);
-	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	Buffer.Append((uint8_t)0x80);
+	Buffer.Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
-bool CDextraProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CDextraProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[] = { 'D','S','V','T',0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
 	uint8_t id = Packet.GetDstarPacketId() % 21;
 	if (Packet.IsLastPacket())
 		id |= 0x40U;
-	Buffer->Append(id);
-	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
-	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
+	Buffer.Append(id);
+	Buffer.Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
+	Buffer.Append((uint8_t *)Packet.GetDvData(), 3);
 
 	return true;
 

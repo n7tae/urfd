@@ -248,7 +248,7 @@ void CDplusProtocol::HandleQueue(void)
 
 		// encode it
 		CBuffer buffer;
-		if ( EncodeDvPacket(*packet, &buffer) )
+		if ( EncodeDvPacket(*packet, buffer) )
 		{
 			// and push it to all our clients who are not streaming in
 			// note that for dplus protocol, all stream of all modules are push to all clients
@@ -300,7 +300,7 @@ void CDplusProtocol::SendDvHeader(CDvHeaderPacket *packet, CDplusClient *client)
 {
 	// encode it
 	CBuffer buffer;
-	if ( EncodeDvPacket(*packet, &buffer) )
+	if ( EncodeDvPacket(*packet, buffer) )
 	{
 		if ( (client->IsDextraDongle() || !client->HasModule()) )
 		{
@@ -312,7 +312,7 @@ void CDplusProtocol::SendDvHeader(CDvHeaderPacket *packet, CDplusClient *client)
 
 			// encode it
 			CBuffer buffer2;
-			if ( EncodeDvPacket(packet2, &buffer2) )
+			if ( EncodeDvPacket(packet2, buffer2) )
 			{
 				// and send it
 				Send(buffer2, client->GetIp());
@@ -466,44 +466,41 @@ void CDplusProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
 }
 
 
-bool CDplusProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer *Buffer) const
+bool CDplusProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[]	= { 0x3A,0x80,0x44,0x53,0x56,0x54,0x10,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 	struct dstar_header DstarHeader;
 
 	Packet.ConvertToDstarStruct(&DstarHeader);
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)0x80);
-	Buffer->Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	Buffer.Append((uint8_t)0x80);
+	Buffer.Append((uint8_t *)&DstarHeader, sizeof(struct dstar_header));
 
 	return true;
 }
 
-bool CDplusProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
+bool CDplusProtocol::EncodeDvFramePacket(const CDvFramePacket &Packet, CBuffer &Buffer) const
 {
 	uint8_t tag[] = { 0x1D,0x80,0x44,0x53,0x56,0x54,0x20,0x00,0x00,0x00,0x20,0x00,0x01,0x02 };
 
-	Buffer->Set(tag, sizeof(tag));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)(Packet.GetPacketId() % 21));
-	Buffer->Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
-	Buffer->Append((uint8_t *)Packet.GetDvData(), 3);
+	Buffer.Set(tag, sizeof(tag));
+	Buffer.Append(Packet.GetStreamId());
+	if (Packet.IsLastPacket())
+	{
+		uint8_t tag2[] = { 0x55,0xC8,0x7A,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x25,0x1A,0xC6 };
+
+		Buffer.Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
+		Buffer.Append(tag2, sizeof(tag2));
+	}
+	else
+	{
+		Buffer.Append((uint8_t)(Packet.GetPacketId() % 21));
+		Buffer.Append((uint8_t *)Packet.GetCodecData(ECodecType::dstar), 9);
+		Buffer.Append((uint8_t *)Packet.GetDvData(), 3);
+	}
 
 	return true;
 
-}
-
-bool CDplusProtocol::EncodeDvLastFramePacket(const CDvFramePacket &Packet, CBuffer *Buffer) const
-{
-	uint8_t tag1[] = { 0x20,0x80,0x44,0x53,0x56,0x54,0x20,0x00,0x81,0x00,0x20,0x00,0x01,0x02 };
-	uint8_t tag2[] = { 0x55,0xC8,0x7A,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x25,0x1A,0xC6 };
-
-	Buffer->Set(tag1, sizeof(tag1));
-	Buffer->Append(Packet.GetStreamId());
-	Buffer->Append((uint8_t)((Packet.GetPacketId() % 21) | 0x40));
-	Buffer->Append(tag2, sizeof(tag2));
-
-	return true;
 }

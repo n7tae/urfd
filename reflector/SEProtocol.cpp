@@ -16,7 +16,7 @@
 
 #include "SEProtocol.h"
 
-bool CSEProtocol::EncodeDvPacket(const CPacket &packet, CBuffer *buffer) const
+bool CSEProtocol::EncodeDvPacket(const CPacket &packet, CBuffer &buffer) const
 {
 	if ( packet.IsDvFrame() )
 		return EncodeDvFramePacket((CDvFramePacket &)packet, buffer);

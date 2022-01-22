@@ -215,7 +215,7 @@ void CURFProtocol::HandleQueue(void)
 		{
 			// encode it
 			CBuffer buffer;
-			if ( EncodeDvPacket(*packet, &buffer) )
+			if ( EncodeDvPacket(*packet, buffer) )
 			{
 				// and push it to all our clients linked to the module and who are not streaming in
 				CClients *clients = g_Reflector.GetClients();
@@ -472,10 +472,12 @@ bool CURFProtocol::IsValidNackPacket(const CBuffer &Buffer, CCallsign *callsign)
 
 bool CURFProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header)
 {
-	if (sizeof(CDvHeaderPacket) == Buffer.size()) {
-		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket());
-		memcpy(header.get(), Buffer.data(), sizeof(CDvHeaderPacket));
-		if (header) {
+	uint8_t magic[] = { 'U', 'R', 'F', 'H' };
+	if (Buffer.size()==CDvHeaderPacket::GetNetworkSize() && 0==Buffer.Compare(magic, 4))
+	{
+		header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(Buffer));
+		if (header)
+		{
 			if (header->IsValid())
 				return true;
 			else
@@ -487,14 +489,12 @@ bool CURFProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_ptr<
 
 bool CURFProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	// otherwise try protocol revision 2
-	if (sizeof(CDvFramePacket)==Buffer.size())
+	uint8_t magic[] = { 'U', 'R', 'F', 'F' };
+	if (Buffer.size()==CDvFramePacket::GetNetworkSize() && 0==Buffer.Compare(magic, 4))
 	{
-		// create packet
-		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket());
-		memcpy(dvframe.get(), Buffer.data(), sizeof(CDvFramePacket));
-		// check validity of packet
-		if (dvframe) {
+		dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(Buffer));
+		if (dvframe)
+		{
 			if (dvframe->IsValid())
 				return true;
 			else
@@ -507,19 +507,15 @@ bool CURFProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<C
 ////////////////////////////////////////////////////////////////////////////////////////
 // packet encoding helpers
 
-bool CURFProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &packet, CBuffer *buffer) const
+bool CURFProtocol::EncodeDvHeaderPacket(const CDvHeaderPacket &packet, CBuffer &buffer) const
 {
-	auto len = sizeof(CDvHeaderPacket);
-	buffer->resize(len);
-	memcpy(buffer->data(), &packet, len);
+	packet.EncodeInterlinkPacket(buffer);
 	return true;
 }
 
-bool CURFProtocol::EncodeDvFramePacket(const CDvFramePacket &packet, CBuffer *buffer) const
+bool CURFProtocol::EncodeDvFramePacket(const CDvFramePacket &packet, CBuffer &buffer) const
 {
-	auto len = sizeof(CDvFramePacket);
-	buffer->resize(len);
-	memcpy(buffer->data(), &packet, len);
+	packet.EncodeInterlinkPacket(buffer);
 	return true;
 }
 

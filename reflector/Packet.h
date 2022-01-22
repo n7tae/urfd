@@ -20,16 +20,18 @@
 
 // Origin Id
 
+#include "Buffer.h"
 #include "TCPacketDef.h"
 #include "M17Packet.h"
 
-enum class EOrigin { local, peer };
+enum class EOrigin : std::uint8_t { local=0, peer=1 };
 
 class CPacket
 {
 public:
 	// constructor
 	CPacket();
+	CPacket(const CBuffer &Buffer);
 	CPacket(uint16_t sid, uint8_t dstarpid);
 	CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrsubpid, bool lastpacket);
 	CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax, bool lastpacket);
@@ -70,7 +72,12 @@ public:
 	void SetRemotePeerOrigin(void)  { m_eOrigin = EOrigin::peer; }
 
 protected:
+	// network
+	void EncodeInterlinkPacket(const char *magic, CBuffer &Buffer) const;
+	static unsigned int GetNetworkSize();
+
 	// data
+	// if you change something here, you'll need to update the CBuffer ctor and EncodeInterlinkPacket()!!!
 	ECodecType m_eCodecIn;
 	EOrigin    m_eOrigin;
 	bool       m_bLastPacket;

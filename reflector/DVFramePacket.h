@@ -50,6 +50,10 @@ public:
 	CDvFramePacket(uint16_t streamid, uint8_t counter, const uint8_t *ambe, const uint8_t *dvdata, uint8_t counter1, uint8_t counter2, const uint8_t *ambe2, const uint8_t *dmrsync, ECodecType type, bool islast);
 	// M17 Frame
 	CDvFramePacket(const CM17Packet &m17);
+	// URF Network
+	CDvFramePacket(const CBuffer &buf);
+	static unsigned int GetNetworkSize();
+	void EncodeInterlinkPacket(CBuffer &buf) const;
 
 	// virtual duplication
 	std::unique_ptr<CPacket> Duplicate(void) const;

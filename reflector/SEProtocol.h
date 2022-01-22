@@ -23,7 +23,7 @@ class CSEProtocol : public CProtocol
 {
 protected:
 	// packet encoding helpers
-	virtual bool EncodeDvPacket(const CPacket &, CBuffer *) const;
-	virtual bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer *) const = 0;
-	virtual bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer *) const = 0;
+	virtual bool EncodeDvPacket(const CPacket &, CBuffer &) const;
+	virtual bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer &) const = 0;
+	virtual bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer &) const = 0;
 };
