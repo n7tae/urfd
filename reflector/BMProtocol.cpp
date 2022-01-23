@@ -198,52 +198,46 @@ void CBMProtocol::HandleQueue(void)
 		// get the packet
 		auto packet = m_Queue.pop();
 
-		// check if origin of packet is local
-		// if not, do not stream it out as it will cause
-		// network loop between linked XLX peers
-		if ( packet->IsLocalOrigin() )
+		// encode it
+		CBuffer buffer;
+		if ( EncodeDvPacket(*packet, buffer) )
 		{
-			// encode it
-			CBuffer buffer;
-			if ( EncodeDvPacket(*packet, buffer) )
+			// encode revision dependent version
+			CBuffer bufferLegacy = buffer;
+			if ( packet->IsDvFrame() && (bufferLegacy.size() == 45) )
 			{
-				// encode revision dependent version
-				CBuffer bufferLegacy = buffer;
-				if ( packet->IsDvFrame() && (bufferLegacy.size() == 45) )
-				{
-					bufferLegacy.resize(27);
-				}
+				bufferLegacy.resize(27);
+			}
 
-				// and push it to all our clients linked to the module and who are not streaming in
-				CClients *clients = g_Reflector.GetClients();
-				auto it = clients->begin();
-				std::shared_ptr<CClient>client = nullptr;
-				while ( (client = clients->FindNextClient(EProtocol::bm, it)) != nullptr )
+			// and push it to all our clients linked to the module and who are not streaming in
+			CClients *clients = g_Reflector.GetClients();
+			auto it = clients->begin();
+			std::shared_ptr<CClient>client = nullptr;
+			while ( (client = clients->FindNextClient(EProtocol::bm, it)) != nullptr )
+			{
+				// is this client busy ?
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
 				{
-					// is this client busy ?
-					if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
+					// no, send the packet
+					// this is protocol revision dependent
+					switch ( client->GetProtocolRevision() )
 					{
-						// no, send the packet
-						// this is protocol revision dependent
-						switch ( client->GetProtocolRevision() )
-						{
-						case EProtoRev::original:
-						case EProtoRev::revised:
-							Send(bufferLegacy, client->GetIp());
-							break;
-						case EProtoRev::ambe:
-						default:
+					case EProtoRev::original:
+					case EProtoRev::revised:
+						Send(bufferLegacy, client->GetIp());
+						break;
+					case EProtoRev::ambe:
+					default:
 #ifdef TRANSCODED_MODULES
-							Send(buffer, client->GetIp());
+						Send(buffer, client->GetIp());
 #else
-							Send(bufferLegacy, client->GetIp());
+						Send(bufferLegacy, client->GetIp());
 #endif
-							break;
-						}
+						break;
 					}
 				}
-				g_Reflector.ReleaseClients();
 			}
+			g_Reflector.ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -351,9 +345,6 @@ void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 	// todo: verify Packet.GetModuleId() is in authorized list of XLX of origin
 	// todo: do the same for DVFrame and DVLAstFrame packets
 
-	// tag packet as remote peer origin
-	Header->SetRemotePeerOrigin();
-
 	// find the stream
 	auto stream = GetStream(Header->GetStreamId());
 	if ( stream )
@@ -387,15 +378,6 @@ void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2, peer);
 		g_Reflector.ReleaseUsers();
 	}
-}
-
-void CBMProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &DvFrame, const CIp *Ip)
-{
-	// tag packet as remote peer origin
-	DvFrame->SetRemotePeerOrigin();
-
-	// anc call base class
-	CProtocol::OnDvFramePacketIn(DvFrame, Ip);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
