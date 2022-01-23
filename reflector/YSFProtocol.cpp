@@ -186,19 +186,11 @@ void CYsfProtocol::Task(void)
 			EncodeServerStatusPacket(&Buffer);
 			Send(Buffer, Ip);
 		}
-		else if ( Buffer.size() == 80 && 0 == memcmp(Buffer.data(), "YSFI", 4) )
-		{
-			// do nothing, it's unneeded information from BlueDV
-		}
-		else if ( Buffer.size() == 50 && 0 == memcmp(Buffer.data(), "YSFO", 4) )
-		{
-			// do nothing, it's unneeded options from BlueDV
-		}
 		else
 		{
-			std::string title("Unknown YSF packet from ");
-			title += Ip.GetAddress();
-			Buffer.Dump(title);
+			// std::string title("Unknown YSF packet from ");
+			// title += Ip.GetAddress();
+			// Buffer.Dump(title);
 		}
 	}
 
@@ -743,11 +735,9 @@ bool CYsfProtocol::IsValidwirexPacket(const CBuffer &Buffer, CYSFFICH *Fich, CCa
 		// decode YSH fich
 		if ( Fich->decode(&(Buffer.data()[40])) )
 		{
-			//std::cout << (int)Fich->getDT() << ","
-			//          << (int)Fich->getFI() << ","
-			//          << (int)Fich->getFN() << ","
-			//          << (int)Fich->getFT()
-			//          << std::endl;
+#ifdef DEBUG
+			std::cout <<"DT=" << (int)Fich->getDT() << " FI=" << (int)Fich->getFI() << " FN=" << (int)Fich->getFN() << " FT=" << (int)Fich->getFT() << std::endl;
+#endif
 			valid = (Fich->getDT() == YSF_DT_DATA_FR_MODE);
 			valid &= (Fich->getFI() == YSF_FI_COMMUNICATIONS);
 			if ( valid )
