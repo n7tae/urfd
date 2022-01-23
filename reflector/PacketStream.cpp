@@ -54,16 +54,19 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_OwnerClient = client;
 		m_LastPacketTime.start();
 #ifdef TRANSCODED_MODULES
-		auto mod = DvHeader.GetRpt2Module();
-		if (std::string::npos != std::string(TRANSCODED_MODULES).find(mod))
+		if (DvHeader.IsLocalOrigin()) // we only need transcoding if the source is local
 		{
-			m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader));
-			return true;
-		}
-		else
-		{
-			std::cerr << "Could not find module '" << mod << " in the transcoded list, '" << TRANSCODED_MODULES << "'" << std::endl;
-			return false;
+			auto mod = DvHeader.GetRpt2Module();
+			if (std::string::npos != std::string(TRANSCODED_MODULES).find(mod))
+			{
+				m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader));
+				return true;
+			}
+			else
+			{
+				std::cerr << "Could not find module '" << mod << " in the transcoded list, '" << TRANSCODED_MODULES << "'" << std::endl;
+				return false;
+			}
 		}
 #else
 		return true;
