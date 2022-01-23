@@ -70,6 +70,18 @@ void CURFProtocol::Task(void)
 		{
 			OnDvFramePacketIn(Frame, &Ip);
 		}
+		else if ( IsValidKeepAlivePacket(Buffer, &Callsign) )
+		{
+			// find peer
+			CPeers *peers = g_Reflector.GetPeers();
+			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::urf);
+			if ( peer != nullptr )
+			{
+				// keep it alive
+				peer->Alive();
+			}
+			g_Reflector.ReleasePeers();
+		}
 		else if ( IsValidDvHeaderPacket(Buffer, Header) )
 		{
 			// callsign allowed?
@@ -147,20 +159,6 @@ void CURFProtocol::Task(void)
 		else if ( IsValidNackPacket(Buffer, &Callsign) )
 		{
 			std::cout << "URF nack packet from " << Callsign << " at " << Ip << std::endl;
-		}
-		else if ( IsValidKeepAlivePacket(Buffer, &Callsign) )
-		{
-			std::cout << "URF keepalive packet from " << Callsign << " at " << Ip << std::endl;
-
-			// find peer
-			CPeers *peers = g_Reflector.GetPeers();
-			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::urf);
-			if ( peer != nullptr )
-			{
-				// keep it alive
-				peer->Alive();
-			}
-			g_Reflector.ReleasePeers();
 		}
 		else
 		{
