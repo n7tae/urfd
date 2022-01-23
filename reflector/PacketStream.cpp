@@ -68,6 +68,8 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 				return false;
 			}
 		}
+		else
+			std::cout << "Stream from " << client->GetCallsign() << " is not local, so no CCodec stream" << std::endl;
 #else
 		return true;
 #endif
