@@ -826,7 +826,9 @@ bool CYsfProtocol::IsValidwirexPacket(const CBuffer &Buffer, CYSFFICH *Fich, CCa
 					}
 					else
 					{
-						std::cout << "Wires-X unknown command" << std::endl;
+#ifdef DEBUG
+						Dump("Unknown Wires-X command:", command + 1U, 3);
+#endif
 						*Cmd = WIRESX_CMD_UNKNOWN;
 						*Arg = 0;
 						valid = false;
