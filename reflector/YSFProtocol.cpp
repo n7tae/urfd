@@ -188,9 +188,11 @@ void CYsfProtocol::Task(void)
 		}
 		else
 		{
-			// std::string title("Unknown YSF packet from ");
-			// title += Ip.GetAddress();
-			// Buffer.Dump(title);
+#ifdef DEBUG
+			std::string title("Unknown YSF packet from ");
+			title += Ip.GetAddress();
+			Buffer.Dump(title);
+#endif
 		}
 	}
 
@@ -773,7 +775,13 @@ bool CYsfProtocol::IsValidwirexPacket(const CBuffer &Buffer, CYSFFICH *Fich, CCa
 						{
 							unsigned char crc = CCRC::addCRC(command, i + 1U);
 							if (crc == command[i + 1U])
+							{
 								valid = true;
+#ifdef DEBUG
+								if (! valid)
+									std::cout << "WiresX command CRC failed:" << (int)crc << " != " << (int)command[i + 1U] << std::endl;
+#endif
+							}
 							break;
 						}
 					}
