@@ -37,7 +37,6 @@ public:
 
 	// get
 	uint16_t GetStreamId(void) const          { return m_uiStreamId; }
-	bool     IsEmpty(void) const;
 
 	// task
 	void Thread(void);

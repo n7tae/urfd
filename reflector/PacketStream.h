@@ -21,10 +21,11 @@
 #include "PacketQueue.h"
 #include "Timer.h"
 #include "DVHeaderPacket.h"
+#include "Client.h"
 #ifdef TRANSCODED_MODULES
 #include "UnixDgramSocket.h"
-#endif
 #include "CodecStream.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,7 +52,6 @@ public:
 	// push & pop
 	void Push(std::unique_ptr<CPacket> packet);
 	void Tickle(void)                               { m_LastPacketTime.start(); }
-	bool IsEmpty(void) const;
 
 	// get
 	std::shared_ptr<CClient> GetOwnerClient(void)   { return m_OwnerClient; }

@@ -45,8 +45,8 @@ public:
 	virtual std::unique_ptr<CPacket> Duplicate(void) const = 0;
 
 	// identity
-	virtual bool IsDvHeader(void) const          { return false; }
-	virtual bool IsDvFrame(void) const           { return false; }
+	virtual bool IsDvHeader(void) const = 0;
+	virtual bool IsDvFrame(void) const = 0;
 	bool IsLastPacket(void) const                { return m_bLastPacket; }
 
 	// get

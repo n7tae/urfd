@@ -69,6 +69,7 @@ public:
 
 	// identity
 	bool IsDvHeader(void) const                     { return true; }
+	bool IsDvFrame(void) const                     { return false; }
 
 	// conversion
 	void ConvertToDstarStruct(struct dstar_header *) const;

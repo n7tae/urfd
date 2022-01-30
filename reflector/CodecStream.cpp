@@ -77,14 +77,6 @@ void CCodecStream::InitCodecStream(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// get
-
-bool CCodecStream::IsEmpty(void) const
-{
-	return (m_LocalQueue.empty() && m_PacketStream->empty());
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
 // thread
 
 void CCodecStream::Thread()
@@ -160,17 +152,16 @@ void CCodecStream::Task(void)
 		// we need a CDvFramePacket pointer to access Frame stuff
 		auto Frame = (CDvFramePacket *)Packet.get();
 
+		// push to our local queue so it can wait for the transcoder
+		m_LocalQueue.push(Packet);
+
 		// update important stuff in Frame->m_TCPack for the transcoder
-		Frame->SetTCParams(m_uiTotalPackets);
+		Frame->SetTCParams(m_uiTotalPackets++);
 
 		// now send to transcoder
 		// this assume that thread pushing the Packet
 		// have verified that the CodecStream is connected
 		// and that the packet needs transcoding
-		m_uiTotalPackets++;
 		m_TCWriter.Send(Frame->GetCodecPacket());
-
-		// and push to our local queue
-		m_LocalQueue.push(Packet);
 	}
 }

@@ -131,23 +131,6 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	}
 }
 
-bool CPacketStream::IsEmpty(void) const
-{
-#ifdef TRANSCODED_MODULES
-	bool bEmpty = empty();
-	// also check no packets still in Codec stream's queue
-	if ( bEmpty && (m_CodecStream != nullptr) )
-	{
-		bEmpty = m_CodecStream->IsEmpty();
-	}
-
-	// done
-	return bEmpty;
-#else
-	return empty();
-#endif
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // get
 

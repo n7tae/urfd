@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Packet.h"
-#include "Client.h"
 
 class CClient;
 
@@ -64,7 +63,6 @@ protected:
 	uint16_t    m_uiStreamId;
 	std::mutex  m_Mutex;
 
-	// owner
-	CClient    *m_Client;
+	// the queue
 	std::queue<std::unique_ptr<CPacket>> queue;
 };

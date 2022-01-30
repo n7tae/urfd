@@ -59,6 +59,7 @@ public:
 	std::unique_ptr<CPacket> Duplicate(void) const;
 
 	// identity
+	bool IsDvHeader(void) const           { return false; }
 	bool IsDvFrame(void) const           { return true; }
 
 	// get

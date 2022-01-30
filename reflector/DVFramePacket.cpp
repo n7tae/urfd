@@ -130,11 +130,6 @@ CDvFramePacket::CDvFramePacket(const CBuffer &buf) : CPacket(buf)
 		memcpy(m_TCPack.dmr,	data+off, 9);	off += 9;
 		memcpy(m_TCPack.m17,	data+off, 16);	off += 16;
 		SetTCParams(seq);
-		m_TCPack.rt_timer.start();
-		m_TCPack.module = m_cModule;
-		m_TCPack.is_last = m_bLastPacket;
-		m_TCPack.streamid = m_uiStreamId;
-		m_TCPack.codec_in = m_eCodecIn;
 	}
 	else
 		std::cerr << "CBuffer is too small to initialize a CDvFramePacket" << std::endl;
