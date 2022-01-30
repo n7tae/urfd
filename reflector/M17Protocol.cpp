@@ -82,6 +82,8 @@ void CM17Protocol::Task(void)
 
 				// push the "first" packet
 				OnDvFramePacketIn(Frame, &Ip);
+				// leave a space between this pair of frames
+				std::this_thread::sleep_for(std::chrono::milliseconds(16));
 				// push the "second" packet
 				OnDvFramePacketIn(secondFrame, &Ip); // push two packet because we need a packet every 20 ms
 			}

@@ -4,10 +4,9 @@
 #  one line per entry
 #  each entry is explicitely authorised (whitelisted)
 #  you can use * as last wildcard character
+#  no definitions means everyone is authorized
 #  example:
-#    *     -> authorize eveybody
 #    LX*   -> authorize all callsign starting with LX
 #    LX3JL -> authorize LX3JL exactly
 #
 #############################################################################
-*
