@@ -162,18 +162,20 @@ If you change any configuration after your reflector has been compiled, be sure 
 
 URF Server requires the following ports to be open and forwarded properly for in- and outgoing network traffic:
 
-- TCP port    80         (http) optional TCP port 443 (https)
-- UDP port 10002         (BM connection)
-- UDP port 10017         (URF interlinking)
-- UDP port 42000         (YSF protocol)
-- UDP port 17000         (M17 protocol)
-- UDP port 30001         (DExtra protocol)
-- UPD port 20001         (DPlus protocol)
-- UDP port 30051         (DCS protocol)
-- UDP port  8880         (DMR+ DMO mode)
-- UDP port 62030         (MMDVM protocol)
-- UDP port 12345 - 12346 (Icom Terminal presence and request port)
-- UDP port 40000         (Icom Terminal dv port)
+```text
+TCP port    80         (http) optional TCP port 443 (https)
+UDP port 10002         (BM connection)
+UDP port 10017         (URF interlinking)
+UDP port 42000         (YSF protocol)
+UDP port 17000         (M17 protocol)
+UDP port 30001         (DExtra protocol)
+UPD port 20001         (DPlus protocol)
+UDP port 30051         (DCS protocol)
+UDP port  8880         (DMR+ DMO mode)
+UDP port 62030         (MMDVM protocol)
+UDP port 12345 - 12346 (Icom Terminal presence and request port)
+UDP port 40000         (Icom Terminal dv port)
+```
 
 ## YSF Master Server
 
