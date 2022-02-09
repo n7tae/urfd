@@ -4,7 +4,7 @@ The URF Multiprotocol Gateway Reflector Server, ***urfd***, is part of the softw
 
 ## Introduction
 
-This will build a new kind of digital voice reflector. Based on N7TAE's [new-xlxd](https://github.com/n7tae/new-xlxd), which, in turn, is based on the first multi-protocol reflector, [xlxd](https://github.com/LX3JL/xlxd), **urfd** supports all protocols of it's predecessors, as well as both M17 protocols, **voice-only** and **voice+data**! A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a seperate repository. URFd is not compatible with either new-xlxd or xlxd. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same protocol. Please note that currently, urfd only supports the tcd transcoder when run locally. For best performance, urfd and tcd uses UNIX DGRAM sockets for interprocess communications. These kernal-base sockets are signifantly faster than conventional UDP/IP sockets. Also, tcd only supports DVSI-3003 devices, which it uses for AMBE vocoding.
+This will build a new kind of digital voice reflector. Based on N7TAE's [new-xlxd](https://github.com/n7tae/new-xlxd), which, in turn, is based on the first multi-protocol reflector, [xlxd](https://github.com/LX3JL/xlxd), **urfd** supports all protocols of it's predecessors, as well as both M17 protocols, **voice-only** and **voice+data**! A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a seperate repository. URFd is not compatible with either new-xlxd or xlxd. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same protocol. Please note that currently, urfd only supports the tcd transcoder when run locally. For best performance, urfd and tcd uses UNIX DGRAM sockets for interprocess communications. These kernal-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
 
 This build support *dual-stack* operation, so the server on which it's running, must have both an IPv4 and IPv6 routable address if you are going to configure a dual-stack reflector. URF can support out-going DExtra links, by adding a new DExtra Peer type *and* it has many changes designed to increase reliability and stability.
 
@@ -16,7 +16,7 @@ There are many improvements of urfd over xlxd, some of which were inherited from
 - Managed memory, std::unique_ptr and std::shared_ptr, is used replacing the need for calls to *new* and *delete*.
 - Your reflector can be configured with up to 26 modules, *A* through *Z* and as few as one module. For other choices, the configure modules don't have to be contigious. For example, you could configure modules A, B, C and E.
 
-Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Also, by default, tcd and urfd are built without gdb support. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding URF reflector.
+Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Also, by default, tcd and urfd are built without gdb support. You can add debugging support in the configuration script, `./rconfig`. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding URF reflector.
 
 ## Usage
 
@@ -44,7 +44,6 @@ sudo apt upgrade
 sudo apt install git
 sudo apt install apache2 php5
 sudo apt install build-essential
-sudo apt install g++
 sudo apt install libmariadb-dev-compat
 ```
 
