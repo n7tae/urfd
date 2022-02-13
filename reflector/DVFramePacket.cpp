@@ -59,7 +59,7 @@ CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_
 }
 
 // ysf constructor
-CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid, bool islast)
+CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid, CCallsign cs, bool islast)
 	: CPacket(sid, pid, spid, fid, islast)
 {
 	memcpy(m_TCPack.dmr, ambe, 9);
@@ -69,6 +69,9 @@ CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, u
 	memset(m_TCPack.m17, 0, 16);
 	memset(m_Nonce, 0, 14);
 	m_TCPack.codec_in = ECodecType::dmr;
+	uint8_t c[12];
+    cs.GetCallsign(c);
+    m_Callsign.SetCallsign((char *)c);
 }
 
 // bm constructor

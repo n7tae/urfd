@@ -92,6 +92,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define DPLUS_PORT                      20001                               // UDP port
 #define DPLUS_KEEPALIVE_PERIOD          1                                   // in seconds
 #define DPLUS_KEEPALIVE_TIMEOUT         (DPLUS_KEEPALIVE_PERIOD*10)         // in seconds
+#define DPLUS_DEFAULT_RPTR1_SUFFIX      'Y'
 
 // DCS
 #define DCS_PORT                        30051                               // UDP port
@@ -123,6 +124,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define DMRMMDVM_KEEPALIVE_TIMEOUT      (DMRMMDVM_KEEPALIVE_PERIOD*10)      // in seconds
 #define DMRMMDVM_REFLECTOR_SLOT         DMR_SLOT2
 #define DMRMMDVM_REFLECTOR_COLOUR       1
+#define DMRMMDVM_DEFAULTID              0
 
 // YSF
 #define YSF_PORT                        42000                               // UDP port

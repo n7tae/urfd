@@ -112,10 +112,10 @@ bool CCallsign::IsValid(void) const
 	}
 
 	// prefix
-	// all chars are number, uppercase or space
+	// all chars are number, letter, special char, or space
 	for ( i = 0; i < CALLSUFFIX_LEN; i++ )
 	{
-		valid &= IsLetter(m_Suffix[i]) || IsNumber(m_Suffix[i]) || IsSpace(m_Suffix[i]);
+		 valid &= IsLetter(m_Suffix[i]) || IsNumber(m_Suffix[i]) || IsSpace(m_Suffix[i]) || IsLetterLC(m_Suffix[i]) || IsSpecialChar(m_Suffix[i]);
 	}
 
 	// module
@@ -369,6 +369,16 @@ bool CCallsign::IsLetter(char c) const
 bool CCallsign::IsSpace(char c) const
 {
 	return (c == ' ');
+}
+
+bool CCallsign::IsLetterLC(char c) const
+{
+	return ((c >= 'a') && (c <= 'z'));
+}
+
+bool CCallsign::IsSpecialChar(char c) const
+{
+    return ((c >= '!') && (c <= '/'));
 }
 
 void CCallsign::CodeIn(const uint8_t *in)
