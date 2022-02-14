@@ -859,12 +859,28 @@ void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const C
 {
 	uint8_t tag[] = { 'D','M','R','D' };
 	Buffer->Set(tag, sizeof(tag));
-
+	uint8_t cs[12];
+	
 	// DMR header
 	// uiSeqId
 	Buffer->Append((uint8_t)seqid);
 	// uiSrcId
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
+	DvFrame0.GetMyCallsign().GetCallsign(cs);
+	
+    if(uiSrcId == 0){
+		uiSrcId = DvFrame0.GetMyCallsign().GetDmrid();
+	}
+	if(uiSrcId == 0){
+		uiSrcId = DvFrame1.GetMyCallsign().GetDmrid();
+	}
+	if(uiSrcId == 0){
+		uiSrcId = DvFrame2.GetMyCallsign().GetDmrid();
+	}
+	if(uiSrcId == 0){
+		uiSrcId = DMRMMDVM_DEFAULTID;
+	}
+	
 	AppendDmrIdToBuffer(Buffer, uiSrcId);
 	// uiDstId = TG9
 	uint32_t uiDstId = 9; // ModuleToDmrDestId(Header.GetRpt2Module());

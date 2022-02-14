@@ -19,6 +19,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "Packet.h"
+#include "Callsign.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // defines
@@ -45,7 +46,7 @@ public:
 	// DMR Frame
 	CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t streamid, uint8_t counter1, uint8_t counter2, bool islast);
 	// YSF Frame
-	CDvFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t counter1, uint8_t counter2, uint8_t counter3, bool islast);
+	CDvFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t counter1, uint8_t counter2, uint8_t counter3, CCallsign cs, bool islast);
 	// XLX Frame
 	CDvFramePacket(uint16_t streamid, uint8_t counter, const uint8_t *ambe, const uint8_t *dvdata, uint8_t counter1, uint8_t counter2, const uint8_t *ambe2, const uint8_t *dmrsync, ECodecType type, bool islast);
 	// M17 Frame
@@ -68,6 +69,7 @@ public:
 	const uint8_t *GetDvSync(void) const { return m_uiDvSync; }
 	const uint8_t *GetDvData(void) const { return m_uiDvData; }
 	const uint8_t *GetNonce(void)  const { return m_Nonce; }
+	const CCallsign &GetMyCallsign(void) const { return m_Callsign; }
 
 	// set
 	void SetDvData(const uint8_t *);
@@ -86,4 +88,5 @@ protected:
 	uint8_t m_Nonce[14];
 	// the transcoder packet
 	STCPacket m_TCPack;
+	CCallsign m_Callsign;
 };
