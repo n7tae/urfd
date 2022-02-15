@@ -423,16 +423,19 @@ bool CDplusProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique_pt
 
 bool CDplusProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::unique_ptr<CDvFramePacket> &dvframe)
 {
-	auto size = Buffer.size();
-	if ( (29==size || 32==size) && 0x1DU==Buffer.data()[0] && 0x80U==Buffer.data()[1] && 0==Buffer.Compare((uint8_t *)"DSVT", 2, 4) && 0x20U==Buffer.data()[6] && 0x20U==Buffer.data()[10] )
+	if (0==Buffer.Compare((uint8_t *)"DSVT", 2, 4) && 0x80u==Buffer.data()[1] && 0x20u==Buffer.data()[6] && 0x20u==Buffer.data()[10])
 	{
-		if (32==size)
-			dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDStarFrame *)&(Buffer.data()[17]), *((uint16_t *)&(Buffer.data()[14])), 0x40U | Buffer.data()[16]));
-		else
+		auto size = Buffer.size();
+		if (29==size && 0x1du==Buffer.data()[0])
+		{
 			dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDStarFrame *)&(Buffer.data()[17]), *((uint16_t *)&(Buffer.data()[14])), Buffer.data()[16]));
-		// check validity of packet
-		if ( dvframe && dvframe->IsValid() )
 			return true;
+		}
+		else if (32==size && 0x20u==Buffer.data()[0])
+		{
+			dvframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket((SDStarFrame *)&(Buffer.data()[17]), *((uint16_t *)&(Buffer.data()[14])), 0x40u | Buffer.data()[16]));
+			return true;
+		}
 	}
 	return false;
 }
