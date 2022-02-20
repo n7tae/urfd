@@ -887,20 +887,28 @@ bool CYsfProtocol::IsValidServerStatusPacket(const CBuffer &Buffer) const
 bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'Y','S','F','S' };
-	uint8_t description[] = { 'X','L','X',' ','r','e','f','l','e','c','t','o','r',' ' };
+	uint8_t description[14];
 	uint8_t callsign[16];
-
+	std::string desc = YSF_REFLECTOR_DESCRIPTION;
+	
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// hash
 	memset(callsign, ' ', sizeof(callsign));
+#ifdef YSF_REFLECTOR_NAME
+	std::string cs = YSF_REFLECTOR_NAME;
+	memcpy(callsign, cs.c_str(), cs.size() > 16 ? 16 : cs.size());
+#else
 	g_Reflector.GetCallsign().GetCallsign(callsign);
+#endif
 	char sz[16];
 	::sprintf(sz, "%05u", CalcHash(callsign, 16) % 100000U);
 	Buffer->Append((uint8_t *)sz, 5);
 	// name
 	Buffer->Append(callsign, 16);
-	// desscription
+	// description
+	memset(description, ' ', sizeof(description));
+	memcpy(description, desc.c_str(), desc.size() > 14 ? 14 : desc.size());
 	Buffer->Append(description, 14);
 	// connected clients
 	CClients *clients = g_Reflector.GetClients();
@@ -915,6 +923,9 @@ bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 
 uint32_t CYsfProtocol::CalcHash(const uint8_t *buffer, int len) const
 {
+#ifdef YSF_REFLECTOR_ID
+	uint32_t hash = YSF_REFLECTOR_ID;
+#else
 	uint32_t hash = 0U;
 
 	for ( int i = 0; i < len; i++)
@@ -923,6 +934,8 @@ uint32_t CYsfProtocol::CalcHash(const uint8_t *buffer, int len) const
 		hash += (hash << 10);
 		hash ^= (hash >> 6);
 	}
+#endif
+
 	hash += (hash << 3);
 	hash ^= (hash >> 11);
 	hash += (hash << 15);
