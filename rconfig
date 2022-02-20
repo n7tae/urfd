@@ -159,6 +159,8 @@ WriteMemFile ()
 	[ -z ${ysflocaldb+x}  ] || echo  "ysflocaldb=$ysflocaldb"  >> $file
 	[ -z ${ysfdbname+x}   ] || echo   "ysfdbname='$ysfdbname'" >> $file
 	[ -z ${ysfdbuser+x}   ] || echo   "ysfdbuser='$ysfdbuser'" >> $file
+	[ -z ${ysfrname+x}    ] || echo    "ysfrname='$ysfrname'"  >> $file
+	[ -z ${ysfrdesc+x}    ] || echo    "ysfrdesc='$ysfrdesc'"  >> $file
 	[ -z ${ysfdbpw+x}     ] || echo     "ysfdbpw='$ysfdbpw'"   >> $file
 	[ -z ${g3support+x}   ] || echo   "g3support=$g3support"   >> $file
 	[ -z ${dbsupport+x}   ] || echo   "dbsupport=$dbsupport"   >> $file
@@ -201,6 +203,12 @@ WriteSRCHFile ()
 		echo "#define YSF_DB_PASSWORD \"$ysfdbpw\"" >> $file
 	else
 		echo '#define YSF_DB_SUPPORT false' >> $file
+	fi
+	if [ ! -z ${ysfrname+x} ]; then
+		echo "#define YSF_REFLECTOR_NAME \"$ysfrname\"" >> $file
+	fi
+	if [ ! -z ${ysfrdesc+x} ]; then
+		echo "#define YSF_REFLECTOR_DESCRIPTION \"$ysfrdesc\"" >> $file
 	fi
 	if [ ! -z ${tcaddress+x} ]; then
 		echo "#define TRANSCODER_IP \"${tcaddress}\"" >> $file
@@ -361,6 +369,19 @@ tcdm='../tcd/configure.mk'
 ysfs='wiresx/configure.php'
 dbcr='configure.sql'
 urfserv='/etc/systemd/system/urfd.service'
+
+# expert mode
+if [[ "$1" == ex* ]]; then
+	expertmode="expertMode"
+fi
+
+if [ -e reflector.cfg ]; then
+	source reflector.cfg
+else
+	echo 'No configuration file found...'
+	sleep 1
+fi
+
 # default values
 callsign_d='CHNGME'
 modules_d='ABCF'
@@ -375,18 +396,12 @@ ysflocaldb_d=false
 ysfdbname_d=''
 ysfdbuser_d=''
 ysfdbpw_d=''
-
-# expert mode
-if [[ "$1" == ex* ]]; then
-	expertmode="expertMode"
-fi
-
-if [ -e reflector.cfg ]; then
-	source reflector.cfg
+if [ -z ${callsign+x} ];then
+	ysfrname_d="$callsign_d"
 else
-	echo 'No configuration file found...'
-	sleep 1
+	ysfrname_d="$callsign"
 fi
+ysfrdesc_d='URF Reflector'
 
 if [ -z ${expertmode+x} ]; then
 	if [ -e $urfserv ]; then
@@ -408,7 +423,7 @@ while [[ "$key" != q* ]]
 do
 	clear
 	echo
-	echo "        Reflector Configuration, Version #220119"
+	echo "        Reflector Configuration, Version #220220"
 	echo
 	echo    "     ******* REFLECTOR ********"
 	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}
@@ -436,6 +451,9 @@ do
 		echo -n "yu : YSF Database User      = "; EvaluateVar ysfdbuser{,_d}
 		echo -n "yp : YSF Database Password  = "; EvaluateVar ysfdbpw{,_d}
 	fi
+	echo    "     ******* YSFReflector Registry *******"
+	echo -n "rn : Registry Name          = "; EvaluateVar ysfrname{,_d}
+	echo -n "rd : Registry Description   = "; EvaluateVar ysfrdesc{,_d}
 	echo    "     ******* DEBUGGING ********"
 	echo -n "db : Debugging Support      = "; EvaluateVar dbsupport{,_d}
 	echo
@@ -445,11 +463,12 @@ do
 	echo    "q  : Quit without saving"
 	echo    "u  : Unset the value of <key> (revert to the default value)."
 	echo
-	read -p "Please input <key> <value> - omit value to toggle a true/false : " key value garbage
+	read -p "Please input <key> <value> - omit value to toggle a true/false : " key value
 
 	if   [[ "$key" == cs*  && ${value^^} == URF* ]]; then
 		callsign="${value^^}"
 		callsign="${callsign:0:6}"
+		ysfrname_d="${callsign}"
 		unset tcaddress tcmodules ysf{autolink,module,localdb,dbname,dbuser,dbpw}
 	elif [[ "$key" == am* ]]; then CheckModules "${value^^}"
 	elif [[ "$key" == i4* ]]; then ip4addr="$value"
@@ -466,6 +485,8 @@ do
 	elif [[ "$key" == yd* ]]; then ysfdbname="$value"
 	elif [[ "$key" == yu* ]]; then ysfdbuser="$value"
 	elif [[ "$key" == yp* ]]; then ysfdbpw="$value"
+	elif [[ "$key" == rn* ]]; then ysfrname="${value:0:16}"
+	elif [[ "$key" == rd* ]]; then ysfrdesc="${value:0:14}"
 	elif [[ "$key" == w* ]]; then
 		WriteCFGFiles
 		ListCFGFiles
@@ -485,6 +506,8 @@ do
 		elif [[ "$value" == yd* ]]; then unset ysfdbname
 		elif [[ "$value" == yu* ]]; then unset ysfdbuser
 		elif [[ "$value" == yp* ]]; then unset ysfdbpw
+		elif [[ "$value" == rn* ]]; then unset ysfrname
+		elif [[ "$value" == rd* ]]; then unset ysfrdesc
 		fi
 	fi
 done

@@ -422,13 +422,13 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 			char sz[YSF_CALLSIGN_LENGTH+1];
 			memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
 			sz[YSF_CALLSIGN_LENGTH] = 0;
-			
+
 			for(uint32_t i = 0; i < YSF_CALLSIGN_LENGTH; ++i){
 				if( (sz[i] == '/') || (sz[i] == '\\') || (sz[i] == '-') || (sz[i] == ' ') ){
 					sz[i] = 0;
 				}
 			}
-			
+
 			csMY = CCallsign((const char *)sz);
 			memcpy(sz, &(Buffer.data()[4]), YSF_CALLSIGN_LENGTH);
 			sz[YSF_CALLSIGN_LENGTH] = 0;
@@ -475,17 +475,17 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 		uint8_t   ambe4[9];
 		uint8_t *ambes[5] = { ambe0, ambe1, ambe2, ambe3, ambe4 };
 		CYsfUtils::DecodeVD2Vchs((unsigned char *)&(Buffer.data()[35]), ambes);
-		
+
 		char sz[YSF_CALLSIGN_LENGTH+1];
         ::memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
         sz[YSF_CALLSIGN_LENGTH] = 0;
-        
+
         for(uint32_t i = 0; i < YSF_CALLSIGN_LENGTH; ++i){
 			if( (sz[i] == '/') || (sz[i] == '\\') || (sz[i] == '-') || (sz[i] == ' ') ){
 				sz[i] = 0;
 			}
 		}
-		
+
         CCallsign csMY = CCallsign((const char *)sz);
 
 		// get DV frames
@@ -515,19 +515,19 @@ bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich,
 		{
 			uint8_t  uiAmbe[9];
 			memset(uiAmbe, 0x00, sizeof(uiAmbe));
-			
+
 			char sz[YSF_CALLSIGN_LENGTH+1];
 			::memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
 			sz[YSF_CALLSIGN_LENGTH] = 0;
-        
+
 			for(uint32_t i = 0; i < YSF_CALLSIGN_LENGTH; ++i){
 				if( (sz[i] == '/') || (sz[i] == '\\') || (sz[i] == '-') || (sz[i] == ' ') ){
 					sz[i] = 0;
 				}
 			}
-		
+
 			CCallsign csMY = CCallsign((const char *)sz);
-			
+
 			oneframe  = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0, csMY, false));
 			lastframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0, csMY, true));
 		}
@@ -889,14 +889,17 @@ bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 	uint8_t tag[] = { 'Y','S','F','S' };
 	uint8_t description[14];
 	uint8_t callsign[16];
-	std::string desc = YSF_REFLECTOR_DESCRIPTION;
-	
+#ifdef YSF_REFLECTOR_DESCRIPTION
+	const std::string desc = YSF_REFLECTOR_DESCRIPTION;
+#else
+	const std::string desc("URF Reflector");
+#endif
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// hash
 	memset(callsign, ' ', sizeof(callsign));
 #ifdef YSF_REFLECTOR_NAME
-	std::string cs = YSF_REFLECTOR_NAME;
+	const std::string cs = YSF_REFLECTOR_NAME;
 	memcpy(callsign, cs.c_str(), cs.size() > 16 ? 16 : cs.size());
 #else
 	g_Reflector.GetCallsign().GetCallsign(callsign);

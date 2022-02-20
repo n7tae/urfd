@@ -63,7 +63,7 @@
 
 #define VERSION_MAJOR                   0
 #define VERSION_MINOR                   0
-#define VERSION_REVISION                3
+#define VERSION_REVISION                4
 
 // global ------------------------------------------------------
 
@@ -133,9 +133,9 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define YSF_DEFAULT_NODE_TX_FREQ        445500000                           // in Hz
 #define YSF_DEFAULT_NODE_RX_FREQ        445500000                           // in Hz
 //#define YSF_REFLECTOR_ID				12345								// 5 digit YSF ID, assigned by registry when not defined
-//#define YSF_REFLECTOR_NAME			"XLX000"							// Max 16 characters, use reflector callsign when not defined
-#define YSF_REFLECTOR_DESCRIPTION		"XLX reflector"						// Max 14 characters				
-// the following two defines are now in configure.h
+// the following 4 defines are now in configure.h
+//#define YSF_REFLECTOR_NAME			"URF000"							// Max 16 characters, use reflector callsign when not defined
+//#define YSF_REFLECTOR_DESCRIPTION		"XLX reflector"						// Max 14 characters
 // #define YSF_AUTOLINK_ENABLE             0                                   // 1 = enable, 0 = disable auto-link
 // #define YSF_AUTOLINK_MODULE             'B'                                 // module for client to auto-link to
 
