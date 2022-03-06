@@ -143,27 +143,90 @@ EvaluateVar ()
 	fi
 }
 
+TestGainValue ()
+{
+	if [[ "$1" =~ ^[-]?[0-9]+$ ]]; then
+		if (( $1 >= -24 && $1 <= 24 )); then
+			return 0
+		else
+			return 1
+		fi
+	else
+		return 1
+	fi
+}
+
+AudioGainMenu ()
+{
+while [[ "$key" != q* ]]
+do
+	clear
+	echo
+	echo    "     DVSI AMBE Chip Audio Gain Menu"
+	echo
+	echo    "     All values are in dB and can be from -24 to 24"
+	echo    "     'input' means the audio amplitude is adjusted before encoding"
+	echo    "     'output' means the audio amplitude is adjusted after decoding"
+	echo
+	echo    "     Non-zero values are generally not required!"
+	echo    "     USE AT YOUR OWN RISK!"
+	echo
+	echo -n "si : D-Star audio input   = "; EvaluateVar dstar_in_gain{,_d}
+	echo -n "so : D-Star audio output  = "; EvaluateVar dstar_out_gain{,_d}
+	echo -n "mi : DMR/YSF audio input  = "; EvaluateVar dmr_in_gain{,_d}
+	echo -n "mo : DMR/YSF audio output = "; EvaluateVar dmr_out_gain{,_d}
+	echo
+	echo    "q  : Return to Main Menu"
+	echo    "u  : Unset the value of <key> (revert to the default value)."
+	echo
+	read -p "Please input <key> <value> : " key value
+	  if [[ "$key" == si* ]]; then
+		TestGainValue "$value" && dstar_in_gain="$value"
+	elif [[ "$key" == so* ]]; then
+		TestGainValue "$value" && dstar_out_gain="$value"
+	elif [[ "$key" == mi* ]]; then
+		TestGainValue "$value" && dmr_in_gain="$value"
+	elif [[ "$key" == mo* ]]; then
+		TestGainValue "$value" && dmr_out_gain="$value"
+	elif [[ "$key" == u*  ]]; then
+		  if [[ "$value" == si* ]]; then
+			unset dstar_in_gain
+		elif [[ "$value" == so* ]]; then
+			unset dstar_out_gain
+		elif [[ "$value" == mi* ]]; then
+			unset dmr_in_gain
+		elif [[ "$value" == mo* ]]; then
+			unset dmr_out_gain
+		fi
+	fi
+done
+}
+
 WriteMemFile ()
 {
 	local file
 	file="$rcfg"
 	echo "# created on `date`"                                  > $file
-	[ -z ${callsign+x}    ] || echo    "callsign='$callsign'"  >> $file
-	[ -z ${modules+x}     ] || echo     "modules='$modules'"   >> $file
-	[ -z ${ip4addr+x}     ] || echo     "ip4addr='$ip4addr'"   >> $file
-	[ -z ${ip6addr+x}     ] || echo     "ip6addr='$ip6addr'"   >> $file
-	[ -z ${tcaddress+x}   ] || echo   "tcaddress='$tcaddress'" >> $file
-	[ -z ${tcmodules+x}   ] || echo   "tcmodules='$tcmodules'" >> $file
-	[ -z ${ysfautolink+x} ] || echo "ysfautolink=$ysfautolink" >> $file
-	[ -z ${ysfmodule+x}   ] || echo   "ysfmodule='$ysfmodule'" >> $file
-	[ -z ${ysflocaldb+x}  ] || echo  "ysflocaldb=$ysflocaldb"  >> $file
-	[ -z ${ysfdbname+x}   ] || echo   "ysfdbname='$ysfdbname'" >> $file
-	[ -z ${ysfdbuser+x}   ] || echo   "ysfdbuser='$ysfdbuser'" >> $file
-	[ -z ${ysfrname+x}    ] || echo    "ysfrname='$ysfrname'"  >> $file
-	[ -z ${ysfrdesc+x}    ] || echo    "ysfrdesc='$ysfrdesc'"  >> $file
-	[ -z ${ysfdbpw+x}     ] || echo     "ysfdbpw='$ysfdbpw'"   >> $file
-	[ -z ${g3support+x}   ] || echo   "g3support=$g3support"   >> $file
-	[ -z ${dbsupport+x}   ] || echo   "dbsupport=$dbsupport"   >> $file
+	[ -z ${callsign+x}       ] || echo       "callsign='$callsign'"     >> $file
+	[ -z ${modules+x}        ] || echo        "modules='$modules'"      >> $file
+	[ -z ${ip4addr+x}        ] || echo        "ip4addr='$ip4addr'"      >> $file
+	[ -z ${ip6addr+x}        ] || echo        "ip6addr='$ip6addr'"      >> $file
+	[ -z ${tcaddress+x}      ] || echo      "tcaddress='$tcaddress'"    >> $file
+	[ -z ${tcmodules+x}      ] || echo      "tcmodules='$tcmodules'"    >> $file
+	[ -z ${dstar_in_gain+x}  ] || echo  "dstar_in_gain=$dstar_in_gain"  >> $file
+	[ -z ${dstar_out_gain+x} ] || echo "dstar_out_gain=$dstar_out_gain" >> $file
+	[ -z ${dmr_in_gain+x}    ] || echo    "dmr_in_gain=$dmr_in_gain"    >> $file
+	[ -z ${dmr_out_gain+x}   ] || echo   "dmr_out_gain=$dmr_out_gain"   >> $file
+	[ -z ${ysfautolink+x}    ] || echo    "ysfautolink=$ysfautolink"    >> $file
+	[ -z ${ysfmodule+x}      ] || echo      "ysfmodule='$ysfmodule'"    >> $file
+	[ -z ${ysflocaldb+x}     ] || echo     "ysflocaldb=$ysflocaldb"     >> $file
+	[ -z ${ysfdbname+x}      ] || echo      "ysfdbname='$ysfdbname'"    >> $file
+	[ -z ${ysfdbuser+x}      ] || echo      "ysfdbuser='$ysfdbuser'"    >> $file
+	[ -z ${ysfrname+x}       ] || echo       "ysfrname='$ysfrname'"     >> $file
+	[ -z ${ysfrdesc+x}       ] || echo       "ysfrdesc='$ysfrdesc'"     >> $file
+	[ -z ${ysfdbpw+x}        ] || echo        "ysfdbpw='$ysfdbpw'"      >> $file
+	[ -z ${g3support+x}      ] || echo      "g3support=$g3support"      >> $file
+	[ -z ${dbsupport+x}      ] || echo      "dbsupport=$dbsupport"      >> $file
 }
 
 WriteSRCHFile ()
@@ -264,6 +327,26 @@ WriteTranscoderHFile ()
 	fi
 	if [ -n ${tcmodules+x} ]; then
 		echo "#define TRANSCODED_MODULES \"${tcmodules}\"" >> $file
+	fi
+	if [ -z ${dstar_in_gain+x} ]; then
+		echo "#define DSTAR_IN_GAIN $dstar_in_gain_d" >> $file
+	else
+		echo "#define DSTAR_IN_GAIN $dstar_in_gain" >> $file
+	fi
+	if [ -z ${dstar_out_gain+x} ]; then
+		echo "#define DSTAR_OUT_GAIN $dstar_out_gain_d" >> $file
+	else
+		echo "#define DSTAR_OUT_GAIN $dstar_out_gain" >> $file
+	fi
+	if [ -z ${dmr_in_gain+x} ]; then
+		echo "#define DMR_IN_GAIN $dmr_in_gain_d" >> $file
+	else
+		echo "#define DMR_IN_GAIN $dmr_in_gain" >> $file
+	fi
+	if [ -z ${dmr_out_gain+x} ]; then
+		echo "#define DMR_OUT_GAIN $dmr_out_gain_d" >> $file
+	else
+		echo "#define DMR_OUT_GAIN $dmr_out_gain" >> $file
 	fi
 	if [ -n ${dbsupport+x} ]; then
 		if [ "$dbsupport" == true ]; then
@@ -396,6 +479,10 @@ ysflocaldb_d=false
 ysfdbname_d=''
 ysfdbuser_d=''
 ysfdbpw_d=''
+dstar_in_gain_d=0
+dstar_out_gain_d=0
+dmr_in_gain_d=0
+dmr_out_gain_d=0
 if [ -z ${callsign+x} ];then
 	ysfrname_d="$callsign_d"
 else
@@ -423,7 +510,7 @@ while [[ "$key" != q* ]]
 do
 	clear
 	echo
-	echo "        Reflector Configuration, Version #220220"
+	echo "        Reflector Configuration, Version #220306"
 	echo
 	echo    "     ******* REFLECTOR ********"
 	echo -n "cs : Reflector Callsign     = "; EvaluateVar callsign{,_d}
@@ -437,6 +524,19 @@ do
 	echo -n "tc : Transcoder Address     = "; EvaluateVar tcaddress{,_d}
 	if [ ! -z ${tcaddress+x} ]; then
 		echo -n "tm : Transcoder Modules     = "; EvaluateVar tcmodules{,_d}
+		echo    "ag : AMBE Audio Gain Sub-Menu"
+		if [ ! -z ${dstar_in_gain+x} ]; then
+			echo -n "     D-Star Input gain      = "; EvaluateVar dstar_in_gain{,_d}
+		fi
+		if [ ! -z ${dstar_out_gain+x} ]; then
+			echo -n "     D-Star Output gain     = "; EvaluateVar dstar_out_gain{,_d}
+		fi
+		if [ ! -z ${dmr_in_gain+x} ]; then
+			echo -n "     DMR Input gain         = "; EvaluateVar dmr_in_gain{,_d}
+		fi
+		if [ ! -z ${dmr_out_gain+x} ]; then
+			echo -n "     DMR Output gain        = "; EvaluateVar dmr_out_gain{,_d}
+		fi
 	fi
 	echo    "     ******* SYSTEM FUSION ********"
 	echo -n "ye : YSF Autolink Enable    = "; EvaluateVar ysfautolink{,_d}
@@ -475,6 +575,9 @@ do
 	elif [[ "$key" == i6* ]]; then ip6addr="$value"
 	elif [[ "$key" == tc* ]]; then tcaddress="local"
 	elif [[ "$key" == tm* ]]; then CheckTranscodedModules "${value^^}"
+	elif [[ "$key" == ag* ]]; then
+		AudioGainMenu
+		key=x
 	elif [[ "$key" == ye* ]]; then SetBooleanValue ysfautolink "$value"
 	elif [[ "$key" == ym* ]]; then
 		ysfmodule="${value^^}"
