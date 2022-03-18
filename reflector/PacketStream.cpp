@@ -60,19 +60,10 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 			if (std::string::npos != std::string(TRANSCODED_MODULES).find(mod))
 			{
 				m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader));
-				return true;
-			}
-			else
-			{
-				std::cerr << "Could not find module '" << mod << " in the transcoded list, '" << TRANSCODED_MODULES << "'" << std::endl;
-				return false;
 			}
 		}
-		else
-			return true;
-#else
-		return true;
 #endif
+		return true;
 	}
 
 	return false;
@@ -102,7 +93,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	}
 	// transcoder avaliable ?
 #ifdef TRANSCODED_MODULES
-	if ( m_CodecStream != nullptr )
+	if ( m_CodecStream )
 	{
 		// todo: verify no possibilty of double lock here
 		m_CodecStream->Lock();
