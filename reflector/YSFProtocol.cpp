@@ -192,7 +192,11 @@ void CYsfProtocol::Task(void)
 		}
 		else if ( IsValidAckPacket(Buffer) )
 		{
-			std::cout << "YSF valid/ack packet received from " << Ip << std::endl;
+			// Do nothing
+		}
+		else if ( IsValidOptionsPacket(Buffer) )
+		{
+			// Do nothing
 		}
 		else
 		{
@@ -904,6 +908,13 @@ bool CYsfProtocol::IsValidInfoPacket(const CBuffer &Buffer) const
 bool CYsfProtocol::IsValidAckPacket(const CBuffer &Buffer) const
 {
 	uint8_t tag[] = { 'Y','S','F','V' };
+
+	return ( (Buffer.size() >= 4) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
+}
+
+bool CYsfProtocol::IsValidOptionsPacket(const CBuffer &Buffer) const
+{
+	uint8_t tag[] = { 'Y','S','F','O' };
 
 	return ( (Buffer.size() >= 4) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
 }

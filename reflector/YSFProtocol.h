@@ -103,6 +103,7 @@ protected:
 	bool IsValidServerStatusPacket(const CBuffer &) const;
 	bool IsValidInfoPacket(const CBuffer &) const;
 	bool IsValidAckPacket(const CBuffer &) const;
+	bool IsValidOptionsPacket(const CBuffer &) const;
 	uint32_t CalcHash(const uint8_t *, int) const;
 
 	// server status packet encoding helpers
