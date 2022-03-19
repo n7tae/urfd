@@ -186,6 +186,18 @@ void CYsfProtocol::Task(void)
 			EncodeServerStatusPacket(&Buffer);
 			Send(Buffer, Ip);
 		}
+		else if ( IsValidInfoPacket(Buffer) )
+		{
+			// Do nothing
+		}
+		else if ( IsValidAckPacket(Buffer) )
+		{
+			// Do nothing
+		}
+		else if ( IsValidOptionsPacket(Buffer) )
+		{
+			// Do nothing
+		}
 		else
 		{
 #ifdef DEBUG
@@ -878,6 +890,31 @@ bool CYsfProtocol::IsValidwirexPacket(const CBuffer &Buffer, CYSFFICH *Fich, CCa
 bool CYsfProtocol::IsValidServerStatusPacket(const CBuffer &Buffer) const
 {
 	uint8_t tag[] = { 'Y','S','F','S' };
+
+	return ( (Buffer.size() >= 4) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
+}
+
+// Info packet sent by some clients -- currently ignored by YSFReflector
+
+bool CYsfProtocol::IsValidInfoPacket(const CBuffer &Buffer) const
+{
+	uint8_t tag[] = { 'Y','S','F','I' };
+
+	return ( (Buffer.size() >= 4) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
+}
+
+// Valid packet sent by registry as an ACK response to a server status reply from reflector
+
+bool CYsfProtocol::IsValidAckPacket(const CBuffer &Buffer) const
+{
+	uint8_t tag[] = { 'Y','S','F','V' };
+
+	return ( (Buffer.size() >= 4) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
+}
+
+bool CYsfProtocol::IsValidOptionsPacket(const CBuffer &Buffer) const
+{
+	uint8_t tag[] = { 'Y','S','F','O' };
 
 	return ( (Buffer.size() >= 4) && (Buffer.Compare(tag, sizeof(tag)) == 0) );
 }
