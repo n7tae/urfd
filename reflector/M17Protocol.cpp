@@ -399,8 +399,7 @@ void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Head
 
 	// do the lich structure first
 	// first, the src callsign (the lich.dest will be set in HandleQueue)
-	CCallsign from = g_Reflector.GetCallsign();
-	from.SetCSModule(Header.GetPacketModule());
+	CCallsign from = Header.GetMyCallsign();
 	from.CodeOut(frame.lich.addr_src);
 	// then the frame type, if the incoming frame is M17 1600, then it will be Voice+Data only, otherwise Voice-Only
 	frame.lich.frametype = htons((ECodecType::c2_1600==codec_in) ? 0x7U : 0x5U);
