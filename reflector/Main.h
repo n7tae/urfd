@@ -165,9 +165,10 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 
 // DMRid database -----------------------------------------------
 
-#define DMRIDDB_USE_RLX_SERVER          1                                   // 1 = use http, 0 = use local file
-#define DMRIDDB_PATH                    "/usr/local/etc/dmrid.dat"          // local file path
-#define DMRIDDB_REFRESH_RATE            180                                 // in minutes
+// these values are now set in configure.h by ./rconfig
+//#define DMRIDDB_USE_RLX_SERVER          1                                   // 1 = use http, 0 = use local file
+//#define DMRIDDB_PATH                    "/usr/local/etc/dmrid.dat"          // local file path
+//#define DMRIDDB_REFRESH_RATE            180                                 // in minutes
 
 // Wires-X node database ----------------------------------------
 
