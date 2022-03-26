@@ -62,7 +62,7 @@ $CallingHome['Comment']                              = "your_comment"; 				     
 $CallingHome['HashFile']                             = "/xlxd-ch/callinghome.php";             // Make sure the apache user has read and write permissions in this folder.
 $CallingHome['LastCallHomefile']                     = "/xlxd-ch/lastcallhome.php";            // lastcallhome.php can remain in the tmp folder
 $CallingHome['OverrideIPAddress']                    = "";                                     // Insert your IP address here. Leave blank for autodetection. No need to enter a fake address.
-$CallingHome['InterlinkFile']                        = "/usr/local/etc/xlxd.interlink";        // Path to interlink file
+$CallingHome['InterlinkFile']                        = "/usr/local/etc/urfd.interlink";        // Path to interlink file
 
 /*
   include an extra config file for people who dont like to mess with shipped config.ing.php
