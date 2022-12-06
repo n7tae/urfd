@@ -108,7 +108,7 @@ void CYsfProtocol::Task(void)
 		// crack the packet
 		if ( IsValidDvPacket(Buffer, &Fich) )
 		{
-			if ( IsValidDvFramePacket(Ip, Fich, Buffer, Frames) )
+			if ( IsValidDvFramePacket(Ip, Fich, Buffer, Header, Frames) )
 			{
 				OnDvFramePacketIn(Frames[0], &Ip);
 				OnDvFramePacketIn(Frames[1], &Ip);
@@ -472,13 +472,44 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 	return false;
 }
 
-bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, const CBuffer &Buffer, std::array<std::unique_ptr<CDvFramePacket>, 5> &frames)
+bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header, std::array<std::unique_ptr<CDvFramePacket>, 5> &frames)
 {
 	// is it DV frame ?
 	if ( Fich.getFI() == YSF_FI_COMMUNICATIONS )
 	{
 		// get stream id
 		//uint32_t uiStreamId = IpToStreamId(Ip);
+		
+		auto stream = GetStream(m_uiStreamId, &Ip);
+		if ( !stream )
+		{
+			std::cerr << "Late entry YSF voice frame, creating YSF header" << std::endl;
+			CCallsign csMY;
+			m_uiStreamId = static_cast<uint32_t>(::rand());
+			char sz[YSF_CALLSIGN_LENGTH+1];
+			memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
+			sz[YSF_CALLSIGN_LENGTH] = 0;
+
+			for(uint32_t i = 0; i < YSF_CALLSIGN_LENGTH; ++i){
+				if( (sz[i] == '/') || (sz[i] == '\\') || (sz[i] == '-') || (sz[i] == ' ') ){
+					sz[i] = 0;
+				}
+			}
+
+			csMY = CCallsign((const char *)sz);
+			memcpy(sz, &(Buffer.data()[4]), YSF_CALLSIGN_LENGTH);
+			sz[YSF_CALLSIGN_LENGTH] = 0;
+			CCallsign rpt1 = CCallsign((const char *)sz);
+			rpt1.SetCSModule(YSF_MODULE_ID);
+			CCallsign rpt2 = m_ReflectorCallsign;
+			rpt2.SetCSModule(' ');
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, Fich.getFN()));
+			
+			if ( g_GateKeeper.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::ysf, header->GetRpt2Module())  )
+			{
+				OnDvHeaderPacketIn(header, Ip);	
+			}
+		}
 
 		// get DV frames
 		uint8_t   ambe0[9];

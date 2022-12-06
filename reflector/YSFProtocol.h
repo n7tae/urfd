@@ -85,7 +85,7 @@ protected:
 	//bool IsValidDisconnectPacket(const CBuffer &, CCallsign *);
 	bool IsValidDvPacket(const CBuffer &, CYSFFICH *);
 	bool IsValidDvHeaderPacket(const CIp &, const CYSFFICH &, const CBuffer &, std::unique_ptr<CDvHeaderPacket> &, std::array<std::unique_ptr<CDvFramePacket>, 5> &);
-	bool IsValidDvFramePacket(const CIp &, const CYSFFICH &, const CBuffer &, std::array<std::unique_ptr<CDvFramePacket>, 5> &);
+	bool IsValidDvFramePacket(const CIp &, const CYSFFICH &, const CBuffer &, std::unique_ptr<CDvHeaderPacket> &, std::array<std::unique_ptr<CDvFramePacket>, 5> &);
 	bool IsValidDvLastFramePacket(const CIp &, const CYSFFICH &, const CBuffer &, std::unique_ptr<CDvFramePacket> &, std::unique_ptr<CDvFramePacket> &);
 
 	// DV packet encoding helpers
