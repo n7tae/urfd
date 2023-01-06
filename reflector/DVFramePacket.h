@@ -51,6 +51,8 @@ public:
 	CDvFramePacket(uint16_t streamid, uint8_t counter, const uint8_t *ambe, const uint8_t *dvdata, uint8_t counter1, uint8_t counter2, const uint8_t *ambe2, const uint8_t *dmrsync, ECodecType type, bool islast);
 	// M17 Frame
 	CDvFramePacket(const CM17Packet &m17);
+	// P25 Frame
+	CDvFramePacket(const uint8_t *imbe, uint16_t streamid, bool islast);
 	// URF Network
 	CDvFramePacket(const CBuffer &buf);
 	static unsigned int GetNetworkSize();

@@ -50,13 +50,15 @@
 #define YSF_IPV4 true
 #define XLX_IPV4 true
 #define M17_IPV4 true
+#define P25_IPV4 true
 #define URF_IPV4 true
 
-#define DSTAR_IPV6 true
+#define DSTAR_IPV6 false
 #define DMR_IPV6 false
 #define YSF_IPV6 false
 #define XLX_IPV6 false
 #define M17_IPV6 true
+#define P25_IPV6 false
 #define URF_IPV6 true
 
 // version -----------------------------------------------------
@@ -77,9 +79,9 @@
 // protocols ---------------------------------------------------
 
 #ifndef NO_G3
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3 };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3, p25 };
 #else
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17 };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, p25 };
 #endif
 
 // DExtra
@@ -144,6 +146,13 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define M17_KEEPALIVE_PERIOD			3
 #define M17_KEEPALIVE_TIMEOUT           (M17_KEEPALIVE_PERIOD*10)
 #define M17_RECONNECT_PERIOD            5
+
+// P25
+#define P25_PORT                      41000                               // UDP port
+#define P25_KEEPALIVE_PERIOD          1                                   // in seconds
+#define P25_KEEPALIVE_TIMEOUT         (P25_KEEPALIVE_PERIOD*10)         // in seconds
+#define P25_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
+#define P25_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
 
 #ifndef NO_G3
 // G3 Terminal

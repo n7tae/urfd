@@ -26,6 +26,7 @@
 #include "YSFProtocol.h"
 #include "M17Protocol.h"
 #include "BMProtocol.h"
+#include "P25Protocol.h"
 #ifndef NO_G3
 #include "G3Protocol.h"
 #endif
@@ -76,6 +77,10 @@ bool CProtocols::Init(void)
 
 		m_Protocols.emplace_back(std::unique_ptr<CM17Protocol>(new CM17Protocol));
 		if (! m_Protocols.back()->Initialize("URF", EProtocol::m17, M17_PORT, M17_IPV4, M17_IPV6))
+			return false;
+			
+		m_Protocols.emplace_back(std::unique_ptr<CP25Protocol>(new CP25Protocol));
+		if (! m_Protocols.back()->Initialize("P25", EProtocol::p25, P25_PORT, P25_IPV4, P25_IPV6))
 			return false;
 
 		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));

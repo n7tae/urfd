@@ -138,6 +138,23 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_bLastPacket = lastpacket;
 }
 
+// p25 constructor
+CPacket::CPacket(uint16_t sid, bool lastpacket)
+{
+	m_uiStreamId = sid;
+	m_uiDstarPacketId = 0xFF;
+	m_uiDmrPacketId = 0xFF;
+	m_uiDmrPacketSubid  = 0xFF;
+	m_uiYsfPacketId = 0xFF;
+	m_uiYsfPacketSubId = 0xFF;
+	m_uiYsfPacketFrameId = 0xFF;
+	m_uiM17FrameNumber = 0xFFFFFFFFU;
+	m_cModule = ' ';
+	m_eOrigin = EOrigin::local;
+	m_eCodecIn = ECodecType::p25;
+	m_bLastPacket = lastpacket;
+};
+
 // bm  constructor
 CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffrid, ECodecType codecIn, bool lastpacket)
 {
