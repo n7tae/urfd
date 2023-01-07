@@ -280,7 +280,6 @@ void CYsfProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 
 void CYsfProtocol::HandleQueue(void)
 {
-
 	m_Queue.Lock();
 	while ( !m_Queue.empty() )
 	{

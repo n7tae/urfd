@@ -1,6 +1,8 @@
-#pragma once
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
+// urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2021 Doug McLain AD8DP
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,26 +17,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <cstdint>
+#pragma once
 
-#include "Timer.h"
+#include "Client.h"
+class CUSRPClient : public CClient
+{
+public:
+	// constructors
+	CUSRPClient();
+	CUSRPClient(const CCallsign &, const CIp &, char = ' ');
+	CUSRPClient(const CUSRPClient &);
 
-// unix socket names
-#define TC2REF "TC2URFMod"
-#define REF2TC "URF2TC"
+	// destructor
+	virtual ~CUSRPClient() {};
 
-enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4, p25 = 5, usrp = 6 };
+	// identity
+	EProtocol GetProtocol(void) const           { return EProtocol::usrp; }
+	const char *GetProtocolName(void) const     { return "USRP"; }
+	bool IsNode(void) const                     { return true; }
 
-using STCPacket = struct tcpacket_tag {
-	CTimer rt_timer;
-	uint32_t sequence;
-	char module;
-	bool is_last;
-	uint16_t streamid;
-	ECodecType codec_in;
-	uint8_t dstar[9];
-	uint8_t dmr[9];
-	uint8_t m17[16];
-	uint8_t p25[11];
-	int16_t usrp[160];
+	// status
+	bool IsAlive(void) const;
 };

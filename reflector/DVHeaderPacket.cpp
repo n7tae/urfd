@@ -138,6 +138,21 @@ CDvHeaderPacket::CDvHeaderPacket(const CCallsign &my, const CCallsign &ur, const
 	m_csMY = my;
 }
 
+// P25 / USRP constructor
+
+CDvHeaderPacket::CDvHeaderPacket(const CCallsign &my, const CCallsign &ur, const CCallsign &rpt1, const CCallsign &rpt2, uint16_t sid, bool usrp)
+	: CPacket(sid, usrp, false)
+{
+	m_uiFlag1 = 0;
+	m_uiFlag2 = 0;
+	m_uiFlag3 = 0;
+	m_uiCrc = 0;
+	m_csUR = ur;
+	m_csRPT1 = rpt1;
+	m_csRPT2 = rpt2;
+	m_csMY = my;
+}
+
 // M17
 
 CDvHeaderPacket::CDvHeaderPacket(const CM17Packet &m17) : CPacket(m17)

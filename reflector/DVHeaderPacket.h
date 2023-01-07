@@ -57,6 +57,7 @@ public:
 	CDvHeaderPacket(const struct dstar_header *, uint16_t, uint8_t);
 	CDvHeaderPacket(uint32_t, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t, uint8_t);
 	CDvHeaderPacket(const CCallsign &, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, uint8_t);
+	CDvHeaderPacket(const CCallsign &, const CCallsign &, const CCallsign &, const CCallsign &, uint16_t, bool);
 	CDvHeaderPacket(const CM17Packet &);
 
 	// network

@@ -53,6 +53,8 @@ public:
 	CDvFramePacket(const CM17Packet &m17);
 	// P25 Frame
 	CDvFramePacket(const uint8_t *imbe, uint16_t streamid, bool islast);
+	// USRP Frame
+	CDvFramePacket(const int16_t *usrp, uint16_t streamid, bool islast);
 	// URF Network
 	CDvFramePacket(const CBuffer &buf);
 	static unsigned int GetNetworkSize();

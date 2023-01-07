@@ -51,6 +51,7 @@
 #define XLX_IPV4 true
 #define M17_IPV4 true
 #define P25_IPV4 true
+#define USRP_IPV4 true
 #define URF_IPV4 true
 
 #define DSTAR_IPV6 false
@@ -59,6 +60,7 @@
 #define XLX_IPV6 false
 #define M17_IPV6 true
 #define P25_IPV6 false
+#define USRP_IPV6 false
 #define URF_IPV6 true
 
 // version -----------------------------------------------------
@@ -79,9 +81,9 @@
 // protocols ---------------------------------------------------
 
 #ifndef NO_G3
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3, p25 };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3, p25, usrp };
 #else
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, p25 };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, p25, usrp };
 #endif
 
 // DExtra
@@ -153,6 +155,16 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define P25_KEEPALIVE_TIMEOUT         (P25_KEEPALIVE_PERIOD*10)         // in seconds
 #define P25_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
 #define P25_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
+
+// USRP
+#define USRP_NODE_ADDRESS				"192.168.1.5"
+#define USRP_RXPORT                      34003                               // UDP port
+#define USRP_TXPORT                      32003                               // UDP port
+#define USRP_KEEPALIVE_PERIOD          1                                   // in seconds
+#define USRP_KEEPALIVE_TIMEOUT         (USRP_KEEPALIVE_PERIOD*10)         // in seconds
+#define USRP_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
+#define USRP_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
+#define USRP_DEFAULT_CALLSIGN			"ALLSTAR"
 
 #ifndef NO_G3
 // G3 Terminal

@@ -1,0 +1,358 @@
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
+// urfd -- The universal reflector
+// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2021 Doug McLain AD8DP
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#include "Main.h"
+#include <string.h>
+#include "USRPClient.h"
+#include "USRPProtocol.h"
+
+#include "Reflector.h"
+#include "GateKeeper.h"
+
+const uint8_t USRP_TYPE_VOICE = 0;
+const uint8_t USRP_TYPE_TEXT  = 2;
+
+const uint8_t USRP_KEYUP_FALSE  = 0;
+const uint8_t USRP_KEYUP_TRUE   = 1;
+
+const uint8_t TLV_TAG_SET_INFO = 8;
+
+////////////////////////////////////////////////////////////////////////////////////////
+// operation
+
+bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
+{
+	m_uiStreamId = 0;
+	// base class
+	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
+		return false;
+
+	CIp Ip(AF_INET, USRP_TXPORT, USRP_NODE_ADDRESS);
+	CCallsign cs(USRP_DEFAULT_CALLSIGN);
+	CClients *clients = g_Reflector.GetClients();
+	auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
+#if USRP_AUTOLINK_ENABLE
+	newclient->SetReflectorModule(USRP_AUTOLINK_MODULE);
+#endif
+	clients->AddClient(newclient);
+	g_Reflector.ReleaseClients();
+	// update time
+	m_LastKeepaliveTime.start();
+
+	// done
+	return true;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// task
+
+void CUSRPProtocol::Task(void)
+{
+	CBuffer   Buffer;
+	CIp       Ip;
+	CCallsign Callsign;
+	char      ToLinkModule;
+	std::unique_ptr<CDvHeaderPacket> Header;
+	std::unique_ptr<CDvFramePacket>  Frame;
+
+	// handle incoming packets
+#if USRP_IPV6==true
+#if USRP_IPV4==true
+	if ( ReceiveDS(Buffer, Ip, 20) )
+#else
+	if ( Receive6(Buffer, Ip, 20) )
+#endif
+#else
+	if ( Receive4(Buffer, Ip, 20) )
+#endif
+	{
+		// crack the packet
+		if ( IsValidDvPacket(Ip, Buffer, Header, Frame) )
+		{
+			// push the packet
+			OnDvFramePacketIn(Frame, &Ip);
+		}
+		else if( IsValidDvHeaderPacket(Ip, Buffer, Header) )
+		{
+			// callsign muted?
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::usrp) )
+			{
+				OnDvHeaderPacketIn(Header, Ip);
+			}
+		}
+		else if ( IsValidDvLastPacket(Buffer) )
+		{
+			// do nothing
+			std::cout << "USRP last frame" << std::endl;
+		}
+		else
+		{
+			// invalid packet
+			std::string title("Unknown USRP packet from ");
+			title += Ip.GetAddress();
+			Buffer.Dump(title);
+		}
+	}
+
+	// handle end of streaming timeout
+	CheckStreamsTimeout();
+
+	// handle queue from reflector
+	HandleQueue();
+
+	// keep client alive
+	if ( m_LastKeepaliveTime.time() > USRP_KEEPALIVE_PERIOD )
+	{
+		//
+		HandleKeepalives();
+
+		// update time
+		m_LastKeepaliveTime.start();
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// streams helpers
+
+void CUSRPProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, const CIp &Ip)
+{
+	// find the stream
+	auto stream = GetStream(Header->GetStreamId(), &Ip);
+	if ( stream )
+	{
+		// stream already open
+		// skip packet, but tickle the stream
+		stream->Tickle();
+	}
+	else
+	{
+		// no stream open yet, open a new one
+		CCallsign my(Header->GetMyCallsign());
+		CCallsign rpt1(Header->GetRpt1Callsign());
+		CCallsign rpt2(Header->GetRpt2Callsign());
+
+		// find this client
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::usrp);
+		if ( client )
+		{
+			// get client callsign
+			rpt1 = client->GetCallsign();
+			auto m = client->GetReflectorModule();
+			Header->SetRpt2Module(m);
+			rpt2.SetCSModule(m);
+			// and try to open the stream
+			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
+			{
+				// keep the handle
+				m_Streams[stream->GetStreamId()] = stream;
+			}
+		}
+		// release
+		g_Reflector.ReleaseClients();
+
+		// update last heard
+		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Reflector.ReleaseUsers();
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// queue helper
+
+void CUSRPProtocol::HandleQueue(void)
+{
+	m_Queue.Lock();
+	while ( !m_Queue.empty() )
+	{
+		// get the packet
+		auto packet = m_Queue.pop();
+
+		// get our sender's id
+		const auto module = packet->GetPacketModule();
+		CBuffer buffer;
+
+		// check if it's header and update cache
+		if ( packet->IsDvHeader() )
+		{
+			// this relies on queue feeder setting valid module id
+			// m_StreamsCache[module] will be created if it doesn't exist
+			m_StreamsCache[module].m_dvHeader = CDvHeaderPacket((const CDvHeaderPacket &)*packet.get());
+			m_StreamsCache[module].m_iSeqCounter = 0;
+			EncodeUSRPHeaderPacket(m_StreamsCache[module].m_dvHeader, m_StreamsCache[module].m_iSeqCounter++, buffer);
+		}
+		else if ( packet->IsDvFrame() )
+		{
+			EncodeUSRPPacket(m_StreamsCache[module].m_dvHeader, (const CDvFramePacket &)*packet.get(), m_StreamsCache[module].m_iSeqCounter++, buffer, packet->IsLastPacket());
+		}
+
+		// send it
+		if ( buffer.size() > 0 )
+		{
+			// and push it to all our clients linked to the module and who are not streaming in
+			CClients *clients = g_Reflector.GetClients();
+			auto it = clients->begin();
+			std::shared_ptr<CClient>client = nullptr;
+			while ( (client = clients->FindNextClient(EProtocol::usrp, it)) != nullptr )
+			{
+				// is this client busy ?
+				if ( !client->IsAMaster() && (client->GetReflectorModule() == module) )
+				{
+					// no, send the packet
+					Send(buffer, client->GetIp());
+				}
+			}
+			g_Reflector.ReleaseClients();
+		}
+	}
+	m_Queue.Unlock();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// packet decoding helpers
+
+bool CUSRPProtocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header, std::unique_ptr<CDvFramePacket> &frame)
+{
+	if(!memcmp(Buffer.data(), "USRP", 4) && (Buffer.size() == 352) && (Buffer.data()[20] == USRP_TYPE_VOICE) && (Buffer.data()[15] == USRP_KEYUP_TRUE) )
+	{
+		auto stream = GetStream(m_uiStreamId, &Ip);
+		if ( !stream )
+		{
+			m_uiStreamId = static_cast<uint32_t>(::rand());
+			CCallsign csMY = CCallsign(USRP_DEFAULT_CALLSIGN);
+			CCallsign rpt1 = CCallsign(USRP_DEFAULT_CALLSIGN);
+			CCallsign rpt2 = m_ReflectorCallsign;
+			rpt1.SetCSModule(USRP_MODULE_ID);
+			rpt2.SetCSModule(' ');
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, true));
+			OnDvHeaderPacketIn(header, Ip);	
+		}
+
+		int16_t pcm[160];
+		for(int i = 0; i < 160; ++i){
+			pcm[i] = (Buffer.data()[32+(i*2)+1] << 8) | Buffer.data()[32+(i*2)];
+		}
+		
+		frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(pcm, m_uiStreamId, false));
+		return true;
+	}
+	return false;
+}
+
+bool CUSRPProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header)
+{
+	if(!memcmp(Buffer.data(), "USRP", 4) && (Buffer.size() == 352) && (Buffer.data()[20] == USRP_TYPE_TEXT) && (Buffer.data()[32] == TLV_TAG_SET_INFO) ){
+		auto stream = GetStream(m_uiStreamId, &Ip);
+		if ( !stream )
+		{
+			uint32_t uiSrcId = ((Buffer.data()[1] << 16) | ((Buffer.data()[2] << 8) & 0xff00) | (Buffer.data()[3] & 0xff));
+			m_uiStreamId = static_cast<uint32_t>(::rand());
+			CCallsign csMY = CCallsign("", uiSrcId);
+			CCallsign rpt1 = CCallsign("", uiSrcId);
+			CCallsign rpt2 = m_ReflectorCallsign;
+			rpt1.SetCSModule(USRP_MODULE_ID);
+			rpt2.SetCSModule(' ');
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, true));
+		}
+		return true;
+	}
+	return false;
+}
+
+bool CUSRPProtocol::IsValidDvLastPacket(const CBuffer &Buffer)
+{
+	if(!memcmp(Buffer.data(), "USRP", 4) && (Buffer.size() == 32) && (Buffer.data()[15] == USRP_KEYUP_FALSE) )
+	{
+		m_uiStreamId = 0;
+		return true;
+	}
+	return false;
+}
+
+void CUSRPProtocol::EncodeUSRPHeaderPacket(const CDvHeaderPacket &Header, uint32_t iSeq, CBuffer &Buffer) const
+{
+	std::string cs = Header.GetMyCallsign().GetCS();
+	const uint32_t cnt = htonl(iSeq);
+	Buffer.resize(352);
+	memset(Buffer.data(), 0, 352);
+	memcpy(Buffer.data(), "USRP", 4);
+	memcpy(Buffer.data() + 4, &cnt, 4);
+	Buffer.data()[15] = USRP_KEYUP_FALSE;
+	Buffer.data()[20] = USRP_TYPE_TEXT;
+	Buffer.data()[32] = TLV_TAG_SET_INFO;
+	Buffer.data()[33] = 13 + cs.size();
+	memcpy(Buffer.data()+46, cs.c_str(), cs.size());
+}
+
+void CUSRPProtocol::EncodeUSRPPacket(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer &Buffer, bool islast) const
+{
+	if(islast)
+	{
+		const uint32_t cnt = htonl(iSeq);
+		Buffer.resize(32);
+		memset(Buffer.data(), 0, 32);
+		memcpy(Buffer.data(), "USRP", 4);
+		memcpy(Buffer.data() + 4, &cnt, 4);
+		Buffer.data()[15] = USRP_KEYUP_FALSE;
+	
+	}
+	else
+	{
+		std::string cs = Header.GetMyCallsign().GetCS();
+		const uint32_t cnt = htonl(iSeq);
+		Buffer.resize(352);
+		memset(Buffer.data(), 0, 352);
+		memcpy(Buffer.data(), "USRP", 4);
+		memcpy(Buffer.data() + 4, &cnt, 4);
+		Buffer.data()[15] = USRP_KEYUP_TRUE;
+		memcpy(Buffer.data() + 32, DvFrame.GetCodecData(ECodecType::usrp), 320);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// keepalive helpers
+
+void CUSRPProtocol::HandleKeepalives(void)
+{
+	// iterate on clients
+	CClients *clients = g_Reflector.GetClients();
+	auto it = clients->begin();
+	std::shared_ptr<CClient>client = nullptr;
+	while ( (client = clients->FindNextClient(EProtocol::usrp, it)) != nullptr )
+	{
+		// is this client busy ?
+		//if ( client->IsAMaster() )
+		//{
+			// yes, just tickle it
+			client->Alive();
+		//}
+		// check it's still with us
+		//else if ( !client->IsAlive() )
+		//{
+			// no, remove it
+			//std::cout << "USRP client " << client->GetCallsign() << " keepalive timeout" << std::endl;
+			//clients->RemoveClient(client);
+		//}
+
+	}
+	g_Reflector.ReleaseClients();
+}
+

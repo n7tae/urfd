@@ -377,7 +377,7 @@ bool CP25Protocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffer, s
 			CCallsign rpt2 = m_ReflectorCallsign;
 			rpt1.SetCSModule(P25_MODULE_ID);
 			rpt2.SetCSModule(' ');
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, 0));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, false));
 		}
 		return true;
 	}
@@ -388,6 +388,10 @@ void CP25Protocol::EncodeP25Packet(const CDvHeaderPacket &Header, const CDvFrame
 {
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
 	uint32_t uiRptrId = Header.GetRpt1Callsign().GetDmrid();
+	
+	if(uiSrcId == 0){
+		uiSrcId = DMRMMDVM_DEFAULTID;
+	}
 	
 	if(islast)
 	{
