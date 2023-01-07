@@ -2,6 +2,21 @@
 
 The URF Multiprotocol Gateway Reflector Server, ***urfd***, is part of the software system for a Digital Voice Network. The sources are published under GPL Licenses.
 
+# Information about this fork
+
+This fork of urfd, along with the swambe2 branch of my tcd repo, contains many changes from the original:
+Integraded P25 Reflector with software imbe vocoder.
+
+Inegrated USRP Reflector with a single client currently defined in Main.h  This is currently used by me to connect to an AllStar node to provide direct AllStar transcoding in and out of all modes.
+
+Software vocoding of AMBE+2(DMR/YSF/NXDN) is done using md380_vocoder library.  This means that only 1 USB dv dongle is required per module.  This also makes an ARM platform (like Rpi) a reqirement.
+
+Numerous fixes like late entry recognition from modes like YSF that are otherwise ignored by the original reflector when no header has been received.
+
+Integrated NXDN Reflector is in progress.
+
+This means that all digitial modes including USRP are transcoded directly from the source, with no double transcoding to/from any mode.
+
 ## Introduction
 
 This will build a new kind of digital voice reflector. Based on N7TAE's [new-xlxd](https://github.com/n7tae/new-xlxd), which, in turn, is based on the first multi-protocol reflector, [xlxd](https://github.com/LX3JL/xlxd), **urfd** supports all protocols of it's predecessors, as well as both M17 protocols, **voice-only** and **voice+data**! A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a seperate repository. URFd is not compatible with either new-xlxd or xlxd. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same protocol. Please note that currently, urfd only supports the tcd transcoder when run locally. For best performance, urfd and tcd uses UNIX DGRAM sockets for interprocess communications. These kernal-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
