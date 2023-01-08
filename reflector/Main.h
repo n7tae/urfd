@@ -128,7 +128,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define DMRMMDVM_KEEPALIVE_TIMEOUT      (DMRMMDVM_KEEPALIVE_PERIOD*10)      // in seconds
 #define DMRMMDVM_REFLECTOR_SLOT         DMR_SLOT2
 #define DMRMMDVM_REFLECTOR_COLOUR       1
-#define DMRMMDVM_DEFAULTID              3126482
+#define DMRMMDVM_DEFAULTID              0
 
 // YSF
 #define YSF_PORT                        42000                               // UDP port

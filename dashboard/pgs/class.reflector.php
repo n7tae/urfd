@@ -27,7 +27,6 @@ class xReflector {
    public $Interlinks               = null;
    private $InterlinkXML            = null;
    private $ReflectorXML            = null;
-   public $TotalNodeCount			= null;
    
    public function __construct() {
       $this->Nodes             = array();
@@ -35,7 +34,6 @@ class xReflector {
       $this->Peers             = array();
       $this->Interlinks        = array();
       $this->Transferinterlink = false;
-      $this->TotalNodeCount	   = 5;
    }
    
    public function LoadXML() {
@@ -458,16 +456,6 @@ class xReflector {
          }
       }
       return -1;
-   }
-   
-   public function SetTotalNodes($n) {
-      $this->TotalNodeCount = $n;
-      //error_log(print_r("SetTotalNodes() ".$this->TotalNodeCount.":".$n."\n", TRUE)); 
-   }
-   
-   public function GetTotalNodes() {
-	   //error_log(print_r("GetTotalNodes() ".$this->TotalNodeCount."\n", TRUE)); 
-      return $this->TotalNodeCount;
    }
          
 }

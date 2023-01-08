@@ -86,7 +86,7 @@ if ($CallingHome['Active']) {
     <meta name="robots" content="<?php echo $PageOptions['MetaAuthor']; ?>"/>
 
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <title><?php echo str_replace("XLX", "URF", $Reflector->GetReflectorName()); ?> Universal Reflector</title>
+    <title><?php echo str_replace("XLX", "URF", $Reflector->GetReflectorName()); ?>Universal Reflector</title>
     <link rel="icon" href="./favicon.ico" type="image/vnd.microsoft.icon">
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -156,7 +156,7 @@ if ($CallingHome['Active']) {
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li class="navbar-info">V#<?php echo $Reflector->GetVersion(); ?> - Dashboard
+                <li class="navbar-info">V#Q<?php echo $Reflector->GetVersion(); ?> - Dashboard
                     v<?php echo $PageOptions['DashboardVersion']; ?></li>
                 <li class="navbar-info">Service
                     uptime: <?php echo FormatSeconds($Reflector->GetServiceUptime()); ?></li>

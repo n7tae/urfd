@@ -3,10 +3,11 @@
 		<th class="col-md-1">#</th>
 		<th class="col-md-1">Flag</th>
 		<th class="col-md-2">DV Station</th>
+		<th class="col-md-1">Band</th>
 		<th class="col-md-2">Last Heard</th>
 		<th class="col-md-2">Linked for</th>
 		<th class="col-md-1">Protocol</th>
-<?php
+		<th class="col-md-1">Module</th><?php
 
 if ($PageOptions['RepeatersPage']['IPModus'] != 'HideIP') {
 	echo '
@@ -16,61 +17,7 @@ if ($PageOptions['RepeatersPage']['IPModus'] != 'HideIP') {
 ?>
 		</tr>
 <?php
-function startsWith($haystack, $needle) {
-    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
-}
-
-function searchForKey($field, $needle, $array) {
-	foreach ($array as $key => $val) {
-		if ($val[$field] === $needle) {
-			return $key;
-		}
-	}
-	return null;
-}
-
-function getLinkedGateways($logLines) {
-
-	$gateways = Array();
-	for ($i = count($logLines); $i>0; $i--) {
-		if(isset($logLines[$i])){
-			$logLine = $logLines[$i];
-
-			if (strpos($logLine, "Starting P25Reflector")) {
-				return $gateways;
-			}
-			if (strpos($logLine, "No repeaters/gateways linked")) {
-				return $gateways;
-			}
-			if (strpos($logLine, "Currently linked repeaters")) {
-				for ($j = $i+1; $j <= count($logLines); $j++) {
-					if(isset($logLines[$j])){
-						$logLine = $logLines[$j];
-						if (!startsWith(substr($logLine,27), "   ")) {
-							return $gateways;
-						} else {
-							//$Reflector->SetTotalNodes($Reflector->GetTotalNodes() + 1); 
-							$timestamp = substr($logLine, 3, 19);
-							$callsign = substr($logLine, 31, 11);
-							//$callsign = explode(" ", $callsign);
-							$ipport = substr($logLine, 43);
-							//$ipport = explode(":", $ipport);
-							$key1 = searchForKey("ipport",$ipport, $gateways);
-							$key2 = searchForKey("callsign",$callsign, $gateways);
-							if (($key1 === NULL) && ($key2 == NULL)) {
-								array_push($gateways, Array('callsign'=>$callsign,'timestamp'=>$timestamp,'ipport'=>$ipport));
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return $gateways;
-}
-
 $Reflector->LoadFlags();
-$i = 0;
 
 for ($i=0;$i<$Reflector->NodeCount();$i++) {
 
@@ -82,11 +29,33 @@ for ($i=0;$i<$Reflector->NodeCount();$i++) {
 		echo '<a href="#" class="tip"><img src="./img/flags/'.$Flag.'.png" class="table-flag" alt="'.$Name.'"><span>'.$Name.'</span></a>';
 	}
 	echo '</td>
-	<td>'.$Reflector->Nodes[$i]->GetCallSign();
+	<td><a href="http://www.aprs.fi/'.$Reflector->Nodes[$i]->GetCallSign();
+	if ($Reflector->Nodes[$i]->GetSuffix() != "") echo '-'.$Reflector->Nodes[$i]->GetSuffix();
+	echo '" class="pl" target="_blank">'.$Reflector->Nodes[$i]->GetCallSign();
+	if ($Reflector->Nodes[$i]->GetSuffix() != "") { echo '-'.$Reflector->Nodes[$i]->GetSuffix(); }
+	echo '</a></td>
+	<td>';
+	if (($Reflector->Nodes[$i]->GetPrefix() == 'REF') || ($Reflector->Nodes[$i]->GetPrefix() == 'XRF')) {
+		switch ($Reflector->Nodes[$i]->GetPrefix()) {
+			case 'REF'  : echo 'REF-Link'; break;
+			case 'XRF'  : echo 'XRF-Link'; break;
+		}
+	}
+	else {
+		switch ($Reflector->Nodes[$i]->GetSuffix()) {
+			case 'A' : echo '23cm'; break;
+			case 'B' : echo '70cm'; break;
+			case 'C' : echo '2m'; break;
+			case 'D' : echo 'Dongle'; break;
+			case 'G' : echo 'Internet-Gateway'; break;
+			default  : echo '';
+		}
+	}
 	echo '</td>
 	<td>'.date("d.m.Y H:i", $Reflector->Nodes[$i]->GetLastHeardTime()).'</td>
 	<td>'.FormatSeconds(time()-$Reflector->Nodes[$i]->GetConnectTime()).' s</td>
-	<td>'.$Reflector->Nodes[$i]->GetProtocol().'</td>';
+	<td>'.$Reflector->Nodes[$i]->GetProtocol().'</td>
+	<td>'.$Reflector->Nodes[$i]->GetLinkedModule().'</td>';
 	if ($PageOptions['RepeatersPage']['IPModus'] != 'HideIP') {
 		echo '<td>';
 		$Bytes = explode(".", $Reflector->Nodes[$i]->GetIP());
@@ -119,60 +88,7 @@ for ($i=0;$i<$Reflector->NodeCount();$i++) {
 		echo '</td>';
    }
    echo '</tr>';
-   
-   
    if ($i == $PageOptions['RepeatersPage']['LimitTo']) { $i = $Reflector->NodeCount()+1; }
-}
-
-//$Reflector->SetTotalNodes($Reflector->NodeCount());
-
-$logLines = array();
-//error_log(print_r("logLines ".count($logLines)."\n", TRUE)); 
-if ($log = fopen("/var/log/reflectors/P25-9846-".date("Y-m-d").".log", 'r')) {
-	while ($logLine = fgets($log)) {
-		array_push($logLines, $logLine);
-	}
-	fclose($log);
-}
-//error_log(print_r("logLines ".count($logLines)."\n", TRUE)); 
-$gateways = getLinkedGateways($logLines) ;
-//error_log(print_r("gateways ".count($gateways)."\n", TRUE)); 
-//$Reflector->SetTotalNodes($Reflector->NodeCount() + count($p25gateways));
-	
-foreach ($gateways as $gateway) {
-	$i += 1;
-	echo '<tr class="table-center">';
-	echo "<td>$i</td><td>";
-	list ($Flag, $Name) = $Reflector->GetFlag($gateway['callsign']);
-	if (file_exists("./img/flags/".$Flag.".png")) {
-		echo '<a href="#" class="tip"><img src="./img/flags/'.$Flag.'.png" class="table-flag" alt="'.$Name.'"><span>'.$Name.'</span></a></td>';
-	}
-	$cs = explode(" ", $gateway['callsign']);
-	$ip = explode(":", $gateway['ipport']);
-	
-	echo "<td>$cs[0]</td><td></td><td></td><td>P25</td><td>$ip[0]</td></tr>";
-}
-
-if ($log = fopen("/var/log/reflectors/NXDNReflector-".date("Y-m-d").".log", 'r')) {
-	while ($logLine = fgets($log)) {
-		array_push($logLines, $logLine);
-	}
-	fclose($log);
-}
-$gateways = getLinkedGateways($logLines);
-	
-foreach ($gateways as $gateway) {
-	$i += 1;
-	echo '<tr class="table-center">';
-	echo "<td>$i</td><td>";
-	list ($Flag, $Name) = $Reflector->GetFlag($gateway['callsign']);
-	if (file_exists("./img/flags/".$Flag.".png")) {
-		echo '<a href="#" class="tip"><img src="./img/flags/'.$Flag.'.png" class="table-flag" alt="'.$Name.'"><span>'.$Name.'</span></a></td>';
-	}
-	$cs = explode(" ", $gateway['callsign']);
-	$ip = explode(":", $gateway['ipport']);
-	
-	echo "<td>$cs[0]</td><td></td><td></td><td>NXDN</td><td>$ip[0]</td></tr>";
 }
 
 ?>
