@@ -69,7 +69,7 @@
 
 #define VERSION_MAJOR                   0
 #define VERSION_MINOR                   0
-#define VERSION_REVISION                6
+#define VERSION_REVISION                7
 
 // global ------------------------------------------------------
 
@@ -202,7 +202,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 
 //NXDNid database
 #define NXDNIDDB_USE_RLX_SERVER          0                                   // 1 = use http, 0 = use local file
-#define NXDNIDDB_PATH                    "/usr/local/etc/NXDN.csv"          // local file path
+#define NXDNIDDB_PATH                    "/home/pi/NXDN.csv"          // local file path
 #define NXDNIDDB_REFRESH_RATE            180                                 // in minutes
 
 // Wires-X node database ----------------------------------------
