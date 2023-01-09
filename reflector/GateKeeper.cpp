@@ -90,6 +90,8 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 	case EProtocol::ysf:
 	case EProtocol::m17:
 	case EProtocol::p25:
+	case EProtocol::usrp:
+	case EProtocol::nxdn:
 #ifndef NO_G3
 	case EProtocol::g3:
 #endif
@@ -137,6 +139,8 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EP
 	case EProtocol::ysf:
 	case EProtocol::m17:
 	case EProtocol::p25:
+	case EProtocol::nxdn:
+	case EProtocol::usrp:
 #ifndef NO_G3
 	case EProtocol::g3:
 #endif
@@ -290,6 +294,10 @@ const std::string CGateKeeper::ProtocolName(const EProtocol p) const
 			return "YSF";
 		case EProtocol::p25:
 			return "P25";
+		case EProtocol::nxdn:
+			return "NXDN";
+		case EProtocol::usrp:
+			return "USRP";
 		case EProtocol::bm:
 			return "Brandmeister";
 #ifndef NO_G3

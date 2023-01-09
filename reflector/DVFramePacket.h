@@ -53,6 +53,8 @@ public:
 	CDvFramePacket(const CM17Packet &m17);
 	// P25 Frame
 	CDvFramePacket(const uint8_t *imbe, uint16_t streamid, bool islast);
+	// NXDN Frame
+	CDvFramePacket(const uint8_t *ambe, uint16_t streamid, uint8_t pid, bool islast);
 	// USRP Frame
 	CDvFramePacket(const int16_t *usrp, uint16_t streamid, bool islast);
 	// URF Network

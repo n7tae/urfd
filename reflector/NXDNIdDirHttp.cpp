@@ -2,7 +2,6 @@
 
 // urfd -- The universal reflector
 // Copyright © 2021 Thomas A. Early N7TAE
-// Copyright © 2021 Doug McLain AD8DP
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,10 +19,10 @@
 #include <string.h>
 #include "Main.h"
 #include "Reflector.h"
-#include "DMRIdDirHttp.h"
+#include "NXDNIdDirHttp.h"
 
-#if (DMRIDDB_USE_RLX_SERVER == 1)
-CDmridDirHttp g_DmridDir;
+#if (NXDNIDDB_USE_RLX_SERVER == 1)
+CNXDNidDirHttp g_NXDNidDir;
 #endif
 
 
@@ -32,19 +31,19 @@ CDmridDirHttp g_DmridDir;
 ////////////////////////////////////////////////////////////////////////////////////////
 // refresh
 
-bool CDmridDirHttp::LoadContent(CBuffer *buffer)
+bool CNXDNidDirHttp::LoadContent(CBuffer *buffer)
 {
 	// get file from xlxapi server
-	return HttpGet("xlxapi.rlx.lu", "api/exportdmr.php", 80, buffer);
+	return HttpGet("www.dudetronics.com", "ar-dns/NXDN.csv", 80, buffer);
 }
 
-bool CDmridDirHttp::RefreshContent(const CBuffer &buffer)
+bool CNXDNidDirHttp::RefreshContent(const CBuffer &buffer)
 {
 	bool ok = false;
 
 	// clear directory
 	m_CallsignMap.clear();
-	m_DmridMap.clear();
+	m_NXDNidMap.clear();
 
 	// scan file
 	if ( buffer.size() > 0 )
@@ -54,21 +53,22 @@ bool CDmridDirHttp::RefreshContent(const CBuffer &buffer)
 		// get next line
 		while ( (ptr2 = ::strchr(ptr1, '\n')) != nullptr )
 		{
+			std::cout << "newline: " << std::string(ptr2) << std::endl;
 			*ptr2 = 0;
 			// get items
-			char *dmrid;
+			char *nxdnid;
 			char *callsign;
-			if ( ((dmrid = ::strtok(ptr1, ";")) != nullptr) && IsValidDmrid(dmrid) )
+			if ( ((nxdnid = ::strtok(ptr1, ",")) != nullptr) && IsValidNXDNid(nxdnid) )
 			{
-				if ( ((callsign = ::strtok(nullptr, ";")) != nullptr) )
+				if ( ((callsign = ::strtok(nullptr, ",")) != nullptr) )
 				{
 					// new entry
-					uint32_t ui = atoi(dmrid);
-					CCallsign cs(callsign, ui);
+					uint16_t us = atoi(nxdnid);
+					CCallsign cs(callsign, 0, us);
 					if ( cs.IsValid() )
 					{
-						m_CallsignMap.insert(std::pair<uint32_t,CCallsign>(ui, cs));
-						m_DmridMap.insert(std::pair<CCallsign,uint32_t>(cs,ui));
+						m_CallsignMap.insert(std::pair<uint16_t,CCallsign>(us, cs));
+						m_NXDNidMap.insert(std::pair<CCallsign,uint16_t>(cs,us));
 					}
 				}
 			}
@@ -80,7 +80,7 @@ bool CDmridDirHttp::RefreshContent(const CBuffer &buffer)
 	}
 
 	// report
-	std::cout << "Read " << m_DmridMap.size() << " DMR ids from xlxapi.rlx.lu database " << std::endl;
+	std::cout << "Read " << m_NXDNidMap.size() << " NXDN ids from xlxapi.rlx.lu database " << std::endl;
 
 	// done
 	return ok;
@@ -90,9 +90,9 @@ bool CDmridDirHttp::RefreshContent(const CBuffer &buffer)
 ////////////////////////////////////////////////////////////////////////////////////////
 // httpd helpers
 
-#define DMRID_HTTPGET_SIZEMAX       (256)
+#define NXDNID_HTTPGET_SIZEMAX       (256)
 
-bool CDmridDirHttp::HttpGet(const char *hostname, const char *filename, int port, CBuffer *buffer)
+bool CNXDNidDirHttp::HttpGet(const char *hostname, const char *filename, int port, CBuffer *buffer)
 {
 	bool ok = false;
 	int sock_id;
@@ -115,7 +115,7 @@ bool CDmridDirHttp::HttpGet(const char *hostname, const char *filename, int port
 			if ( ::connect(sock_id, (struct sockaddr *)&servaddr, sizeof(servaddr)) == 0)
 			{
 				// send the GET request
-				char request[DMRID_HTTPGET_SIZEMAX];
+				char request[NXDNID_HTTPGET_SIZEMAX];
 				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n",
 						  filename, (const char *)g_Reflector.GetCallsign());
 				::write(sock_id, request, strlen(request));

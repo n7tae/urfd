@@ -21,6 +21,8 @@
 #include <cctype>
 #include "DMRIdDirFile.h"
 #include "DMRIdDirHttp.h"
+#include "NXDNIdDirFile.h"
+#include "NXDNIdDirHttp.h"
 #include "Callsign.h"
 
 // if a client is using special characters '.', '-' or '/', he's out of luck!
@@ -39,13 +41,14 @@ CCallsign::CCallsign()
 	m_coded = 0;
 }
 
-CCallsign::CCallsign(const char *sz, uint32_t dmrid)
+CCallsign::CCallsign(const char *sz, uint32_t dmrid, uint16_t nxdnid)
 {
 	// blank all
 	memset(m_Callsign, ' ', CALLSIGN_LEN);
 	memset(m_Suffix, ' ', CALLSUFFIX_LEN);
 	m_Module = ' ';
 	m_uiDmrid = dmrid;
+	m_uiNXDNid = nxdnid;
 
 	// and populate
 	auto len = strlen(sz);
@@ -70,6 +73,14 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 			}
 			g_DmridDir.Unlock();
 		}
+		if ( m_uiNXDNid == 0 )
+		{
+			g_NXDNidDir.Lock();
+			{
+				m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+			}
+			g_NXDNidDir.Unlock();
+		}
 	}
 	else if ( m_uiDmrid != 0 )
 	{
@@ -82,6 +93,18 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid)
 			}
 		}
 		g_DmridDir.Unlock();
+	}
+	else if ( m_uiNXDNid != 0 )
+	{
+		g_NXDNidDir.Lock();
+		{
+			const CCallsign *callsign = g_NXDNidDir.FindCallsign(m_uiNXDNid);
+			if ( callsign != nullptr )
+			{
+				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
+			}
+		}
+		g_NXDNidDir.Unlock();
 	}
 }
 
@@ -163,6 +186,11 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 			m_uiDmrid = g_DmridDir.FindDmrid(*this);
 		}
 		g_DmridDir.Unlock();
+		g_NXDNidDir.Lock();
+		{
+			m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+		}
+		g_NXDNidDir.Unlock();
 	}
 }
 
@@ -191,6 +219,11 @@ void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 			m_uiDmrid = g_DmridDir.FindDmrid(*this);
 		}
 		g_DmridDir.Unlock();
+		g_NXDNidDir.Lock();
+		{
+			m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+		}
+		g_NXDNidDir.Unlock();
 	}
 }
 
@@ -217,6 +250,31 @@ void CCallsign::SetDmrid(const uint8_t *buffer, bool UpdateCallsign)
 	memcpy(sz, buffer, 8);
 	sz[8] = 0;
 	SetDmrid((uint32_t)::strtol(sz, nullptr, 16), UpdateCallsign);
+}
+
+void CCallsign::SetNXDNid(uint16_t nxdnid, bool UpdateCallsign)
+{
+	m_uiNXDNid = nxdnid;
+	if ( UpdateCallsign )
+	{
+		g_DmridDir.Lock();
+		{
+			const CCallsign *callsign = g_NXDNidDir.FindCallsign(nxdnid);
+			if ( callsign != nullptr )
+			{
+				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
+			}
+		}
+		g_NXDNidDir.Unlock();
+	}
+}
+
+void CCallsign::SetNXDNid(const uint8_t *buffer, bool UpdateCallsign)
+{
+	char sz[9];
+	memcpy(sz, buffer, 8);
+	sz[8] = 0;
+	SetNXDNid((uint16_t)::strtol(sz, nullptr, 16), UpdateCallsign);
 }
 
 void CCallsign::SetCSModule(char c)

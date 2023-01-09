@@ -36,7 +36,7 @@ class CCallsign
 public:
 	// contructors
 	CCallsign();
-	CCallsign(const char *, uint32_t = 0);
+	CCallsign(const char *, uint32_t = 0, uint16_t = 0);
 
 	// status
 	bool IsValid(void) const;
@@ -48,6 +48,8 @@ public:
 	void SetCallsign(const uint8_t *, int, bool = true);
 	void SetDmrid(uint32_t, bool = true);
 	void SetDmrid(const uint8_t *, bool = true);
+	void SetNXDNid(uint16_t, bool = true);
+	void SetNXDNid(const uint8_t *, bool = true);
 	void SetCSModule(char);
 	void SetSuffix(const char *);
 	void SetSuffix(const uint8_t *, int);
@@ -60,6 +62,7 @@ public:
 	void GetCallsignString(char *) const;
 	const std::string GetCS(unsigned len = 9) const;
 	uint32_t GetDmrid(void) const { return m_uiDmrid; }
+	uint16_t GetNXDNid(void) const { return m_uiNXDNid; }
 	void GetSuffix(uint8_t *) const;
 	char GetCSModule(void) const { return m_Module; }
 
@@ -94,5 +97,6 @@ protected:
 	char         m_Module;
 	mutable char m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
 	uint32_t     m_uiDmrid;
+	uint16_t     m_uiNXDNid;
 	uint64_t     m_coded; // M17 encoded callsign
 };

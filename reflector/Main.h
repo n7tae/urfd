@@ -51,6 +51,7 @@
 #define XLX_IPV4 true
 #define M17_IPV4 true
 #define P25_IPV4 true
+#define NXDN_IPV4 true
 #define USRP_IPV4 true
 #define URF_IPV4 true
 
@@ -60,6 +61,7 @@
 #define XLX_IPV6 false
 #define M17_IPV6 true
 #define P25_IPV6 false
+#define NXDN_IPV6 false
 #define USRP_IPV6 false
 #define URF_IPV6 true
 
@@ -81,9 +83,9 @@
 // protocols ---------------------------------------------------
 
 #ifndef NO_G3
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3, p25, usrp };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, g3, p25, nxdn, usrp };
 #else
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, p25, usrp };
+enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17, p25, nxdn, usrp };
 #endif
 
 // DExtra
@@ -128,7 +130,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define DMRMMDVM_KEEPALIVE_TIMEOUT      (DMRMMDVM_KEEPALIVE_PERIOD*10)      // in seconds
 #define DMRMMDVM_REFLECTOR_SLOT         DMR_SLOT2
 #define DMRMMDVM_REFLECTOR_COLOUR       1
-#define DMRMMDVM_DEFAULTID              0
+#define DMRMMDVM_DEFAULTID				0
 
 // YSF
 #define YSF_PORT                        42000                               // UDP port
@@ -156,10 +158,17 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define P25_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
 #define P25_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
 
+// NXDN
+#define NXDN_PORT                      41400                               // UDP port
+#define NXDN_KEEPALIVE_PERIOD          3                                   // in seconds
+#define NXDN_KEEPALIVE_TIMEOUT         (NXDN_KEEPALIVE_PERIOD*10)         // in seconds
+#define NXDN_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
+#define NXDN_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
+
 // USRP
 #define USRP_NODE_ADDRESS				"192.168.1.5"
-#define USRP_RXPORT                      34003                               // UDP port
-#define USRP_TXPORT                      32003                               // UDP port
+#define USRP_RXPORT                      34001                               // UDP port
+#define USRP_TXPORT                      32001                               // UDP port
 #define USRP_KEEPALIVE_PERIOD          1                                   // in seconds
 #define USRP_KEEPALIVE_TIMEOUT         (USRP_KEEPALIVE_PERIOD*10)         // in seconds
 #define USRP_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
@@ -190,6 +199,11 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 //#define DMRIDDB_USE_RLX_SERVER          1                                   // 1 = use http, 0 = use local file
 //#define DMRIDDB_PATH                    "/usr/local/etc/dmrid.dat"          // local file path
 //#define DMRIDDB_REFRESH_RATE            180                                 // in minutes
+
+//NXDNid database
+#define NXDNIDDB_USE_RLX_SERVER          0                                   // 1 = use http, 0 = use local file
+#define NXDNIDDB_PATH                    "/usr/local/etc/NXDN.csv"          // local file path
+#define NXDNIDDB_REFRESH_RATE            180                                 // in minutes
 
 // Wires-X node database ----------------------------------------
 
@@ -242,6 +256,14 @@ extern CDmridDirHttp   g_DmridDir;
 #else
 class CDmridDirFile;
 extern CDmridDirFile   g_DmridDir;
+#endif
+
+#if (NXDNIDDB_USE_RLX_SERVER == 1)
+class CNXDNidDirHttp;
+extern CNXDNidDirHttp   g_NXDNidDir;
+#else
+class CNXDNidDirFile;
+extern CNXDNidDirFile   g_NXDNidDir;
 #endif
 
 #if (YSFNODEDB_USE_RLX_SERVER == 1)

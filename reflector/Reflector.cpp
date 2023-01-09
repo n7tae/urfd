@@ -22,8 +22,11 @@
 #include "GateKeeper.h"
 #include "DMRIdDirFile.h"
 #include "DMRIdDirHttp.h"
+#include "NXDNIdDirFile.h"
+#include "NXDNIdDirHttp.h"
 #include "YSFNodeDirFile.h"
 #include "YSFNodeDirHttp.h"
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -77,6 +80,9 @@ bool CReflector::Start(void)
 
 	// init dmrid directory. No need to check the return value.
 	g_DmridDir.Init();
+	
+	// init dmrid directory. No need to check the return value.
+	g_NXDNidDir.Init();
 
 	// init wiresx node directory. Likewise with the return vale.
 	g_YsfNodeDir.Init();
@@ -149,6 +155,7 @@ void CReflector::Stop(void)
 
 	// close databases
 	g_DmridDir.Close();
+	g_NXDNidDir.Close();
 	g_YsfNodeDir.Close();
 }
 

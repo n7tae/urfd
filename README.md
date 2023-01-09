@@ -3,9 +3,11 @@
 The URF Multiprotocol Gateway Reflector Server, ***urfd***, is part of the software system for a Digital Voice Network. The sources are published under GPL Licenses.
 
 # Information about this fork
+This fork of URFD supports *all* modes currently used in ham radio: D-Star, DMR, YSF, P25, NXDN, M17, and USRP (for connections to AllStar nodes, etc).  All transcoding is centralized so there is no double transcoding to/from any mode. This fork of urfd, along with the swambe2 branch of my tcd repo, contains many changes from the original:
 
-This fork of urfd, along with the swambe2 branch of my tcd repo, contains many changes from the original:
 Integraded P25 Reflector with software imbe vocoder.
+
+Integrated NXDN Reflector
 
 Inegrated USRP Reflector with a single client currently defined in Main.h  This is currently used by me to connect to an AllStar node to provide direct AllStar transcoding in and out of all modes.
 
@@ -13,9 +15,7 @@ Software vocoding of AMBE+2(DMR/YSF/NXDN) is done using md380_vocoder library.  
 
 Numerous fixes like late entry recognition from modes like YSF that are otherwise ignored by the original reflector when no header has been received.
 
-Integrated NXDN Reflector is in progress.
-
-This means that all digitial modes including USRP are transcoded directly from the source, with no double transcoding to/from any mode.
+The rest of this README is unchanged from the original.
 
 ## Introduction
 
