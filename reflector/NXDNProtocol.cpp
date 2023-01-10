@@ -103,7 +103,7 @@ void CNXDNProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Ip, Buffer, Header) )
 		{
 			// node linked and callsign muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::ysf, Header->GetRpt2Module())  )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::nxdn, Header->GetRpt2Module())  )
 			{
 				// handle it
 				OnDvHeaderPacketIn(Header, Ip);
@@ -351,7 +351,7 @@ bool CNXDNProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *ca
 {
 	uint8_t tag[] = { 'N','X','D','N','U' };
 
-	if ( (Buffer.size() == 14) && (Buffer.Compare(tag, sizeof(tag)) == 0) )
+	if ( (Buffer.size() == 17) && (Buffer.Compare(tag, sizeof(tag)) == 0) )
 	{
 		return true;
 	}
@@ -572,6 +572,7 @@ bool CNXDNProtocol::EncodeNXDNPacket(const CDvHeaderPacket &Header, uint32_t seq
 	}
 	get_sacch(&Buffer.data()[11U]);
 
+	memset(ambe, 0, 28);
 	for(int i = 0; i < 4; ++i){
 		decode(DvFrames[i].GetCodecData(ECodecType::dmr), ambe+(i*7));
 	}

@@ -93,6 +93,16 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid, uint16_t nxdnid)
 			}
 		}
 		g_DmridDir.Unlock();
+		
+		if ( m_uiNXDNid == 0 )
+		{
+			g_NXDNidDir.Lock();
+			{
+				m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+			}
+			g_NXDNidDir.Unlock();
+		}
+		CSIn();
 	}
 	else if ( m_uiNXDNid != 0 )
 	{
@@ -105,6 +115,16 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid, uint16_t nxdnid)
 			}
 		}
 		g_NXDNidDir.Unlock();
+		
+		if ( m_uiDmrid == 0 )
+		{
+			g_DmridDir.Lock();
+			{
+				m_uiDmrid = g_DmridDir.FindDmrid(*this);
+			}
+			g_DmridDir.Unlock();
+		}
+		CSIn();
 	}
 }
 
