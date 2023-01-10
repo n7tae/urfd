@@ -387,7 +387,7 @@ bool CP25Protocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffer, s
 void CP25Protocol::EncodeP25Packet(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer &Buffer, bool islast) const
 {
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
-	uint32_t uiRptrId = Header.GetRpt1Callsign().GetDmrid();
+	uint32_t uiRptrId = P25_REFID;
 	
 	if(uiSrcId == 0){
 		uiSrcId = DMRMMDVM_DEFAULTID;

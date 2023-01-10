@@ -152,6 +152,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define M17_RECONNECT_PERIOD            5
 
 // P25
+#define P25_REFID                       12345                                   // Reflector ID
 #define P25_PORT                      41000                               // UDP port
 #define P25_KEEPALIVE_PERIOD          1                                   // in seconds
 #define P25_KEEPALIVE_TIMEOUT         (P25_KEEPALIVE_PERIOD*10)         // in seconds
@@ -159,6 +160,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define P25_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
 
 // NXDN
+#define NXDN_REFID                       12345                                   // Reflector ID
 #define NXDN_PORT                      41400                               // UDP port
 #define NXDN_KEEPALIVE_PERIOD          3                                   // in seconds
 #define NXDN_KEEPALIVE_TIMEOUT         (NXDN_KEEPALIVE_PERIOD*10)         // in seconds

@@ -465,7 +465,8 @@ bool CNXDNProtocol::EncodeNXDNHeaderPacket(const CDvHeaderPacket &Header, CBuffe
 {
 	Buffer.resize(43);
 	uint16_t NXDNId = Header.GetMyCallsign().GetNXDNid();
-	uint16_t RptrId = Header.GetRpt1Callsign().GetNXDNid();
+	uint16_t RptrId = NXDN_REFID;
+	
 	memcpy(Buffer.data(), "NXDND", 5);
 	Buffer.data()[5U] = (NXDNId >> 8) & 0xFFU;
 	Buffer.data()[6U] = (NXDNId >> 0) & 0xFFU;
@@ -520,7 +521,7 @@ bool CNXDNProtocol::EncodeNXDNPacket(const CDvHeaderPacket &Header, uint32_t seq
 	uint8_t ambe[28];
 	Buffer.resize(43);
 	uint16_t NXDNId = Header.GetMyCallsign().GetNXDNid();
-	uint16_t RptrId = Header.GetRpt1Callsign().GetNXDNid();
+	uint16_t RptrId = NXDN_REFID;
 	
 	memcpy(Buffer.data(), "NXDND", 5);
 	Buffer.data()[5U] = (NXDNId >> 8) & 0xFFU;
