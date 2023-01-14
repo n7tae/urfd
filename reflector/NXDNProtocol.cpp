@@ -148,6 +148,20 @@ void CNXDNProtocol::Task(void)
 				g_Reflector.ReleaseClients();
 			}
 		}
+		else if ( IsValidDisconnectPacket(Buffer) )
+		{
+			std::cout << "NXDN disconnect packet from " << Ip << std::endl;
+
+			// find client
+			CClients *clients = g_Reflector.GetClients();
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::nxdn);
+			if ( client != nullptr )
+			{
+				// remove it
+				clients->RemoveClient(client);
+			}
+			g_Reflector.ReleaseClients();
+		}
 		else
 		{
 #ifdef DEBUG
@@ -347,7 +361,7 @@ bool CNXDNProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *calls
 	return valid;
 }
 
-bool CNXDNProtocol::IsValidDisconnectPacket(const CBuffer &Buffer, CCallsign *callsign)
+bool CNXDNProtocol::IsValidDisconnectPacket(const CBuffer &Buffer)
 {
 	uint8_t tag[] = { 'N','X','D','N','U' };
 

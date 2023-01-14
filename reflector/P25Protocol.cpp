@@ -142,7 +142,7 @@ void CP25Protocol::Task(void)
 
 			// find client
 			CClients *clients = g_Reflector.GetClients();
-			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::m17);
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::p25);
 			if ( client != nullptr )
 			{
 				// remove it

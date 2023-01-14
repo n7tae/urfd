@@ -171,6 +171,23 @@ void CYsfProtocol::Task(void)
 				g_Reflector.ReleaseClients();
 			}
 		}
+		else if ( IsValidDisconnectPacket(Buffer) )
+		{
+			std::cout << "YSF disconnect packet from " << Ip << std::endl;
+
+			// find client
+			CClients *clients = g_Reflector.GetClients();
+			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::ysf);
+			if ( client != nullptr )
+			{
+				// remove it
+				clients->RemoveClient(client);
+				// and acknowledge the disconnect
+				//EncodeDisconnectPacket(&Buffer);
+				//Send(Buffer, Ip);
+			}
+			g_Reflector.ReleaseClients();
+		}
 		else if ( IsValidwirexPacket(Buffer, &Fich, &Callsign, &iWiresxCmd, &iWiresxArg) )
 		{
 			// std::cout << "Got a WiresX command from " << Callsign << " at " << Ip << " cmd=" <<iWiresxCmd << " arg=" << iWiresxArg << std::endl;
@@ -396,6 +413,17 @@ bool CYsfProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 		valid = (callsign->IsValid());
 	}
 	return valid;
+}
+
+bool CYsfProtocol::IsValidDisconnectPacket(const CBuffer &Buffer)
+{
+	uint8_t tag[] = { 'Y','S','F','U' };
+
+	if ( (Buffer.size() == 14) && (Buffer.Compare(tag, sizeof(tag)) == 0) )
+	{
+		return true;
+	}
+	return false;
 }
 
 bool CYsfProtocol::IsValidDvPacket(const CBuffer &Buffer, CYSFFICH *Fich)
