@@ -90,7 +90,7 @@ bool CProtocols::Init(void)
 			return false;
 			
 		m_Protocols.emplace_back(std::unique_ptr<CUSRPProtocol>(new CUSRPProtocol));
-		if (! m_Protocols.back()->Initialize("USRP", EProtocol::usrp, USRP_RXPORT, USRP_IPV4, USRP_IPV6))
+		if (! m_Protocols.back()->Initialize("USRP", EProtocol::usrp, USRP_PORT, USRP_IPV4, USRP_IPV6))
 			return false;
 
 		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));

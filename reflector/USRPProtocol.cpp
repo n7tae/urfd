@@ -38,19 +38,61 @@ const uint8_t TLV_TAG_SET_INFO = 8;
 
 bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	CBuffer buffer;
 	m_uiStreamId = 0;
+	CCallsign cs(USRP_DEFAULT_CALLSIGN);
+	CClients *clients = g_Reflector.GetClients();
+	std::ifstream file;
+	std::streampos size;
+	
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
+	
+	file.open(USRPCLIENTS_PATH, std::ios::in | std::ios::binary | std::ios::ate);
+	if ( file.is_open() )
+	{
+		// read file
+		size = file.tellg();
+		if ( size > 0 )
+		{
+			// read file into buffer
+			buffer.resize((int)size+1);
+			file.seekg (0, std::ios::beg);
+			file.read((char *)buffer.data(), (int)size);
 
-	CIp Ip(AF_INET, USRP_TXPORT, USRP_NODE_ADDRESS);
-	CCallsign cs(USRP_DEFAULT_CALLSIGN);
-	CClients *clients = g_Reflector.GetClients();
-	auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
+			// close file
+			file.close();
+		}
+	}
+
+	if ( buffer.size() > 0 )
+	{
+		char *ptr1 = (char *)buffer.data();
+		char *ptr2;
+
+		while ( (ptr2 = ::strchr(ptr1, '\n')) != nullptr )
+		{
+			*ptr2 = 0;
+			char *ip;
+			char *port;
+			if ((ip = ::strtok(ptr1, ";")) != nullptr)
+			{
+				if ( ((port = ::strtok(nullptr, ";")) != nullptr) )
+				{
+					uint32_t ui = atoi(port);
+					CIp Ip(AF_INET, ui, ip);
+					auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
 #if USRP_AUTOLINK_ENABLE
-	newclient->SetReflectorModule(USRP_AUTOLINK_MODULE);
+					newclient->SetReflectorModule(USRP_AUTOLINK_MODULE);
 #endif
-	clients->AddClient(newclient);
+					clients->AddClient(newclient);
+				}
+			}
+			ptr1 = ptr2+1;
+		}
+	}
+
 	g_Reflector.ReleaseClients();
 	// update time
 	m_LastKeepaliveTime.start();
