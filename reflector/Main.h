@@ -154,7 +154,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 // P25
 #define P25_REFID                       12345                                   // Reflector ID
 #define P25_PORT                      41000                               // UDP port
-#define P25_KEEPALIVE_PERIOD          1                                   // in seconds
+#define P25_KEEPALIVE_PERIOD          3                                   // in seconds
 #define P25_KEEPALIVE_TIMEOUT         (P25_KEEPALIVE_PERIOD*10)         // in seconds
 #define P25_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
 #define P25_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to

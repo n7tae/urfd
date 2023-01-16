@@ -9,9 +9,9 @@ Integraded P25 Reflector with software imbe vocoder.
 
 Integrated NXDN Reflector
 
-Inegrated USRP Reflector with a single client currently defined in Main.h  This is currently used by me to connect to an AllStar node to provide direct AllStar transcoding in and out of all modes.
+Inegrated USRP Reflector
 
-Software vocoding of AMBE+2(DMR/YSF/NXDN) is done using md380_vocoder library.  This means that only 1 USB dv dongle is required per module.  This also makes an ARM platform (like Rpi) a reqirement.
+Optional software vocoding of AMBE+2(DMR/YSF/NXDN) can be done using md380_vocoder library.  This means that only 1 USB dv dongle is required per module.  This also makes an ARM platform (like Rpi) a reqirement. See the tcd README for details.
 
 Numerous fixes like late entry recognition from modes like YSF that are otherwise ignored by the original reflector when no header has been received.
 
