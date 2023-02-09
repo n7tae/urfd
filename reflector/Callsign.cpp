@@ -277,7 +277,7 @@ void CCallsign::SetNXDNid(uint16_t nxdnid, bool UpdateCallsign)
 	m_uiNXDNid = nxdnid;
 	if ( UpdateCallsign )
 	{
-		g_DmridDir.Lock();
+		g_NXDNidDir.Lock();
 		{
 			const CCallsign *callsign = g_NXDNidDir.FindCallsign(nxdnid);
 			if ( callsign != nullptr )

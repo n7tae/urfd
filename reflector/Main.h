@@ -67,9 +67,9 @@
 
 // version -----------------------------------------------------
 
-#define VERSION_MAJOR                   0
-#define VERSION_MINOR                   0
-#define VERSION_REVISION                7
+#define VERSION_MAJOR                   2
+#define VERSION_MINOR                   6
+#define VERSION_REVISION                0
 
 // global ------------------------------------------------------
 
@@ -171,10 +171,9 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define USRP_PORT                      34001                               // UDP port
 #define USRP_KEEPALIVE_PERIOD          1                                   // in seconds
 #define USRP_KEEPALIVE_TIMEOUT         (USRP_KEEPALIVE_PERIOD*10)         // in seconds
-#define USRP_AUTOLINK_ENABLE             1                                   // 1 = enable, 0 = disable auto-link
-#define USRP_AUTOLINK_MODULE             'A'                                 // module for client to auto-link to
 #define USRP_DEFAULT_CALLSIGN			"ALLSTAR"
-#define USRPCLIENTS_PATH                "/home/pi/USRPClients.txt"        // format ip;port; per line for each ALLSTAR/USRP node
+#define USRP_CLIENTS_PATH                "/home/pi/USRPClients.txt"        // format ip;port;callsign; per line for each ALLSTAR/USRP node
+#define USRP_AUTOLINK_MODULE             'A'
 
 #ifndef NO_G3
 // G3 Terminal

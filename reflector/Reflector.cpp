@@ -81,7 +81,7 @@ bool CReflector::Start(void)
 	// init dmrid directory. No need to check the return value.
 	g_DmridDir.Init();
 	
-	// init dmrid directory. No need to check the return value.
+	// init nxdnid directory. No need to check the return value.
 	g_NXDNidDir.Init();
 
 	// init wiresx node directory. Likewise with the return vale.
