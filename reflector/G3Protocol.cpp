@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include <sys/stat.h>
 #include "G3Client.h"
@@ -37,7 +37,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, con
 	ReadOptions();
 
 	// init reflector apparent callsign
-	m_ReflectorCallsign = g_Reflector.GetCallsign();
+	m_ReflectorCallsign = g_Refl..GetCallsign();
 
 	// reset stop flag
 	keep_running = true;
@@ -177,7 +177,7 @@ void CG3Protocol::PresenceTask(void)
 				Buffer.Append(m_GwAddress);
 			}
 
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>extant = nullptr;
 			while ( (extant = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -219,7 +219,7 @@ void CG3Protocol::PresenceTask(void)
 					clients->AddClient(std::make_shared<CG3Client>(Terminal, Ip));
 				}
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 
 			m_PresenceSocket.Send(Buffer, ReqIp);
 		}
@@ -260,7 +260,7 @@ void CG3Protocol::ConfigTask(void)
 
 			if (isRepeaterCall)
 			{
-				if ((Call.HasSameCallsign(GetReflectorCallsign())) && (g_Reflector.IsValidModule(Call.GetCSModule())))
+				if ((Call.HasSameCallsign(GetReflectorCallsign())) && (g_Refl..IsValidModule(Call.GetCSModule())))
 				{
 					Buffer.data()[3] = 0x00; // ok
 				}
@@ -343,7 +343,7 @@ void CG3Protocol::IcmpTask(void)
 	{
 		if (iIcmpType == ICMP_DEST_UNREACH)
 		{
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -354,7 +354,7 @@ void CG3Protocol::IcmpTask(void)
 					clients->RemoveClient(client);
 				}
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 	}
 }
@@ -378,7 +378,7 @@ void CG3Protocol::Task(void)
 	{
 		CIp ClIp;
 		CIp *BaseIp = nullptr;
-		CClients *clients = g_Reflector.GetClients();
+		CClients *clients = g_Refl..GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
 		while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -394,7 +394,7 @@ void CG3Protocol::Task(void)
 				break;
 			}
 		}
-		g_Reflector.ReleaseClients();
+		g_Refl..ReleaseClients();
 
 		if (BaseIp != nullptr)
 		{
@@ -406,7 +406,7 @@ void CG3Protocol::Task(void)
 			else if ( IsValidDvHeaderPacket(Buffer, Header) )
 			{
 				// callsign muted?
-				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::g3, Header->GetRpt2Module()) )
+				if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::g3, Header->GetRpt2Module()) )
 				{
 					// handle it
 					OnDvHeaderPacketIn(Header, *BaseIp);
@@ -454,7 +454,7 @@ void CG3Protocol::HandleQueue(void)
 		if ( EncodeDvPacket(*packet, buffer) )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -470,7 +470,7 @@ void CG3Protocol::HandleQueue(void)
 					}
 				}
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -487,7 +487,7 @@ void CG3Protocol::HandleKeepalives(void)
 	CBuffer keepalive((uint8_t *)"PING", 4);
 
 	// iterate on clients
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -502,7 +502,7 @@ void CG3Protocol::HandleKeepalives(void)
 			Send(keepalive, client->GetIp());
 		}
 	}
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -527,7 +527,7 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		CClients *clients = g_Reflector.GetClients();
+		CClients *clients = g_Refl..GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
 		while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -554,7 +554,7 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 					}
 					else
 					{
-						g_Reflector.ReleaseClients();
+						g_Refl..ReleaseClients();
 						return;
 					}
 				}
@@ -563,19 +563,19 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 				rpt1 = client->GetCallsign();
 
 				// and try to open the stream
-				if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
+				if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
 				{
 					// keep the handle
 					m_Streams[stream->GetStreamId()] = stream;
 				}
 
 				// update last heard
-				g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
-				g_Reflector.ReleaseUsers();
+				g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
+				g_Refl..ReleaseUsers();
 			}
 		}
 		// release
-		g_Reflector.ReleaseClients();
+		g_Refl..ReleaseClients();
 	}
 }
 
@@ -679,7 +679,7 @@ void CG3Protocol::NeedReload(void)
 			ReadOptions();
 
 			// we have new options - iterate on clients for potential removal
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -690,7 +690,7 @@ void CG3Protocol::NeedReload(void)
 					clients->RemoveClient(client);
 				}
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 	}
 }

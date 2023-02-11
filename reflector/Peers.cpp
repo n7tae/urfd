@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "Reflector.h"
 #include "Peers.h"
 
@@ -60,15 +60,15 @@ void CPeers::AddPeer(std::shared_ptr<CPeer> peer)
 	std::cout << "New peer " << peer->GetCallsign() << " at " << peer->GetIp() << " added with protocol " << peer->GetProtocolName()  << std::endl;
 	// and append all peer's client to reflector client list
 	// it is double lock safe to lock Clients list after Peers list
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	for ( auto cit=peer->cbegin(); cit!=peer->cend(); cit++ )
 	{
 		clients->AddClient(*cit);
 	}
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 
 	// notify
-	g_Reflector.OnPeersChanged();
+	g_Refl..OnPeersChanged();
 }
 
 void CPeers::RemovePeer(std::shared_ptr<CPeer> peer)
@@ -81,7 +81,7 @@ void CPeers::RemovePeer(std::shared_ptr<CPeer> peer)
 		{
 			// remove all clients from reflector client list
 			// it is double lock safe to lock Clients list after Peers list
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			for ( auto cit=peer->begin(); cit!=peer->end(); cit++ )
 			{
 				// this also delete the client object
@@ -89,13 +89,13 @@ void CPeers::RemovePeer(std::shared_ptr<CPeer> peer)
 			}
 			// so clear it then
 			(*pit)->ClearClients();
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 
 			// remove it
 			std::cout << "Peer " << (*pit)->GetCallsign() << " at " << (*pit)->GetIp() << " removed" << std::endl;
 			pit = m_Peers.erase(pit);
 			// notify
-			g_Reflector.OnPeersChanged();
+			g_Refl..OnPeersChanged();
 		}
 		else
 		{

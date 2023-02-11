@@ -16,59 +16,59 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
-#include "Reflector.h"
-
 #include <sys/stat.h>
 
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // global objects
 
-CReflector  g_Reflector;
+CReflector  g_Refl;
+CGateKeeper g_Gate;
+CConfigure  g_Conf;
+CVersion    g_Vers(3,0,0); // The major byte should only change if the interlink packet changes!
+CLookupDmr  g_LDid;
+CLookupNxdn g_LNid;
+CLookupYsf  g_LYtr;
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// function declaration
 
-#include "Users.h"
-
-int main()
+int main(int argc, char *argv[])
 {
-	const std::string cs(CALLSIGN);
-	if ((cs.size() != 6) || cs.compare(0, 3, "URF"))
+	if (argc != 2)
 	{
-		std::cerr << "Malformed reflector callsign: '" << cs << "', aborting!" << std::endl;
+		std::cerr << "No configuration file specifed! Usage: " << argv[0] << " /pathname/to/configuration/file" << std::endl;
 		return EXIT_FAILURE;
 	}
 
+	if (g_Conf.ReadData(argv[1]))
+		return EXIT_FAILURE;
+
 	// remove pidfile
-	remove(PIDFILE_PATH);
+	const std::string pidpath(g_Conf.GetString(g_Conf.j.files.pid));
+	const std::string callsign(g_Conf.GetString(g_Conf.j.names.cs));
+	remove(pidpath.c_str());
 
 	// splash
-	std::cout << "Starting " << cs << " " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_REVISION << std::endl << std::endl;
-
-#ifdef TRANSCODER_IS_REMOTE
-	g_Reflector.SetTranscoderIp(TRANSCODER_IP, INET6_ADDRSTRLEN);
-#endif
-
+	std::cout << "Starting " << callsign << " " << g_Vers << std::endl;
 
 	// and let it run
-	if ( !g_Reflector.Start() )
+	if (g_Refl.Start())
 	{
 		std::cout << "Error starting reflector" << std::endl;
 		return EXIT_FAILURE;
 	}
 
-	std::cout << "Reflector " << g_Reflector.GetCallsign()  << "started and listening" << std::endl;
+	std::cout << "Reflector " << callsign << "started and listening" << std::endl;
 
 	// write new pid file
-	std::ofstream ofs(PIDFILE_PATH, std::ofstream::out);
+	std::ofstream ofs(pidpath, std::ofstream::out);
 	ofs << getpid() << std::endl;
 	ofs.close();
 
 	pause(); // wait for any signal
 
-	g_Reflector.Stop();
+	g_Refl.Stop();
 	std::cout << "Reflector stopped" << std::endl;
 
 	// done

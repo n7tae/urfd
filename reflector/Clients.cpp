@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "Reflector.h"
 #include "Clients.h"
 
@@ -66,7 +66,7 @@ void CClients::AddClient(std::shared_ptr<CClient> client)
 	}
 	std::cout << std::endl;
 	// notify
-	g_Reflector.OnClientsChanged();
+	g_Refl..OnClientsChanged();
 }
 
 void CClients::RemoveClient(std::shared_ptr<CClient> client)
@@ -90,7 +90,7 @@ void CClients::RemoveClient(std::shared_ptr<CClient> client)
 				std::cout << std::endl;
 				m_Clients.erase(it);
 				// notify
-				g_Reflector.OnClientsChanged();
+				g_Refl..OnClientsChanged();
 				break;
 			}
 		}

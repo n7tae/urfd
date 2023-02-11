@@ -1,7 +1,7 @@
-//  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,30 +18,25 @@
 
 #pragma once
 
-#include "YSFNodeDir.h"
+#include "Lookup.h"
 
-class CYsfNodeDirFile : public CYsfNodeDir
+class CLookupNxdn : public CLookup
 {
 public:
-	// constructor
-	CYsfNodeDirFile();
-
-	// destructor
-	~CYsfNodeDirFile() {}
-
-	// init & close
-	bool Init(void);
-
-	// refresh
-	bool LoadContent(CBuffer *);
-	bool RefreshContent(const CBuffer &);
-
+	uint16_t FindNXDNid(const CCallsign &callsign);
+	const CCallsign *FindCallsign(uint16_t id);
 protected:
-	// reload helpers
-	bool NeedReload(void);
-	bool GetLastModTime(time_t *);
+	void ClearContents();
+	void LoadParameters();
+	bool LoadContentFile(CBuffer &buf);
+	bool LoadContentHttp(CBuffer &buf);
+	void RefreshContentFile(const CBuffer &);
+	void RefreshContentHttp(const CBuffer &);
 
-protected:
-	// data
-	time_t      m_LastModTime;
+private:
+	std::map <uint32_t, CCallsign> m_CallsignMap;
+	std::map <CCallsign, uint32_t, CCallsignCompare> m_NxdnidMap;
+
+	bool IsValidNxdnId(const char *);
+	bool HttpGet(const char *, const char *, int, CBuffer &);
 };

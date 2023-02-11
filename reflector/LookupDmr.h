@@ -1,7 +1,7 @@
-//  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,23 +18,26 @@
 
 #pragma once
 
-#include "YSFNodeDir.h"
+#include "Lookup.h"
 
-class CYsfNodeDirHttp : public CYsfNodeDir
+class CLookupDmr : public CLookup
 {
 public:
-	// constructor
-	CYsfNodeDirHttp() {}
-
-	// destructor
-	~CYsfNodeDirHttp() {}
-
-	// refresh
-	bool LoadContent(CBuffer *);
-	bool RefreshContent(const CBuffer &);
+	uint32_t FindDmrid(const CCallsign &cs);
+	const CCallsign *FindCallsign(uint32_t dmrid);
 
 protected:
-	// reload helpers
-	bool NeedReload(void)  { return true; }
-	bool HttpGet(const char *, const char *, int, CBuffer *);
+	void ClearContents();
+	void LoadParameters();
+	bool LoadContentFile(CBuffer &buf);
+	bool LoadContentHttp(CBuffer &buf);
+	void RefreshContentFile(const CBuffer &);
+	void RefreshContentHttp(const CBuffer &);
+
+private:
+	std::map <uint32_t, CCallsign> m_CallsignMap;
+	std::map <CCallsign, uint32_t, CCallsignCompare> m_DmridMap;
+
+	bool IsValidDmrId(const char *);
+	bool HttpGet(const char *, const char *, int, CBuffer &);
 };

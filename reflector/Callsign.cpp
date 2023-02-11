@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include <cctype>
 #include "DMRIdDirFile.h"
@@ -67,62 +67,62 @@ CCallsign::CCallsign(const char *sz, uint32_t dmrid, uint16_t nxdnid)
 		// dmrid ok ?
 		if ( m_uiDmrid == 0 )
 		{
-			g_DmridDir.Lock();
+			g_LDid.Lock();
 			{
-				m_uiDmrid = g_DmridDir.FindDmrid(*this);
+				m_uiDmrid = g_LDid.FindDmrid(*this);
 			}
-			g_DmridDir.Unlock();
+			g_LDid.Unlock();
 		}
 		if ( m_uiNXDNid == 0 )
 		{
-			g_NXDNidDir.Lock();
+			g_LNid.Lock();
 			{
-				m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+				m_uiNXDNid = g_LNid.FindNXDNid(*this);
 			}
-			g_NXDNidDir.Unlock();
+			g_LNid.Unlock();
 		}
 	}
 	else if ( m_uiDmrid != 0 )
 	{
-		g_DmridDir.Lock();
+		g_LDid.Lock();
 		{
-			const CCallsign *callsign = g_DmridDir.FindCallsign(m_uiDmrid);
+			const CCallsign *callsign = g_LDid.FindCallsign(m_uiDmrid);
 			if ( callsign != nullptr )
 			{
 				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
 			}
 		}
-		g_DmridDir.Unlock();
-		
+		g_LDid.Unlock();
+
 		if ( m_uiNXDNid == 0 )
 		{
-			g_NXDNidDir.Lock();
+			g_LNid.Lock();
 			{
-				m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+				m_uiNXDNid = g_LNid.FindNXDNid(*this);
 			}
-			g_NXDNidDir.Unlock();
+			g_LNid.Unlock();
 		}
 		CSIn();
 	}
 	else if ( m_uiNXDNid != 0 )
 	{
-		g_NXDNidDir.Lock();
+		g_LNid.Lock();
 		{
-			const CCallsign *callsign = g_NXDNidDir.FindCallsign(m_uiNXDNid);
+			const CCallsign *callsign = g_LNid.FindCallsign(m_uiNXDNid);
 			if ( callsign != nullptr )
 			{
 				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
 			}
 		}
-		g_NXDNidDir.Unlock();
-		
+		g_LNid.Unlock();
+
 		if ( m_uiDmrid == 0 )
 		{
-			g_DmridDir.Lock();
+			g_LDid.Lock();
 			{
-				m_uiDmrid = g_DmridDir.FindDmrid(*this);
+				m_uiDmrid = g_LDid.FindDmrid(*this);
 			}
-			g_DmridDir.Unlock();
+			g_LDid.Unlock();
 		}
 		CSIn();
 	}
@@ -201,16 +201,16 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 	// and update dmrid
 	if ( UpdateDmrid )
 	{
-		g_DmridDir.Lock();
+		g_LDid.Lock();
 		{
-			m_uiDmrid = g_DmridDir.FindDmrid(*this);
+			m_uiDmrid = g_LDid.FindDmrid(*this);
 		}
-		g_DmridDir.Unlock();
-		g_NXDNidDir.Lock();
+		g_LDid.Unlock();
+		g_LNid.Lock();
 		{
-			m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+			m_uiNXDNid = g_LNid.FindNXDNid(*this);
 		}
-		g_NXDNidDir.Unlock();
+		g_LNid.Unlock();
 	}
 }
 
@@ -234,16 +234,16 @@ void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 	CSIn();
 	if ( UpdateDmrid )
 	{
-		g_DmridDir.Lock();
+		g_LDid.Lock();
 		{
-			m_uiDmrid = g_DmridDir.FindDmrid(*this);
+			m_uiDmrid = g_LDid.FindDmrid(*this);
 		}
-		g_DmridDir.Unlock();
-		g_NXDNidDir.Lock();
+		g_LDid.Unlock();
+		g_LNid.Lock();
 		{
-			m_uiNXDNid = g_NXDNidDir.FindNXDNid(*this);
+			m_uiNXDNid = g_LNid.FindNXDNid(*this);
 		}
-		g_NXDNidDir.Unlock();
+		g_LNid.Unlock();
 	}
 }
 
@@ -252,15 +252,15 @@ void CCallsign::SetDmrid(uint32_t dmrid, bool UpdateCallsign)
 	m_uiDmrid = dmrid;
 	if ( UpdateCallsign )
 	{
-		g_DmridDir.Lock();
+		g_LDid.Lock();
 		{
-			const CCallsign *callsign = g_DmridDir.FindCallsign(dmrid);
+			const CCallsign *callsign = g_LDid.FindCallsign(dmrid);
 			if ( callsign != nullptr )
 			{
 				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
 			}
 		}
-		g_DmridDir.Unlock();
+		g_LDid.Unlock();
 	}
 }
 
@@ -277,15 +277,15 @@ void CCallsign::SetNXDNid(uint16_t nxdnid, bool UpdateCallsign)
 	m_uiNXDNid = nxdnid;
 	if ( UpdateCallsign )
 	{
-		g_DmridDir.Lock();
+		g_LDid.Lock();
 		{
-			const CCallsign *callsign = g_NXDNidDir.FindCallsign(nxdnid);
+			const CCallsign *callsign = g_LNid.FindCallsign(nxdnid);
 			if ( callsign != nullptr )
 			{
 				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
 			}
 		}
-		g_NXDNidDir.Unlock();
+		g_LNid.Unlock();
 	}
 }
 

@@ -17,7 +17,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
-#include "Main.h"
+
 #include "PeerCallsignList.h"
 
 bool CPeerCallsignList::LoadFromFile(const char *filename)

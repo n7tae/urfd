@@ -10,4 +10,5 @@ configure.h
 configure.sql
 reflector.cfg
 wiresx/configure.php
-urfd
+urfd*
+inicheck

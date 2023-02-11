@@ -1,8 +1,7 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
-// Copyright © 2021 Doug McLain AD8DP
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,68 +18,60 @@
 
 #pragma once
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include <map>
+#include <atomic>
+#include <future>
 #include "Buffer.h"
 #include "Callsign.h"
+#include "Configure.h"
 
 // compare function for std::map::find
 
-struct CNXDNidDirCallsignCompare
+struct CCallsignCompare
 {
 	bool operator() (const CCallsign &cs1, const CCallsign &cs2) const
-	{ return cs1.HasLowerCallsign(cs2);}
+	{
+		return cs1.HasLowerCallsign(cs2);
+	}
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-class CNXDNidDir
+class CLookup
 {
 public:
 	// constructor
-	CNXDNidDir();
+	CLookup() : keep_running(true), m_LastModTime(0) {}
 
 	// destructor
-	~CNXDNidDir();
+	virtual ~CLookup();
 
-	// init & close
-	virtual bool Init(void);
-	virtual void Close(void);
+	void LookupInit();
+	void LookupClose();
 
 	// locks
-	void Lock(void)                                 { m_Mutex.lock(); }
-	void Unlock(void)                               { m_Mutex.unlock(); }
-
-	// refresh
-	virtual bool LoadContent(CBuffer *)             { return false; }
-	virtual bool RefreshContent(const CBuffer &)    { return false; }
-
-	// find
-	const CCallsign *FindCallsign(uint16_t);
-	uint16_t FindNXDNid(const CCallsign &);
+	void Lock(void)   { m_Mutex.lock();   }
+	void Unlock(void) { m_Mutex.unlock(); }
 
 protected:
-	// thread
+	std::time_t GetLastModTime();
+	virtual void LoadParameters() = 0;
+	virtual void ClearContents()  = 0;
 	void Thread();
 
-	// reload helpers
-	bool Reload(void);
-	virtual bool NeedReload(void)                    { return false; }
-	bool IsValidNXDNid(const char *);
+	// refresh
+	virtual bool LoadContentFile(CBuffer &buf)       = 0;
+	virtual bool LoadContentHttp(CBuffer &buf)       = 0;
+	virtual void RefreshContentFile(const CBuffer &) = 0;
+	virtual void RefreshContentHttp(const CBuffer &) = 0;
 
-protected:
-	// data
-	std::map <uint16_t, CCallsign> m_CallsignMap;
-	std::map <CCallsign, uint16_t, CNXDNidDirCallsignCompare> m_NXDNidMap;
-
-	// Lock()
 	std::mutex        m_Mutex;
+	ERefreshType      m_Type;
+	unsigned          m_Refresh;
+	std::string       m_Path, m_Host, m_Suffix;
+	std::time_t       m_LastModTime;
 
-	// thread
 	std::atomic<bool> keep_running;
 	std::future<void> m_Future;
-
 };

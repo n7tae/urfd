@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "Protocol.h"
 #include "Clients.h"
 #include "Reflector.h"
@@ -52,7 +52,7 @@ CProtocol::~CProtocol()
 bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// init reflector apparent callsign
-	m_ReflectorCallsign = g_Reflector.GetCallsign();
+	m_ReflectorCallsign = g_Refl..GetCallsign();
 
 	// reset stop flag
 	keep_running = true;
@@ -179,7 +179,7 @@ void CProtocol::CheckStreamsTimeout(void)
 		{
 			// yes, close it
 			it->second->Unlock();
-			g_Reflector.CloseStream(it->second);
+			g_Refl..CloseStream(it->second);
 			// and remove it from the m_Streams map
 			it = m_Streams.erase(it);
 		}

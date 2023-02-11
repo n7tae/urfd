@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <future>
+
 #include "UnixDgramSocket.h"
 #include "PacketQueue.h"
 
@@ -30,7 +33,11 @@ class CCodecStream : public CPacketQueue
 {
 public:
 	// constructor
-	CCodecStream(CPacketStream *packetstream, uint16_t streamid, ECodecType codectype, std::shared_ptr<CUnixDgramReader> reader);
+	CCodecStream(CPacketStream *packetstream);
+	bool InitCodecStream(char module);
+
+	void ResetStats(uint16_t streamid, ECodecType codectype);
+	void ReportStats();
 
 	// destructor
 	virtual ~CCodecStream();
@@ -44,7 +51,6 @@ public:
 
 protected:
 	// initialization
-	void InitCodecStream(void);
 	// data
 	uint16_t        m_uiStreamId;
 	uint16_t        m_uiPort;
@@ -52,7 +58,7 @@ protected:
 	ECodecType      m_eCodecIn;
 
 	// sockets
-	std::shared_ptr<CUnixDgramReader> m_TCReader;
+	CUnixDgramReader m_TCReader;
 	CUnixDgramWriter m_TCWriter;
 
 	// associated packet stream

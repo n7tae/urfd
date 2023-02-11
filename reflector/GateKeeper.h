@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "Main.h"
+#include "Defines.h"
 #include "Callsign.h"
 #include "IP.h"
 #include "CallsignList.h"

@@ -16,26 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
-#include "Reflector.h"
-#include "GateKeeper.h"
-#include "DMRIdDirFile.h"
-#include "DMRIdDirHttp.h"
-#include "NXDNIdDirFile.h"
-#include "NXDNIdDirHttp.h"
-#include "YSFNodeDirFile.h"
-#include "YSFNodeDirHttp.h"
 
-
-////////////////////////////////////////////////////////////////////////////////////////
-// constructor
-
-CReflector::CReflector() : m_Callsign(CALLSIGN), m_Modules(ACTIVE_MODULES), keep_running(true)
-{
-}
-
-
+#include "Global.h"
 ////////////////////////////////////////////////////////////////////////////////////////
 // destructor
 
@@ -46,12 +30,7 @@ CReflector::~CReflector()
 	{
 		m_XmlReportFuture.get();
 	}
-#ifdef JSON_MONITOR
-	if ( m_JsonReportFuture.valid() )
-	{
-		m_JsonReportFuture.get();
-	}
-#endif
+
 	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
 	{
 		if (m_RouterFuture[*it].valid())
@@ -59,11 +38,6 @@ CReflector::~CReflector()
 	}
 	m_RouterFuture.clear();
 	m_Stream.clear();
-
-#ifdef TRANSCODED_MODULES
-	m_TCReader.clear();
-#endif
-
 }
 
 
@@ -72,55 +46,68 @@ CReflector::~CReflector()
 
 bool CReflector::Start(void)
 {
+	// get config stuff
+	m_Callsign = CCallsign(g_Conf.GetString(g_Conf.j.names.cs).c_str(), false);
+	m_Modules.assign(g_Conf.GetString(g_Conf.j.modules.modules));
+	std::string tcmods(g_Conf.GetString(g_Conf.j.modules.tcmodules));
+
 	// let's go!
 	keep_running = true;
 
 	// init gate keeper. It can only return true!
-	g_GateKeeper.Init();
+	g_Gate.Init();
 
 	// init dmrid directory. No need to check the return value.
-	g_DmridDir.Init();
-	
+	g_LDid.LookupInit();
+
 	// init dmrid directory. No need to check the return value.
-	g_NXDNidDir.Init();
+	g_LNid.LookupInit();
 
 	// init wiresx node directory. Likewise with the return vale.
-	g_YsfNodeDir.Init();
+	g_LYtr.LookupInit();
 
 	// create protocols
 	if (! m_Protocols.Init())
 	{
 		m_Protocols.Close();
-		return false;
+		return true;
 	}
 
 	// start one thread per reflector module
-	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
+	for (auto c : m_Modules)
 	{
-#ifdef TRANSCODED_MODULES
-		m_TCReader[*it] = std::make_shared<CUnixDgramReader>();
-		std::string readername(TC2REF);
-		readername.append(1, *it);
-		if (m_TCReader[*it]->Open(readername.c_str()))
+		auto stream = std::make_shared<CPacketStream>();
+		if (stream)
 		{
-			std::cerr << "ERROR: Reflector can't open " << readername << std::endl;
-			m_TCReader[*it].reset();
-			return false;
+			stream->InitPacketStream(std::string::npos != tcmods.find(c));
 		}
-		m_Stream[*it] = std::make_shared<CPacketStream>(m_TCReader[*it]);
-#else
-		m_Stream[*it] = std::make_shared<CPacketStream>();
-#endif
-		m_RouterFuture[*it] = std::async(std::launch::async, &CReflector::RouterThread, this, *it);
+		else
+		{
+			return true;
+		}
+		try
+		{
+			m_RouterFuture[c] = std::async(std::launch::async, &CReflector::RouterThread, this, c);
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "Cannot start module '" << c << "' thread: " << e.what() << '\n';
+			keep_running = false;
+			return true;
+		}
 	}
 
 	// start the reporting threads
-	m_XmlReportFuture = std::async(std::launch::async, &CReflector::XmlReportThread, this);
-#ifdef JSON_MONITOR
-	m_JsonReportFuture = std::async(std::launch::async, &CReflector::JsonReportThread, this);
-#endif
+	try
+	{
+		m_XmlReportFuture = std::async(std::launch::async, &CReflector::XmlReportThread, this);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "Cannot start the dashboard data report thread: " << e.what() << '\n';
+	}
 
-	return true;
+	return false;
 }
 
 void CReflector::Stop(void)
@@ -133,30 +120,24 @@ void CReflector::Stop(void)
 	{
 		m_XmlReportFuture.get();
 	}
-#ifdef JSON_MONITOR
-	if ( m_JsonReportFuture.valid() )
-	{
-		m_JsonReportFuture.get();
-	}
-#endif
 
 	// stop & delete all router thread
-	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
+	for (auto c : m_Modules)
 	{
-		if (m_RouterFuture[*it].valid())
-			m_RouterFuture[*it].get();
+		if (m_RouterFuture[c].valid())
+			m_RouterFuture[c].get();
 	}
 
 	// close protocols
 	m_Protocols.Close();
 
 	// close gatekeeper
-	g_GateKeeper.Close();
+	g_Gate.Close();
 
 	// close databases
-	g_DmridDir.Close();
-	g_NXDNidDir.Close();
-	g_YsfNodeDir.Close();
+	g_LDid.LookupClose();
+	g_LNid.LookupClose();
+	g_LYtr.LookupClose();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -338,13 +319,16 @@ void CReflector::RouterThread(const char ThisModule)
 ////////////////////////////////////////////////////////////////////////////////////////
 // report threads
 
+#define XML_UPDATE_PERIOD 10
+
 void CReflector::XmlReportThread()
 {
+	const std::string path(g_Conf.GetString(g_Conf.j.files.json));
 	while (keep_running)
 	{
 		// report to xml file
 		std::ofstream xmlFile;
-		xmlFile.open(XML_PATH, std::ios::out | std::ios::trunc);
+		xmlFile.open(path, std::ios::out | std::ios::trunc);
 		if ( xmlFile.is_open() )
 		{
 			// write xml file
@@ -353,112 +337,16 @@ void CReflector::XmlReportThread()
 			// and close file
 			xmlFile.close();
 		}
-#ifndef DEBUG_NO_ERROR_ON_XML_OPEN_FAIL
 		else
 		{
-			std::cout << "Failed to open " << XML_PATH  << std::endl;
+			std::cout << "Failed to open " << path  << std::endl;
 		}
-#endif
 
 		// and wait a bit
 		for (int i=0; i< XML_UPDATE_PERIOD && keep_running; i++)
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }
-
-#ifdef JSON_MONITOR
-void CReflector::JsonReportThread()
-{
-	CUdpSocket Socket;
-	CBuffer    Buffer;
-	CIp        Ip;
-	bool       bOn;
-
-	// init variable
-	bOn = false;
-
-	// create listening socket
-	if ( Socket.Open(JSON_PORT) )
-	{
-		// and loop
-		while (keep_running)
-		{
-			// any command ?
-			if ( Socket.Receive(Buffer, Ip, 50) )
-			{
-				// check verb
-				if ( Buffer.Compare((uint8_t *)"hello", 5) == 0 )
-				{
-					std::cout << "Monitor socket connected with " << Ip << std::endl;
-
-					// connected
-					bOn = true;
-
-					// announce ourselves
-					SendJsonReflectorObject(Socket, Ip);
-
-					// dump tables
-					SendJsonNodesObject(Socket, Ip);
-					SendJsonStationsObject(Socket, Ip);
-				}
-				else if ( Buffer.Compare((uint8_t *)"bye", 3) == 0 )
-				{
-					std::cout << "Monitor socket disconnected" << std::endl;
-
-					// diconnected
-					bOn = false;
-				}
-			}
-
-			// any notifications ?
-			CNotification notification;
-			m_Notifications.Lock();
-			if ( !m_Notifications.empty() )
-			{
-				// get the packet
-				notification = m_Notifications.front();
-				m_Notifications.pop();
-			}
-			m_Notifications.Unlock();
-
-			// handle it
-			if ( bOn )
-			{
-				switch ( notification.GetId() )
-				{
-				case NOTIFICATION_CLIENTS:
-				case NOTIFICATION_PEERS:
-					//std::cout << "Monitor updating nodes table" << std::endl;
-					SendJsonNodesObject(Socket, Ip);
-					break;
-				case NOTIFICATION_USERS:
-					//std::cout << "Monitor updating stations table" << std::endl;
-					SendJsonStationsObject(Socket, Ip);
-					break;
-				case NOTIFICATION_STREAM_OPEN:
-					//std::cout << "Monitor notify station " << notification.GetCallsign() << "going ON air" << std::endl;
-					SendJsonStationsObject(Socket, Ip);
-					SendJsonOnairObject(Socket, Ip, notification.GetCallsign());
-					break;
-				case NOTIFICATION_STREAM_CLOSE:
-					//std::cout << "Monitor notify station " << notification.GetCallsign() << "going OFF air" << std::endl;
-					SendJsonOffairObject(Socket, Ip, notification.GetCallsign());
-					break;
-				case NOTIFICATION_NONE:
-				default:
-					// nothing to do, just sleep a bit
-					std::this_thread::sleep_for(std::chrono::milliseconds(250);
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		std::cout << "Error creating monitor socket" << std::endl;
-	}
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // notifications
@@ -549,9 +437,7 @@ void CReflector::WriteXmlFile(std::ofstream &xmlFile)
 	xmlFile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
 
 	// software version
-	char sz[64];
-	::sprintf(sz, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-	xmlFile << "<Version>" << sz << "</Version>" << std::endl;
+	xmlFile << "<Version>" << g_Vers << "</Version>" << std::endl;
 
 	CCallsign cs = m_Callsign;
 	cs.PatchCallsign(0, "XLX", 3);
@@ -598,120 +484,3 @@ void CReflector::WriteXmlFile(std::ofstream &xmlFile)
 	ReleaseUsers();
 	xmlFile << "</" << cs << "heard users>" << std::endl;
 }
-
-
-#ifdef JSON_MONITOR
-////////////////////////////////////////////////////////////////////////////////////////
-// json helpers
-
-void CReflector::SendJsonReflectorObject(CUdpSocket &Socket, CIp &Ip)
-{
-	char Buffer[1024];
-	char cs[CALLSIGN_LEN+1];
-	char mod[8] = "\"A\"";
-
-	// get reflector callsign
-	m_Callsign.GetCallsign((uint8_t *)cs);
-	cs[CALLSIGN_LEN] = 0;
-
-	// build string
-	::sprintf(Buffer, "{\"reflector\":\"%s\",\"modules\":[", cs);
-	for ( int i = 0; i < NB_OF_MODULES; i++ )
-	{
-		::strcat(Buffer, mod);
-		mod[1]++;
-		if ( i < NB_OF_MODULES-1 )
-		{
-			::strcat(Buffer, ",");
-		}
-	}
-	::strcat(Buffer, "]}");
-
-	// and send
-	Socket.Send(Buffer, Ip);
-}
-
-#define JSON_NBMAX_NODES	250
-
-void CReflector::SendJsonNodesObject(CUdpSocket &Socket, CIp &Ip)
-{
-	char Buffer[12+(JSON_NBMAX_NODES*94)];
-
-	// nodes object table
-	::sprintf(Buffer, "{\"nodes\":[");
-	// lock
-	CClients *clients = GetClients();
-	// iterate on clients
-	for ( auto it=clients->cbegin(); it!=clients->cend(); )
-	{
-		(*it++)->GetJsonObject(Buffer);
-		if ( it != clients->cend() )
-		{
-			::strcat(Buffer, ",");
-		}
-	}
-	// unlock
-	ReleaseClients();
-	::strcat(Buffer, "]}");
-
-	// and send
-	//std::cout << Buffer << std::endl;
-	Socket.Send(Buffer, Ip);
-}
-
-void CReflector::SendJsonStationsObject(CUdpSocket &Socket, CIp &Ip)
-{
-	char Buffer[15+(LASTHEARD_USERS_MAX_SIZE*94)];
-
-	// stations object table
-	::sprintf(Buffer, "{\"stations\":[");
-
-	// lock
-	CUsers *users = GetUsers();
-	// iterate on users
-	for ( auto it=users->begin(); it!=users->end(); )
-	{
-		(*it++).GetJsonObject(Buffer);
-		if ( it != users->end() )
-		{
-			::strcat(Buffer, ",");
-		}
-	}
-	// unlock
-	ReleaseUsers();
-
-	::strcat(Buffer, "]}");
-
-	// and send
-	//std::cout << Buffer << std::endl;
-	Socket.Send(Buffer, Ip);
-}
-
-void CReflector::SendJsonOnairObject(CUdpSocket &Socket, CIp &Ip, const CCallsign &Callsign)
-{
-	char Buffer[128];
-	char sz[CALLSIGN_LEN+1];
-
-	// onair object
-	Callsign.GetCallsignString(sz);
-	::sprintf(Buffer, "{\"onair\":\"%s\"}", sz);
-
-	// and send
-	//std::cout << Buffer << std::endl;
-	Socket.Send(Buffer, Ip);
-}
-
-void CReflector::SendJsonOffairObject(CUdpSocket &Socket, CIp &Ip, const CCallsign &Callsign)
-{
-	char Buffer[128];
-	char sz[CALLSIGN_LEN+1];
-
-	// offair object
-	Callsign.GetCallsignString(sz);
-	::sprintf(Buffer, "{\"offair\":\"%s\"}", sz);
-
-	// and send
-	//std::cout << Buffer << std::endl;
-	Socket.Send(Buffer, Ip);
-}
-#endif

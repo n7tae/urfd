@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "Users.h"
 #include "Reflector.h"
 
@@ -40,7 +40,7 @@ void CUsers::AddUser(const CUser &user)
 	}
 
 	// notify
-	g_Reflector.OnUsersChanged();
+	g_Refl..OnUsersChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ void CUsers::AddUser(const CUser &user)
 
 void CUsers::Hearing(const CCallsign &my, const CCallsign &rpt1, const CCallsign &rpt2)
 {
-	Hearing(my, rpt1, rpt2, g_Reflector.GetCallsign());
+	Hearing(my, rpt1, rpt2, g_Refl..GetCallsign());
 }
 
 void CUsers::Hearing(const CCallsign &my, const CCallsign &rpt1, const CCallsign &rpt2, const CCallsign &xlx)

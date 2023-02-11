@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "CodecStream.h"
 #include "DVFramePacket.h"
@@ -25,7 +25,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECodecType type, std::shared_ptr<CUnixDgramReader> reader)
+CCodecStream::CCodecStream(CPacketStream *PacketStream)
+{
+	m_PacketStream = PacketStream;
+}
+
+void CCodecStream::ResetStats(uint16_t streamid, ECodecType type)
 {
 	keep_running = true;
 	m_uiStreamId = streamid;
@@ -36,9 +41,6 @@ CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECode
 	m_RTSum = 0;
 	m_RTCount = 0;
 	m_uiTotalPackets = 0;
-	m_PacketStream = PacketStream;
-	m_TCReader = reader;
-	InitCodecStream();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +54,12 @@ CCodecStream::~CCodecStream()
 	{
 		m_Future.get();
 	}
+	// and close the socket
+	m_TCReader.Close();
+}
 
+void CCodecStream::ReportStats()
+{
 	// display stats
 	if (m_RTCount > 0)
 	{
@@ -69,11 +76,24 @@ CCodecStream::~CCodecStream()
 ////////////////////////////////////////////////////////////////////////////////////////
 // initialization
 
-void CCodecStream::InitCodecStream(void)
+bool CCodecStream::InitCodecStream(char module)
 {
 	m_TCWriter.SetUp(REF2TC);
+	std::string name(TC2REF);
+	name.append(1, module);
+	if (m_TCReader.Open(name.c_str()))
+		return true;
 	keep_running = true;
-	m_Future = std::async(std::launch::async, &CCodecStream::Thread, this);
+	try
+	{
+		m_Future = std::async(std::launch::async, &CCodecStream::Thread, this);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "Could not start Codec processing on module '" << module << "': " << e.what() << std::endl;
+		return true;
+	}
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -92,21 +112,21 @@ void CCodecStream::Task(void)
 	STCPacket pack;
 
 	// any packet from transcoder
-	if (m_TCReader->Receive(&pack, 5))
+	if (m_TCReader.Receive(&pack, 5))
 	{
 		// update statistics
 		double rt = pack.rt_timer.time();	// the round-trip time
-		if ( m_RTMin == -1 )
+		if (0 == m_RTCount)
 		{
 			m_RTMin = rt;
 			m_RTMax = rt;
-
 		}
 		else
 		{
-			m_RTMin = MIN(m_RTMin, rt);
-			m_RTMax = MAX(m_RTMax, rt);
-
+			if (rt < m_RTMin)
+				m_RTMin = rt;
+			else if (rt > m_RTMax)
+				m_RTMax = rt;
 		}
 		m_RTSum += rt;
 		m_RTCount++;

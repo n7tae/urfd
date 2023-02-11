@@ -33,7 +33,7 @@ public:
 	~CUser() {}
 
 	// operation
-	void HeardNow(void)     { m_LastHeardTime = std::time(nullptr); }
+	void HeardNow(void)     { m_LastHeardTime = time(nullptr); }
 
 	// operators
 	bool operator ==(const CUser &) const;
@@ -49,5 +49,5 @@ protected:
 	CCallsign   m_Rpt1;
 	CCallsign   m_Rpt2;
 	CCallsign   m_Xlx;
-	std::time_t m_LastHeardTime;
+	time_t      m_LastHeardTime;
 };

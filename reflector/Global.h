@@ -1,7 +1,5 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,25 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Reflector.h"
+#include "GateKeeper.h"
+#include "Configure.h"
+#include "Version.h"
+#include "LookupDmr.h"
+#include "LookupNxdn.h"
+#include "LookupYsf.h"
 
-#include "NXDNIdDir.h"
-
-class CNXDNidDirHttp : public CNXDNidDir
-{
-public:
-	// constructor
-	CNXDNidDirHttp() {}
-
-	// destructor
-	~CNXDNidDirHttp() {}
-
-	// refresh
-	bool LoadContent(CBuffer *);
-	bool RefreshContent(const CBuffer &);
-
-protected:
-	// reload helpers
-	bool NeedReload(void)  { return true; }
-	bool HttpGet(const char *, const char *, int, CBuffer *);
-};
+extern CReflector  g_Refl;
+extern CGateKeeper g_Gate;
+extern CConfigure  g_Conf;
+extern CVersion    g_Vers;
+extern CLookupDmr  g_LDid;
+extern CLookupNxdn g_LNid;
+extern CLookupYsf  g_LYtr;

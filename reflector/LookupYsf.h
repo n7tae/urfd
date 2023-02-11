@@ -1,7 +1,7 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,23 +18,26 @@
 
 #pragma once
 
-#include "DMRIdDir.h"
+#include "YSFNode.h"
+#include "Lookup.h"
 
-class CDmridDirHttp : public CDmridDir
+using CsNodeMap = std::map<CCallsign, CYsfNode, CCallsignCompare>;
+
+class CLookupYsf : public CLookup
 {
 public:
-	// constructor
-	CDmridDirHttp() {}
-
-	// destructor
-	~CDmridDirHttp() {}
-
-	// refresh
-	bool LoadContent(CBuffer *);
-	bool RefreshContent(const CBuffer &);
+	bool FindFrequencies(const CCallsign &, uint32_t *, uint32_t *);
 
 protected:
-	// reload helpers
-	bool NeedReload(void)  { return true; }
-	bool HttpGet(const char *, const char *, int, CBuffer *);
+	void ClearContents();
+	void LoadParameters();
+	bool LoadContentFile(CBuffer &buf);
+	bool LoadContentHttp(CBuffer &buf);
+	void RefreshContentFile(const CBuffer &);
+	void RefreshContentHttp(const CBuffer &);
+
+private:
+	CsNodeMap m_map;
+
+	bool HttpGet(const char *, const char *, int, CBuffer &);
 };

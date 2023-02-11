@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "PacketStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -32,10 +32,15 @@ CPacketStream::CPacketStream()
 	m_uiStreamId = 0;
 	m_uiPacketCntr = 0;
 	m_OwnerClient = nullptr;
-#ifdef TRANSCODED_MODULES
 	m_CodecStream = nullptr;
-	m_TCReader = reader;
-#endif
+}
+
+bool CPacketStream::InitPacketStream(bool is_transcoded)
+{
+	if (is_transcoded)
+		m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this));
+
+	return nullptr == m_CodecStream;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -53,16 +58,6 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_DvHeader = DvHeader;
 		m_OwnerClient = client;
 		m_LastPacketTime.start();
-#ifdef TRANSCODED_MODULES
-		if (DvHeader.IsLocalOrigin()) // we only need transcoding if the source is local
-		{
-			auto mod = DvHeader.GetRpt2Module();
-			if (std::string::npos != std::string(TRANSCODED_MODULES).find(mod))
-			{
-				m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader));
-			}
-		}
-#endif
 		return true;
 	}
 
@@ -75,9 +70,8 @@ void CPacketStream::ClosePacketStream(void)
 	m_bOpen = false;
 	m_uiStreamId = 0;
 	m_OwnerClient.reset();
-#ifdef TRANSCODED_MODULES
-	m_CodecStream.reset();
-#endif
+	if (m_CodecStream)
+		m_CodecStream.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +86,6 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 		Packet->UpdatePids(m_uiPacketCntr++);
 	}
 	// transcoder avaliable ?
-#ifdef TRANSCODED_MODULES
 	if ( m_CodecStream )
 	{
 		// todo: verify no possibilty of double lock here
@@ -115,7 +108,6 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 		m_CodecStream->Unlock();
 	}
 	else
-#endif
 	{
 		// otherwise, push direct push
 		push(Packet);

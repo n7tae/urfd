@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "DCSClient.h"
 #include "DCSProtocol.h"
@@ -68,7 +68,7 @@ void CDcsProtocol::Task(void)
 		if ( IsValidDvPacket(Buffer, Header, Frame) )
 		{
 			// callsign muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dcs, Header->GetRpt2Module()) )
+			if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dcs, Header->GetRpt2Module()) )
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
@@ -80,18 +80,18 @@ void CDcsProtocol::Task(void)
 			std::cout << "DCS connect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dcs) && g_Reflector.IsValidModule(ToLinkModule) )
+			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::dcs) && g_Refl..IsValidModule(ToLinkModule) )
 			{
 				// valid module ?
-				if ( g_Reflector.IsValidModule(ToLinkModule) )
+				if ( g_Refl..IsValidModule(ToLinkModule) )
 				{
 					// acknowledge the request
 					EncodeConnectAckPacket(Callsign, ToLinkModule, &Buffer);
 					Send(Buffer, Ip);
 
 					// create the client and append
-					g_Reflector.GetClients()->AddClient(std::make_shared<CDcsClient>(Callsign, Ip, ToLinkModule));
-					g_Reflector.ReleaseClients();
+					g_Refl..GetClients()->AddClient(std::make_shared<CDcsClient>(Callsign, Ip, ToLinkModule));
+					g_Refl..ReleaseClients();
 				}
 				else
 				{
@@ -115,7 +115,7 @@ void CDcsProtocol::Task(void)
 			std::cout << "DCS disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find client
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dcs);
 			if ( client != nullptr )
 			{
@@ -125,21 +125,21 @@ void CDcsProtocol::Task(void)
 				EncodeConnectNackPacket(Callsign, ' ', &Buffer);
 				Send(Buffer, Ip);
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, &Callsign) )
 		{
 			//std::cout << "DCS keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find all clients with that callsign & ip and keep them alive
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::dcs, it)) != nullptr )
 			{
 				client->Alive();
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 		else if ( IsIgnorePacket(Buffer) )
 		{
@@ -193,24 +193,24 @@ void CDcsProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dcs);
+		std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::dcs);
 		if ( client )
 		{
 			// get client callsign
 			rpt1 = client->GetCallsign();
 			// and try to open the stream
-			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Reflector.ReleaseClients();
+		g_Refl..ReleaseClients();
 
 		// update last heard
-		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
-		g_Reflector.ReleaseUsers();
+		g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Refl..ReleaseUsers();
 	}
 }
 
@@ -253,7 +253,7 @@ void CDcsProtocol::HandleQueue(void)
 			if ( buffer.size() > 0 )
 			{
 				// and push it to all our clients linked to the module and who are not streaming in
-				CClients *clients = g_Reflector.GetClients();
+				CClients *clients = g_Refl..GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
 				while ( (client = clients->FindNextClient(EProtocol::dcs, it)) != nullptr )
@@ -266,7 +266,7 @@ void CDcsProtocol::HandleQueue(void)
 
 					}
 				}
-				g_Reflector.ReleaseClients();
+				g_Refl..ReleaseClients();
 			}
 		}
 	}
@@ -285,7 +285,7 @@ void CDcsProtocol::HandleKeepalives(void)
 	EncodeKeepAlivePacket(&keepalive1);
 
 	// iterate on clients
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::dcs, it)) != nullptr )
@@ -318,7 +318,7 @@ void CDcsProtocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

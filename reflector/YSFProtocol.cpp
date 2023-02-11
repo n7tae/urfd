@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "CRC.h"
 #include "YSFPayload.h"
@@ -119,7 +119,7 @@ void CYsfProtocol::Task(void)
 			else if ( IsValidDvHeaderPacket(Ip, Fich, Buffer, Header, Frames) )
 			{
 				// node linked and callsign muted?
-				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::ysf, Header->GetRpt2Module())  )
+				if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::ysf, Header->GetRpt2Module())  )
 				{
 					// handle it
 					OnDvHeaderPacketIn(Header, Ip);
@@ -138,14 +138,14 @@ void CYsfProtocol::Task(void)
 			//std::cout << "YSF keepalive/connect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::ysf) )
+			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::ysf) )
 			{
 				// acknowledge the request
 				EncodeConnectAckPacket(&Buffer);
 				Send(Buffer, Ip);
 
 				// add client if needed
-				CClients *clients = g_Reflector.GetClients();
+				CClients *clients = g_Refl..GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::ysf);
 				// client already connected ?
 				if ( client == nullptr )
@@ -168,7 +168,7 @@ void CYsfProtocol::Task(void)
 					client->Alive();
 				}
 				// and done
-				g_Reflector.ReleaseClients();
+				g_Refl..ReleaseClients();
 			}
 		}
 		else if ( IsValidDisconnectPacket(Buffer) )
@@ -176,7 +176,7 @@ void CYsfProtocol::Task(void)
 			std::cout << "YSF disconnect packet from " << Ip << std::endl;
 
 			// find client
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::ysf);
 			if ( client != nullptr )
 			{
@@ -186,7 +186,7 @@ void CYsfProtocol::Task(void)
 				//EncodeDisconnectPacket(&Buffer);
 				//Send(Buffer, Ip);
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 		else if ( IsValidwirexPacket(Buffer, &Fich, &Callsign, &iWiresxCmd, &iWiresxArg) )
 		{
@@ -263,7 +263,7 @@ void CYsfProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::ysf);
+		std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::ysf);
 		if ( client )
 		{
 			// get client callsign
@@ -274,20 +274,20 @@ void CYsfProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 			rpt2.SetCSModule(m);
 
 			// and try to open the stream
-			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Reflector.ReleaseClients();
+		g_Refl..ReleaseClients();
 
 		// update last heard
-		if ( g_Reflector.IsValidModule(rpt2.GetCSModule()) )
+		if ( g_Refl..IsValidModule(rpt2.GetCSModule()) )
 		{
-			g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
-			g_Reflector.ReleaseUsers();
+			g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
+			g_Refl..ReleaseUsers();
 		}
 	}
 }
@@ -346,7 +346,7 @@ void CYsfProtocol::HandleQueue(void)
 		if ( buffer.size() > 0 )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::ysf, it)) != nullptr )
@@ -359,7 +359,7 @@ void CYsfProtocol::HandleQueue(void)
 
 				}
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -375,7 +375,7 @@ void CYsfProtocol::HandleKeepalives(void)
 	// and disconnect them if not
 
 	// iterate on clients
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::ysf, it)) != nullptr )
@@ -395,7 +395,7 @@ void CYsfProtocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -506,7 +506,7 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 	{
 		// get stream id
 		//uint32_t uiStreamId = IpToStreamId(Ip);
-		
+
 		auto stream = GetStream(m_uiStreamId, &Ip);
 		if ( !stream )
 		{
@@ -531,10 +531,10 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 			CCallsign rpt2 = m_ReflectorCallsign;
 			rpt2.SetCSModule(' ');
 			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, Fich.getFN()));
-			
-			if ( g_GateKeeper.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::ysf, header->GetRpt2Module())  )
+
+			if ( g_Gate.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::ysf, header->GetRpt2Module())  )
 			{
-				OnDvHeaderPacketIn(header, Ip);	
+				OnDvHeaderPacketIn(header, Ip);
 			}
 		}
 
@@ -998,7 +998,7 @@ bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 	const std::string cs = YSF_REFLECTOR_NAME;
 	memcpy(callsign, cs.c_str(), cs.size() > 16 ? 16 : cs.size());
 #else
-	g_Reflector.GetCallsign().GetCallsign(callsign);
+	g_Refl..GetCallsign().GetCallsign(callsign);
 #endif
 	char sz[16];
 	::sprintf(sz, "%05u", CalcHash(callsign, 16) % 100000U);
@@ -1010,9 +1010,9 @@ bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 	memcpy(description, desc.c_str(), desc.size() > 14 ? 14 : desc.size());
 	Buffer->Append(description, 14);
 	// connected clients
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	int count = MIN(999, clients->GetSize());
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 	::sprintf(sz, "%03u", count);
 	Buffer->Append((uint8_t *)sz, 3);
 
@@ -1090,8 +1090,8 @@ bool CYsfProtocol::DebugTestDecodePacket(const CBuffer &Buffer)
 				std::cout << "Trailer" << std::endl;
 				std::cout << "length of payload : " << len << std::endl;
 				dump.Set(command, len);
-				dump.DebugDump(g_Reflector.m_DebugFile);
-				dump.DebugDumpAscii(g_Reflector.m_DebugFile);
+				dump.DebugDump(g_Refl..m_DebugFile);
+				dump.DebugDumpAscii(g_Refl..m_DebugFile);
 				break;
 			case YSF_FI_COMMUNICATIONS:
 				if ( Fich.getDT() == YSF_DT_DATA_FR_MODE )

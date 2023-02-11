@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "DExtraProtocol.h"
 #include "DPlusProtocol.h"
 #include "DCSProtocol.h"
@@ -80,15 +80,15 @@ bool CProtocols::Init(void)
 		m_Protocols.emplace_back(std::unique_ptr<CM17Protocol>(new CM17Protocol));
 		if (! m_Protocols.back()->Initialize("URF", EProtocol::m17, M17_PORT, M17_IPV4, M17_IPV6))
 			return false;
-			
+
 		m_Protocols.emplace_back(std::unique_ptr<CP25Protocol>(new CP25Protocol));
 		if (! m_Protocols.back()->Initialize("P25", EProtocol::p25, P25_PORT, P25_IPV4, P25_IPV6))
 			return false;
-			
+
 		m_Protocols.emplace_back(std::unique_ptr<CNXDNProtocol>(new CNXDNProtocol));
 		if (! m_Protocols.back()->Initialize("NXDN", EProtocol::nxdn, NXDN_PORT, NXDN_IPV4, NXDN_IPV6))
 			return false;
-			
+
 		m_Protocols.emplace_back(std::unique_ptr<CUSRPProtocol>(new CUSRPProtocol));
 		if (! m_Protocols.back()->Initialize("USRP", EProtocol::usrp, USRP_PORT, USRP_IPV4, USRP_IPV6))
 			return false;

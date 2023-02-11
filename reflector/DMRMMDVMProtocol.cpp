@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "DMRMMDVMClient.h"
 #include "DMRMMDVMProtocol.h"
@@ -93,7 +93,7 @@ void CDmrmmdvmProtocol::Task(void)
 	if ( Receive4(Buffer, Ip, 20) )
 #endif
 	{
-		//Buffer.DebugDump(g_Reflector.m_DebugFile);
+		//Buffer.DebugDump(g_Refl..m_DebugFile);
 		// crack the packet
 		if ( IsValidDvFramePacket(Buffer, Frames) )
 		{
@@ -105,7 +105,7 @@ void CDmrmmdvmProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Buffer, Header, &Cmd, &CallType) )
 		{
 			// callsign muted?
-			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dmrmmdvm) )
+			if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dmrmmdvm) )
 			{
 				// handle it
 				OnDvHeaderPacketIn(Header, Ip, Cmd, CallType);
@@ -120,7 +120,7 @@ void CDmrmmdvmProtocol::Task(void)
 			std::cout << "DMRmmdvm connect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dmrmmdvm) )
+			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::dmrmmdvm) )
 			{
 				// acknowledge the request
 				EncodeConnectAckPacket(&Buffer, Callsign, m_uiAuthSeed);
@@ -139,14 +139,14 @@ void CDmrmmdvmProtocol::Task(void)
 			std::cout << "DMRmmdvm authentication packet from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dmrmmdvm) )
+			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::dmrmmdvm) )
 			{
 				// acknowledge the request
 				EncodeAckPacket(&Buffer, Callsign);
 				Send(Buffer, Ip);
 
 				// add client if needed
-				CClients *clients = g_Reflector.GetClients();
+				CClients *clients = g_Refl..GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::dmrmmdvm);
 				// client already connected ?
 				if ( client == nullptr )
@@ -161,7 +161,7 @@ void CDmrmmdvmProtocol::Task(void)
 					client->Alive();
 				}
 				// and done
-				g_Reflector.ReleaseClients();
+				g_Refl..ReleaseClients();
 			}
 			else
 			{
@@ -176,13 +176,13 @@ void CDmrmmdvmProtocol::Task(void)
 			std::cout << "DMRmmdvm disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find client & remove it
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dmrmmdvm);
 			if ( client != nullptr )
 			{
 				clients->RemoveClient(client);
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 		else if ( IsValidConfigPacket(Buffer, &Callsign, Ip) )
 		{
@@ -197,7 +197,7 @@ void CDmrmmdvmProtocol::Task(void)
 			//std::cout << "DMRmmdvm keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find all clients with that callsign & ip and keep them alive
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::dmrmmdvm, it)) != nullptr )
@@ -209,7 +209,7 @@ void CDmrmmdvmProtocol::Task(void)
 				// and mark as alive
 				client->Alive();
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 		else if ( IsValidRssiPacket(Buffer, &Callsign, &iRssi) )
 		{
@@ -273,7 +273,7 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 		CCallsign rpt2(Header->GetRpt2Callsign());
 		// no stream open yet, open a new one
 		// firstfind this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dmrmmdvm);
+		std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::dmrmmdvm);
 		if ( client )
 		{
 			// process cmd if any
@@ -282,7 +282,7 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 				// not linked yet
 				if ( cmd == CMD_LINK )
 				{
-					if ( g_Reflector.IsValidModule(rpt2.GetCSModule()) )
+					if ( g_Refl..IsValidModule(rpt2.GetCSModule()) )
 					{
 						std::cout << "DMRmmdvm client " << client->GetCallsign() << " linking on module " << rpt2.GetCSModule() << std::endl;
 						// link
@@ -313,10 +313,10 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 			}
 
 			// and now, re-check module is valid && that it's not a private call
-			if ( g_Reflector.IsValidModule(rpt2.GetCSModule()) && (CallType == DMR_GROUP_CALL) )
+			if ( g_Refl..IsValidModule(rpt2.GetCSModule()) && (CallType == DMR_GROUP_CALL) )
 			{
 				// yes, try to open the stream
-				if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
+				if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
 				{
 					// keep the handle
 					m_Streams[stream->GetStreamId()] = stream;
@@ -330,13 +330,13 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 		}
 
 		// release
-		g_Reflector.ReleaseClients();
+		g_Refl..ReleaseClients();
 
 		// update last heard
 		if ( lastheard )
 		{
-			g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
-			g_Reflector.ReleaseUsers();
+			g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
+			g_Refl..ReleaseUsers();
 		}
 	}
 }
@@ -403,7 +403,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 		if ( buffer.size() > 0 )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::dmrmmdvm, it)) != nullptr )
@@ -416,7 +416,7 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 
 				}
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -432,7 +432,7 @@ void CDmrmmdvmProtocol::HandleKeepalives(void)
 	// and disconnect them if not
 
 	// iterate on clients
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::dmrmmdvm, it)) != nullptr )
@@ -456,7 +456,7 @@ void CDmrmmdvmProtocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -696,7 +696,7 @@ bool CDmrmmdvmProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::array<s
 			// debug
 			//CBuffer dump;
 			//dump.Set(dmrsync, 6);
-			//dump.DebugDump(g_Reflector.m_DebugFile);
+			//dump.DebugDump(g_Refl..m_DebugFile);
 
 			// and create 3 dv frames
 			// frame1
@@ -860,14 +860,14 @@ void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const C
 	uint8_t tag[] = { 'D','M','R','D' };
 	Buffer->Set(tag, sizeof(tag));
 	uint8_t cs[12];
-	
+
 	// DMR header
 	// uiSeqId
 	Buffer->Append((uint8_t)seqid);
 	// uiSrcId
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
 	DvFrame0.GetMyCallsign().GetCallsign(cs);
-	
+
     if(uiSrcId == 0){
 		uiSrcId = DvFrame0.GetMyCallsign().GetDmrid();
 	}
@@ -880,7 +880,7 @@ void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const C
 	if(uiSrcId == 0){
 		uiSrcId = DMRMMDVM_DEFAULTID;
 	}
-	
+
 	AppendDmrIdToBuffer(Buffer, uiSrcId);
 	// uiDstId = TG9
 	uint32_t uiDstId = 9; // ModuleToDmrDestId(Header.GetRpt2Module());
@@ -924,7 +924,7 @@ void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const C
 	// debug
 	//CBuffer dump;
 	//dump.Set(&(Buffer->data()[33]), 7);
-	//dump.DebugDump(g_Reflector.m_DebugFile);
+	//dump.DebugDump(g_Refl..m_DebugFile);
 
 	// BER
 	Buffer->Append((uint8_t)0);

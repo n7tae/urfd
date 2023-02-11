@@ -19,7 +19,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "Main.h"
+
 #include "CallsignList.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////

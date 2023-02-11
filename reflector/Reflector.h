@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include "Users.h"
 #include "Clients.h"
 #include "Peers.h"
@@ -40,19 +42,8 @@
 class CReflector
 {
 public:
-	// constructor
-	CReflector();
-
 	// destructor
-	virtual ~CReflector();
-
-	//
-	const CCallsign &GetCallsign(void) const         { return m_Callsign; }
-
-#ifdef TRANSCODER_IP
-	void SetTranscoderIp(const char *a, const int n) { memset(m_AmbedIp, 0, n); strncpy(m_AmbedIp, a, n-1); }
-	const char *GetTranscoderIp(void) const          { return m_AmbedIp; }
-#endif
+	~CReflector();
 
 	// operation
 	bool Start(void);
@@ -71,7 +62,8 @@ public:
 	bool IsStreaming(char);
 	void CloseStream(std::shared_ptr<CPacketStream>);
 
-	// users
+	// get
+	const CCallsign &GetCallsign(void) const        { return m_Callsign; }
 	CUsers  *GetUsers(void)                         { m_Users.Lock(); return &m_Users; }
 	void    ReleaseUsers(void)                      { m_Users.Unlock(); }
 
@@ -90,9 +82,6 @@ protected:
 	// threads
 	void RouterThread(const char);
 	void XmlReportThread(void);
-#ifdef JSON_MONITOR
-	void JsonReportThread(void);
-#endif
 
 	// streams
 	std::shared_ptr<CPacketStream> GetStream(char);
@@ -102,22 +91,10 @@ protected:
 	// xml helpers
 	void WriteXmlFile(std::ofstream &);
 
-#ifdef JSON_MONITOR
-	// json helpers
-	void SendJsonReflectorObject(CUdpSocket &, CIp &);
-	void SendJsonNodesObject(CUdpSocket &, CIp &);
-	void SendJsonStationsObject(CUdpSocket &, CIp &);
-	void SendJsonOnairObject(CUdpSocket &, CIp &, const CCallsign &);
-	void SendJsonOffairObject(CUdpSocket &, CIp &, const CCallsign &);
-#endif
-
 protected:
 	// identity
-	const CCallsign   m_Callsign;
-	const std::string m_Modules;
-#ifdef TRANSCODER_IP
-	char  m_AmbedIp[INET6_ADDRSTRLEN];
-#endif
+	CCallsign   m_Callsign;
+	std::string m_Modules, m_TCmodules;
 
 	// objects
 	CUsers     m_Users;            // sorted list of lastheard stations
@@ -127,22 +104,12 @@ protected:
 
 	// queues
 	std::unordered_map<char, std::shared_ptr<CPacketStream>> m_Stream;
-#ifdef TRANSCODED_MODULES
-	std::unordered_map<char, std::shared_ptr<CUnixDgramReader>> m_TCReader;
-#endif
 
 	// threads
 	std::atomic<bool> keep_running;
 	std::unordered_map<char, std::future<void>> m_RouterFuture;
 	std::future<void> m_XmlReportFuture;
-#ifdef JSON_MONITOR
-	std::future<void> m_JsonReportFuture;
-#endif
+
 	// notifications
 	CNotificationQueue  m_Notifications;
-
-public:
-#ifdef DEBUG_DUMPFILE
-	std::ofstream        m_DebugFile;
-#endif
 };

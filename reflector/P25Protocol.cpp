@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "P25Client.h"
 #include "P25Protocol.h"
@@ -93,7 +93,7 @@ void CP25Protocol::Task(void)
 			if( !m_uiStreamId && IsValidDvHeaderPacket(Ip, Buffer, Header) )
 			{
 				// callsign muted?
-				if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::p25) )
+				if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::p25) )
 				{
 					OnDvHeaderPacketIn(Header, Ip);
 				}
@@ -104,10 +104,10 @@ void CP25Protocol::Task(void)
 		else if ( IsValidConnectPacket(Buffer, &Callsign) )
 		{
 			// callsign authorized?
-			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::p25) )
+			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::p25) )
 			{
 				// add client if needed
-				CClients *clients = g_Reflector.GetClients();
+				CClients *clients = g_Refl..GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::p25);
 				// client already connected ?
 				if ( client == nullptr )
@@ -129,11 +129,11 @@ void CP25Protocol::Task(void)
 				{
 					client->Alive();
 				}
-				
+
 				// acknowledge the request -- P25Reflector simply echoes the packet
 				Send(Buffer, Ip);
 				// and done
-				g_Reflector.ReleaseClients();
+				g_Refl..ReleaseClients();
 			}
 		}
 		else if ( IsValidDisconnectPacket(Buffer, &Callsign) )
@@ -141,14 +141,14 @@ void CP25Protocol::Task(void)
 			std::cout << "P25 disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find client
-			CClients *clients = g_Reflector.GetClients();
+			CClients *clients = g_Refl..GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::p25);
 			if ( client != nullptr )
 			{
 				// remove it
 				clients->RemoveClient(client);
 			}
-			g_Reflector.ReleaseClients();
+			g_Refl..ReleaseClients();
 		}
 		else
 		{
@@ -197,7 +197,7 @@ void CP25Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::p25);
+		std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::p25);
 		if ( client )
 		{
 			// get client callsign
@@ -206,18 +206,18 @@ void CP25Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 			Header->SetRpt2Module(m);
 			rpt2.SetCSModule(m);
 			// and try to open the stream
-			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Reflector.ReleaseClients();
+		g_Refl..ReleaseClients();
 
 		// update last heard
-		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
-		g_Reflector.ReleaseUsers();
+		g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Refl..ReleaseUsers();
 	}
 }
 
@@ -256,7 +256,7 @@ void CP25Protocol::HandleQueue(void)
 			if ( buffer.size() > 0 )
 			{
 				// and push it to all our clients linked to the module and who are not streaming in
-				CClients *clients = g_Reflector.GetClients();
+				CClients *clients = g_Refl..GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
 				while ( (client = clients->FindNextClient(EProtocol::p25, it)) != nullptr )
@@ -269,7 +269,7 @@ void CP25Protocol::HandleQueue(void)
 
 					}
 				}
-				g_Reflector.ReleaseClients();
+				g_Refl..ReleaseClients();
 			}
 		}
 	}
@@ -308,7 +308,7 @@ bool CP25Protocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::un
 	{
 		int offset = 0;
 		bool last = false;
-		
+
 		switch (Buffer.data()[0U]) {
 		case 0x62U:
 			offset = 10U;
@@ -357,7 +357,7 @@ bool CP25Protocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::un
 		default:
 			break;
 		}
-		
+
 		frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(&(Buffer.data()[offset]), m_uiStreamId, last));
 		return true;
 	}
@@ -388,18 +388,18 @@ void CP25Protocol::EncodeP25Packet(const CDvHeaderPacket &Header, const CDvFrame
 {
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
 	uint32_t uiRptrId = P25_REFID;
-	
+
 	if(uiSrcId == 0){
 		uiSrcId = DMRMMDVM_DEFAULTID;
 	}
-	
+
 	if(islast)
 	{
 		Buffer.resize(17);
 		::memcpy(Buffer.data(), REC80, 17U);
 		return;
 	}
-	
+
 	switch (iSeq % 18) {
 		case 0x00U:
 			Buffer.resize(22);
@@ -506,7 +506,7 @@ void CP25Protocol::EncodeP25Packet(const CDvHeaderPacket &Header, const CDvFrame
 void CP25Protocol::HandleKeepalives(void)
 {
 	// iterate on clients
-	CClients *clients = g_Reflector.GetClients();
+	CClients *clients = g_Refl..GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::p25, it)) != nullptr )
@@ -526,6 +526,5 @@ void CP25Protocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Reflector.ReleaseClients();
+	g_Refl..ReleaseClients();
 }
-
