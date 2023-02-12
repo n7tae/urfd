@@ -18,55 +18,37 @@
 # if you change these locations, make sure the sgs.service file is updated!
 # you will also break hard coded paths in the dashboard file, index.php.
 
+EXE = urfd
+
+INICHECK = inicheck
+
 include configure.mk
 
-# if you make changed in these two variable, you'll need to change things
-# in the main.h file as well as the systemd service file.
-BINDIR = /usr/local/bin
-CFGDIR = /usr/local/etc
-
-CC = g++
-
 ifeq ($(debug), true)
-CFLAGS = -ggdb3 -W -Werror -Wno-psabi -c -std=c++11 -MMD -MD -c
+CFLAGS = -ggdb3 -W -Werror -c -std=c++11 -MMD -MD
 else
-CFLAGS = -c -W -Werror -Wno-psabi -std=c++11 -MMD -MD -c
+CFLAGS = -W -Werror -std=c++11 -MMD -MD
 endif
 
-LDFLAGS=-pthread
+LDFLAGS=-pthread -lcurl
 
-URFSRCS = Buffer.cpp Callsign.cpp CallsignList.cpp CallsignListItem.cpp Client.cpp Clients.cpp DCSClient.cpp DCSProtocol.cpp DExtraClient.cpp DExtraPeer.cpp DExtraProtocol.cpp DPlusClient.cpp DPlusProtocol.cpp DVFramePacket.cpp DVHeaderPacket.cpp GateKeeper.cpp IP.cpp Notification.cpp Packet.cpp PacketStream.cpp PeerCallsignList.cpp Peer.cpp Peers.cpp Protocol.cpp Protocols.cpp Reflector.cpp SEProtocol.cpp UDPSocket.cpp User.cpp Users.cpp Version.cpp Main.cpp BMClient.cpp BMPeer.cpp BMProtocol.cpp BPTC19696.cpp CRC.cpp DMRIdDir.cpp DMRIdDirFile.cpp DMRIdDirHttp.cpp NXDNIdDir.cpp NXDNIdDirFile.cpp NXDNIdDirHttp.cpp DMRMMDVMClient.cpp DMRMMDVMProtocol.cpp DMRPlusClient.cpp DMRPlusProtocol.cpp Golay2087.cpp Golay24128.cpp Hamming.cpp M17Client.cpp M17CRC.cpp M17Packet.cpp M17Client.cpp M17Protocol.cpp NXDNClient.cpp NXDNProtocol.cpp P25Client.cpp P25Protocol.cpp QR1676.cpp RS129.cpp Semaphore.cpp USRPClient.cpp USRPProtocol.cpp Utils.cpp WiresXCmd.cpp WiresXCmdHandler.cpp WiresXInfo.cpp URFClient.cpp URFProtocol.cpp URFPeer.cpp YSFClient.cpp YSFConvolution.cpp YSFFich.cpp YSFNode.cpp YSFNodeDir.cpp YSFNodeDirFile.cpp YSFNodeDirHttp.cpp YSFPayload.cpp YSFProtocol.cpp YSFUtils.cpp
-
-G3SRCS = G3Client.cpp G3Protocol.cpp RawSocket.cpp UDPMsgSocket.cpp
-
-SRCS = $(URFSRCS)
-ifeq ($(use_g3), true)
-SRCS += $(G3SRCS)
-endif
-
-ifeq ($(ysf_db), true)
-LDFLAGS += `mysql_config --libs`
-endif
-
-ifdef tc_ip
-SRCS += CodecStream.cpp UnixDgramSocket.cpp
-endif
-
+SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
-EXE=urfd
-
-all : $(EXE)
+all : $(EXE) $(INICHECK)
 
 $(EXE) : $(OBJS)
-	$(CC) $^ -o $@ $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+$(INICHECK) : Configure.cpp Configure.h
+	$(CXX) -DINICHECK $(CFLAGS) $< -o $(INICHECK) -lcurl
 
 %.o : %.cpp
-	g++ $(CFLAGS) $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 clean :
-	$(RM) *.o *.d urfd
+	$(RM) *.o *.d $(EXE) $(INICHECK)
 
 -include $(DEPS)
 
@@ -74,9 +56,7 @@ install :
 	ln -f -s $(shell pwd)/$(EXE).blacklist $(CFGDIR)/$(EXE).blacklist
 	ln -f -s $(shell pwd)/$(EXE).whitelist $(CFGDIR)/$(EXE).whitelist
 	ln -f -s $(shell pwd)/$(EXE).interlink $(CFGDIR)/$(EXE).interlink
-ifeq ($(use_g3), true)
 	ln -f -s $(shell pwd)/$(EXE).terminal  $(CFGDIR)/$(EXE).terminal
-endif
 	cp -f ../systemd/$(EXE).service /etc/systemd/system/
 	cp -f $(EXE) $(BINDIR)
 	systemctl enable $(EXE).service

@@ -132,10 +132,8 @@ protected:
 	// identity
 	CCallsign       m_ReflectorCallsign;
 
+	// data
+	uint8_t m_Port;
 	// debug
 	CTimer      m_DebugTimer;
-
-#ifdef DEBUG
-	void Dump(const char *title, const uint8_t *pointer, int length);
-#endif
 };

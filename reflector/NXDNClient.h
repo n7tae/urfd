@@ -19,7 +19,9 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Client.h"
+
 class CNXDNClient : public CClient
 {
 public:

@@ -19,6 +19,8 @@
 #pragma once
 
 #include <string>
+
+#include "Defines.h"
 #include "Timer.h"
 #include "SEProtocol.h"
 #include "DVHeaderPacket.h"
@@ -117,4 +119,5 @@ protected:
 	uint32_t              m_GwAddress;
 	std::string         m_Modules;
 	time_t              m_LastModTime;
+	std::string         m_TerminalPath;
 };

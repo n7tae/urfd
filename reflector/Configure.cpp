@@ -441,7 +441,7 @@ bool CConfigure::ReadData(const std::string &path)
 					data[j.usrp.defaultcallsign] = cs;
 				}
 				else if (0 == key.compare(JCLIENTSPATH))
-					data[j.usrp.clientfilepath] == value;
+					data[j.usrp.clientfilepath] = value;
 				else
 					badParam(key);
 				break;
@@ -915,14 +915,14 @@ bool CConfigure::IsString(const std::string &key) const
 #ifdef INICHECK
 int main(int argc, char *argv[])
 {
-	if (argc == 2)
+	if (argc == 2 || argc == 3)
 	{
 		CConfigure d;
-		auto rval = d.ReadData(argv[1]);
-		d.Dump(true);
+		auto rval = d.ReadData(argv[argc-1]);
+		d.Dump((2==argc) ? false : true);
 		return rval ? EXIT_FAILURE : EXIT_SUCCESS;
 	}
-	std::cerr << "Usage: " << argv[0] << " FILENAME" << std::endl;
+	std::cerr << "Usage: " << argv[0] << " <x> FILENAME\nWhere <x> is anything.\nThis option only shows values whose key begins with an uppercase letter." << std::endl;
 	return EXIT_SUCCESS;
 }
 #endif

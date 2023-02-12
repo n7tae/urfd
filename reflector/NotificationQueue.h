@@ -32,12 +32,6 @@
 class CNotificationQueue
 {
 public:
-	// constructor
-	CNotificationQueue() {}
-
-	// destructor
-	~CNotificationQueue() {}
-
 	// lock
 	void Lock()                   { m_Mutex.lock(); }
 	void Unlock()                 { m_Mutex.unlock(); }

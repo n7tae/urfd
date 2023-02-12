@@ -22,8 +22,7 @@
 #include "USRPClient.h"
 #include "USRPProtocol.h"
 
-#include "Reflector.h"
-#include "GateKeeper.h"
+#include "Global.h"
 
 const uint8_t USRP_TYPE_VOICE = 0;
 const uint8_t USRP_TYPE_TEXT  = 2;
@@ -38,10 +37,13 @@ const uint8_t TLV_TAG_SET_INFO = 8;
 
 bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	// config data
+	m_DefaultCallsign.assign(g_Conf.GetString(g_Conf.j.usrp.defaultcallsign));
+	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Conf.j.usrp.autolinkmod);
 	CBuffer buffer;
 	m_uiStreamId = 0;
-	CCallsign cs(USRP_DEFAULT_CALLSIGN);
-	CClients *clients = g_Refl..GetClients();
+	CCallsign cs(m_DefaultCallsign.c_str());
+	CClients *clients = g_Refl.GetClients();
 	std::ifstream file;
 	std::streampos size;
 
@@ -49,7 +51,7 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
-	file.open(USRPCLIENTS_PATH, std::ios::in | std::ios::binary | std::ios::ate);
+	file.open(g_Conf.GetString(g_Conf.j.usrp.clientfilepath), std::ios::in | std::ios::binary | std::ios::ate);
 	if ( file.is_open() )
 	{
 		// read file
@@ -83,9 +85,9 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 					uint32_t ui = atoi(port);
 					CIp Ip(AF_INET, ui, ip);
 					auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
-#if USRP_AUTOLINK_ENABLE
-					newclient->SetReflectorModule(USRP_AUTOLINK_MODULE);
-#endif
+					if (m_AutolinkModule)
+						newclient->SetReflectorModule(m_AutolinkModule);
+
 					clients->AddClient(newclient);
 				}
 			}
@@ -93,7 +95,7 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 		}
 	}
 
-	g_Refl..ReleaseClients();
+	g_Refl.ReleaseClients();
 	// update time
 	m_LastKeepaliveTime.start();
 
@@ -192,7 +194,7 @@ void CUSRPProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header,
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::usrp);
+		std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::usrp);
 		if ( client )
 		{
 			// get client callsign
@@ -201,18 +203,18 @@ void CUSRPProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header,
 			Header->SetRpt2Module(m);
 			rpt2.SetCSModule(m);
 			// and try to open the stream
-			if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Refl..ReleaseClients();
+		g_Refl.ReleaseClients();
 
 		// update last heard
-		g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
-		g_Refl..ReleaseUsers();
+		g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Refl.ReleaseUsers();
 	}
 }
 
@@ -249,7 +251,7 @@ void CUSRPProtocol::HandleQueue(void)
 		if ( buffer.size() > 0 )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::usrp, it)) != nullptr )
@@ -261,7 +263,7 @@ void CUSRPProtocol::HandleQueue(void)
 					Send(buffer, client->GetIp());
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -279,8 +281,8 @@ bool CUSRPProtocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::u
 		if ( !stream )
 		{
 			m_uiStreamId = static_cast<uint32_t>(::rand());
-			CCallsign csMY = CCallsign(USRP_DEFAULT_CALLSIGN);
-			CCallsign rpt1 = CCallsign(USRP_DEFAULT_CALLSIGN);
+			CCallsign csMY = CCallsign(m_DefaultCallsign.c_str());
+			CCallsign rpt1 = CCallsign(m_DefaultCallsign.c_str());
 			CCallsign rpt2 = m_ReflectorCallsign;
 			rpt1.SetCSModule(USRP_MODULE_ID);
 			rpt2.SetCSModule(' ');
@@ -375,7 +377,7 @@ void CUSRPProtocol::EncodeUSRPPacket(const CDvHeaderPacket &Header, const CDvFra
 void CUSRPProtocol::HandleKeepalives(void)
 {
 	// iterate on clients
-	CClients *clients = g_Refl..GetClients();
+	CClients *clients = g_Refl.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::usrp, it)) != nullptr )
@@ -395,5 +397,5 @@ void CUSRPProtocol::HandleKeepalives(void)
 		//}
 
 	}
-	g_Refl..ReleaseClients();
+	g_Refl.ReleaseClients();
 }

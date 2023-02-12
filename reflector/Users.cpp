@@ -18,7 +18,7 @@
 
 
 #include "Users.h"
-#include "Reflector.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -28,6 +28,7 @@ CUsers::CUsers() {}
 ////////////////////////////////////////////////////////////////////////////////////////
 // users management
 
+#define LASTHEARD_USERS_MAX_SIZE 20
 void CUsers::AddUser(const CUser &user)
 {
 	// add
@@ -40,7 +41,7 @@ void CUsers::AddUser(const CUser &user)
 	}
 
 	// notify
-	g_Refl..OnUsersChanged();
+	g_Refl.OnUsersChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ void CUsers::AddUser(const CUser &user)
 
 void CUsers::Hearing(const CCallsign &my, const CCallsign &rpt1, const CCallsign &rpt2)
 {
-	Hearing(my, rpt1, rpt2, g_Refl..GetCallsign());
+	Hearing(my, rpt1, rpt2, g_Refl.GetCallsign());
 }
 
 void CUsers::Hearing(const CCallsign &my, const CCallsign &rpt1, const CCallsign &rpt2, const CCallsign &xlx)

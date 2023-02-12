@@ -40,4 +40,6 @@ private:
 	CsNodeMap m_map;
 
 	bool HttpGet(const char *, const char *, int, CBuffer &);
+
+	unsigned m_DefaultTx, m_DefaultRx;
 };

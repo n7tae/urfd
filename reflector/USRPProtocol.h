@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Timer.h"
 #include "Protocol.h"
 #include "DVHeaderPacket.h"
@@ -53,7 +54,7 @@ protected:
 	// queue helper
 	void HandleQueue(void);
 	void HandleKeepalives(void);
-	
+
 	// stream helpers
 	void OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &, const CIp &);
 
@@ -72,4 +73,8 @@ protected:
 	// for queue header caches
 	std::unordered_map<char, CUSRPStreamCacheItem> m_StreamsCache;
 	uint32_t m_uiStreamId;
+
+	// config data
+	std::string m_DefaultCallsign;
+	char m_AutolinkModule;
 };

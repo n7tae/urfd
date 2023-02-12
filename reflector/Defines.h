@@ -46,25 +46,31 @@
 #define DSTAR_IPV4 true
 #define DMR_IPV4 true
 #define YSF_IPV4 true
-#define BM_IPV4 true
+#define XLX_IPV4 true
 #define M17_IPV4 true
+#define P25_IPV4 true
+#define NXDN_IPV4 true
+#define USRP_IPV4 true
 #define URF_IPV4 true
 
-#define DSTAR_IPV6 true
+
+#define DSTAR_IPV6 true	// QnetGateway can use IPv6
 #define DMR_IPV6 false
 #define YSF_IPV6 false
-#define BM_IPV6 false
+#define XLX_IPV6 false
 #define M17_IPV6 true
+#define P25_IPV6 false
+#define NXDN_IPV6 false
+#define USRP_IPV6 false
 #define URF_IPV6 true
 
 // protocols ---------------------------------------------------
 
-enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm, ysf, m17 };
+enum class EProtocol { any, none, dextra, dplus, dcs, g3, bm, urf, dmrplus, dmrmmdvm, nxdn, p25, usrp, ysf, m17 };
 
 // DExtra
 #define DEXTRA_KEEPALIVE_PERIOD         3                                   // in seconds
 #define DEXTRA_KEEPALIVE_TIMEOUT        (DEXTRA_KEEPALIVE_PERIOD*10)        // in seconds
-#define DEXTRA_RECONNECT_PERIOD         5                                   // in seconds
 
 // DPlus
 #define DPLUS_KEEPALIVE_PERIOD          1                                   // in seconds
@@ -77,7 +83,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 
 // XLX, used for BM
 #define BM_KEEPALIVE_PERIOD             1                                   // in seconds
-#define BM_KEEPALIVE_TIMEOUT            (XLX_KEEPALIVE_PERIOD*30)           // in seconds
+#define BM_KEEPALIVE_TIMEOUT            (BM_KEEPALIVE_PERIOD*30)           // in seconds
 #define BM_RECONNECT_PERIOD             5                                   // in seconds
 
 // URF
@@ -89,6 +95,7 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 #define DMRPLUS_KEEPALIVE_PERIOD        1                                   // in seconds
 #define DMRPLUS_KEEPALIVE_TIMEOUT       (DMRPLUS_KEEPALIVE_PERIOD*10)       // in seconds
 #define DMRPLUS_REFLECTOR_SLOT          DMR_SLOT2
+#define DMRPLUS_REFLECTOR_COLOUR        1
 
 // DMRMmdvm
 #define DMRMMDVM_KEEPALIVE_PERIOD       10                                  // in seconds
@@ -103,6 +110,18 @@ enum class EProtocol { any, none, dextra, dplus, dcs, bm, urf, dmrplus, dmrmmdvm
 // M17
 #define M17_KEEPALIVE_PERIOD			3
 #define M17_KEEPALIVE_TIMEOUT           (M17_KEEPALIVE_PERIOD*10)
+
+// P25
+#define P25_KEEPALIVE_PERIOD            3                                   // in seconds
+#define P25_KEEPALIVE_TIMEOUT           (P25_KEEPALIVE_PERIOD*10)         // in seconds
+
+// NXDN
+#define NXDN_KEEPALIVE_PERIOD          3                                   // in seconds
+#define NXDN_KEEPALIVE_TIMEOUT         (NXDN_KEEPALIVE_PERIOD*10)         // in seconds
+
+// USRP
+#define USRP_KEEPALIVE_PERIOD          1                                   // in seconds
+#define USRP_KEEPALIVE_TIMEOUT         (USRP_KEEPALIVE_PERIOD*10)         // in seconds
 
 // G3 Terminal
 #define G3_PRESENCE_PORT                12346                               // UDP port

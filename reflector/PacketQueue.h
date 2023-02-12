@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <mutex>
+#include <queue>
 #include "Packet.h"
 
 class CClient;

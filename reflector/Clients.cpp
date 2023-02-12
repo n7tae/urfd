@@ -17,13 +17,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#include "Reflector.h"
+#include "Global.h"
 #include "Clients.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
-
 
 CClients::CClients()
 {
@@ -66,7 +64,7 @@ void CClients::AddClient(std::shared_ptr<CClient> client)
 	}
 	std::cout << std::endl;
 	// notify
-	g_Refl..OnClientsChanged();
+	g_Refl.OnClientsChanged();
 }
 
 void CClients::RemoveClient(std::shared_ptr<CClient> client)
@@ -90,7 +88,7 @@ void CClients::RemoveClient(std::shared_ptr<CClient> client)
 				std::cout << std::endl;
 				m_Clients.erase(it);
 				// notify
-				g_Refl..OnClientsChanged();
+				g_Refl.OnClientsChanged();
 				break;
 			}
 		}

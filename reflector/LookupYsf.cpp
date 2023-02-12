@@ -22,11 +22,7 @@
 #include <mysql/mysql.h>
 #include <netdb.h>
 
-#include "Reflector.h"
-#include "LookupYsf.h"
-
-extern CReflector g_ref;
-extern CConfigure g_cfg;
+#include "Global.h"
 
 void CLookupYsf::ClearContents()
 {
@@ -35,13 +31,13 @@ void CLookupYsf::ClearContents()
 
 void CLookupYsf::LoadParameters()
 {
-	g_cfg.GetRefreshType(g_cfg.j.ysftxrxdb.mode, m_Type);
-	g_cfg.GetUnsigned(g_cfg.j.ysftxrxdb.refreshmin, m_Refresh);
-	g_cfg.GetString(g_cfg.j.ysftxrxdb.filepath, m_Path);
-	g_cfg.GetString(g_cfg.j.ysftxrxdb.hostname, m_Host);
-	g_cfg.GetString(g_cfg.j.ysftxrxdb.suffix, m_Suffix);
-	g_cfg.GetUnsigned(g_cfg.j.ysf.defaulttxfreq, m_DefaultTx);
-	g_cfg.GetUnsigned(g_cfg.j.ysf.defaultrxfreq, m_DefaultRx);
+	m_Type = g_Conf.GetRefreshType(g_Conf.j.ysftxrxdb.mode);
+	m_Refresh = g_Conf.GetUnsigned(g_Conf.j.ysftxrxdb.refreshmin);
+	m_Path.assign(g_Conf.GetString(g_Conf.j.ysftxrxdb.filepath));
+	m_Host.assign(g_Conf.GetString(g_Conf.j.ysftxrxdb.hostname));
+	m_Suffix.assign(g_Conf.GetString(g_Conf.j.ysftxrxdb.suffix));
+	m_DefaultTx = g_Conf.GetUnsigned(g_Conf.j.ysf.defaulttxfreq);
+	m_DefaultRx = g_Conf.GetUnsigned(g_Conf.j.ysf.defaultrxfreq);
 }
 
 bool CLookupYsf::LoadContentFile(CBuffer &buffer)
@@ -182,7 +178,7 @@ bool CLookupYsf::HttpGet(const char *hostname, const char *filename, int port, C
 			{
 				// send the GET request
 				char request[YSFNODE_HTTPGET_SIZEMAX];
-				sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_ref.GetCallsign().GetCS().c_str());
+				sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Conf.j.names.cs).c_str());
 				write(sock_id, request, strlen(request));
 
 				// config receive timeouts

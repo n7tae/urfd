@@ -60,7 +60,8 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_LastPacketTime.start();
 		return true;
 	}
-
+	if (m_CodecStream)
+		m_CodecStream->ResetStats(m_uiStreamId, m_DvHeader.GetCodecIn());
 	return false;
 }
 
@@ -71,7 +72,7 @@ void CPacketStream::ClosePacketStream(void)
 	m_uiStreamId = 0;
 	m_OwnerClient.reset();
 	if (m_CodecStream)
-		m_CodecStream.reset();
+		m_CodecStream->ReportStats();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

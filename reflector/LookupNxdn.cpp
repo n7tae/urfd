@@ -21,11 +21,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include "Reflector.h"
-#include "LookupNxdn.h"
-
-extern CReflector g_ref;
-extern CConfigure g_cfg;
+#include "Global.h"
 
 void CLookupNxdn::ClearContents()
 {
@@ -35,11 +31,11 @@ void CLookupNxdn::ClearContents()
 
 void CLookupNxdn::LoadParameters()
 {
-	g_cfg.GetRefreshType(g_cfg.j.nxdniddb.mode, m_Type);
-	g_cfg.GetUnsigned(g_cfg.j.nxdniddb.refreshmin, m_Refresh);
-	g_cfg.GetString(g_cfg.j.nxdniddb.filepath, m_Path);
-	g_cfg.GetString(g_cfg.j.dmriddb.hostname, m_Host);
-	g_cfg.GetString(g_cfg.j.nxdniddb.suffix, m_Suffix);
+	m_Type = g_Conf.GetRefreshType(g_Conf.j.nxdniddb.mode);
+	m_Refresh = g_Conf.GetUnsigned(g_Conf.j.nxdniddb.refreshmin);
+	m_Path.assign(g_Conf.GetString(g_Conf.j.nxdniddb.filepath));
+	m_Host.assign(g_Conf.GetString(g_Conf.j.nxdniddb.hostname));
+	m_Suffix.assign(g_Conf.GetString(g_Conf.j.nxdniddb.suffix));
 }
 
 const CCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid)
@@ -206,7 +202,7 @@ bool CLookupNxdn::HttpGet(const char *hostname, const char *filename, int port, 
 			{
 				// send the GET request
 				char request[NXDNID_HTTPGET_SIZEMAX];
-				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, (const char *)g_ref.GetCallsign());
+				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Conf.j.names.cs).c_str());
 				::write(sock_id, request, strlen(request));
 
 				// config receive timeouts

@@ -19,19 +19,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 #include <string.h>
 #include "YSFDefines.h"
 #include "YSFUtils.h"
 #include "Golay24128.h"
-
-////////////////////////////////////////////////////////////////////////////////////////
-// constants & defines
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-//
 
 void CYsfUtils::DecodeVD2Vchs(uint8_t *data, uint8_t **ambe)
 {

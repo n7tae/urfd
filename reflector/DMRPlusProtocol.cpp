@@ -18,11 +18,10 @@
 
 
 #include <string.h>
+
+#include "Global.h"
 #include "DMRPlusClient.h"
 #include "DMRPlusProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-#include "DMRIdDir.h"
 #include "BPTC19696.h"
 #include "RS129.h"
 #include "Golay2087.h"
@@ -111,7 +110,7 @@ void CDmrplusProtocol::Task(void)
 				Send(Buffer, Ip);
 
 				// add client if needed
-				CClients *clients = g_Refl..GetClients();
+				CClients *clients = g_Refl.GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::dmrplus);
 				// client already connected ?
 				if ( client == nullptr )
@@ -126,7 +125,7 @@ void CDmrplusProtocol::Task(void)
 					client->Alive();
 				}
 				// and done
-				g_Refl..ReleaseClients();
+				g_Refl.ReleaseClients();
 			}
 			else
 			{
@@ -141,13 +140,13 @@ void CDmrplusProtocol::Task(void)
 			std::cout << "DMRplus disconnect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << std::endl;
 
 			// find client & remove it
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dmrplus);
 			if ( client != nullptr )
 			{
 				clients->RemoveClient(client);
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 		else
 		{
@@ -196,21 +195,21 @@ void CDmrplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Head
 
 		// no stream open yet, open a new one
 		// find this client
-		std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::dmrplus);
+		std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::dmrplus);
 		if ( client )
 		{
 			// and try to open the stream
-			if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Refl..ReleaseClients();
+		g_Refl.ReleaseClients();
 		// update last heard
-		g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
-		g_Refl..ReleaseUsers();
+		g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Refl.ReleaseUsers();
 	}
 }
 
@@ -268,7 +267,7 @@ void CDmrplusProtocol::HandleQueue(void)
 		if ( buffer.size() > 0 )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::dmrplus, it)) != nullptr )
@@ -280,10 +279,10 @@ void CDmrplusProtocol::HandleQueue(void)
 					Send(buffer, client->GetIp());
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 
 			// debug
-			//buffer.DebugDump(g_Refl..m_DebugFile);
+			//buffer.DebugDump(g_Refl.m_DebugFile);
 		}
 	}
 	m_Queue.Unlock();
@@ -294,7 +293,7 @@ void CDmrplusProtocol::SendBufferToClients(const CBuffer &buffer, uint8_t module
 	if ( buffer.size() > 0 )
 	{
 		// and push it to all our clients linked to the module and who are not streaming in
-		CClients *clients = g_Refl..GetClients();
+		CClients *clients = g_Refl.GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
 		while ( (client = clients->FindNextClient(EProtocol::dmrplus, it)) != nullptr )
@@ -306,10 +305,10 @@ void CDmrplusProtocol::SendBufferToClients(const CBuffer &buffer, uint8_t module
 				Send(buffer, client->GetIp());
 			}
 		}
-		g_Refl..ReleaseClients();
+		g_Refl.ReleaseClients();
 
 		// debug
-		//buffer.DebugDump(g_Refl..m_DebugFile);
+		//buffer.DebugDump(g_Refl.m_DebugFile);
 	}
 }
 
@@ -324,7 +323,7 @@ void CDmrplusProtocol::HandleKeepalives(void)
 	// and disconnect them if not
 
 	// iterate on clients
-	CClients *clients = g_Refl..GetClients();
+	CClients *clients = g_Refl.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::dmrplus, it)) != nullptr )
@@ -349,7 +348,7 @@ void CDmrplusProtocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Refl..ReleaseClients();
+	g_Refl.ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -642,7 +641,7 @@ char CDmrplusProtocol::DmrDstIdToModule(uint32_t tg) const
 	// is it a 4xxx ?
 	if (tg > 4000 && tg < 4027) {
 		char mod = 'A' + (tg - 4001U);
-		if (strchr(ACTIVE_MODULES, mod))
+		if (g_Refl.IsValidModule(mod))
 		{
 			return mod;
 		}

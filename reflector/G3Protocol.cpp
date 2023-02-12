@@ -16,16 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-#include <string.h>
-#include <sys/stat.h>
-#include "G3Client.h"
-#include "G3Protocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <string.h>
+#include <sys/stat.h>
+
+#include "Global.h"
+#include "G3Client.h"
+#include "G3Protocol.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -34,10 +32,14 @@
 bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, const uint16_t /*port*/, const bool /*has_ipv4*/, const bool /*has_ipv6*/)
 // everything is hard coded until ICOM gets their act together and start supporting IPv6
 {
+	//config data
+	m_TerminalPath.assign(g_Conf.GetString(g_Conf.j.files.terminal));
+	const std::string ipv4address(g_Conf.GetString(g_Conf.j.ip.ipv4bind));
+
 	ReadOptions();
 
 	// init reflector apparent callsign
-	m_ReflectorCallsign = g_Refl..GetCallsign();
+	m_ReflectorCallsign = g_Refl.GetCallsign();
 
 	// reset stop flag
 	keep_running = true;
@@ -46,7 +48,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, con
 	//m_ReflectorCallsign.PatchCallsign(0, "XLX", 3);
 
 	// create our sockets
-	CIp ip(AF_INET, G3_DV_PORT, LISTEN_IPV4);
+	CIp ip(AF_INET, G3_DV_PORT, ipv4address.c_str());
 	if ( ip.IsSet() )
 	{
 		if (! m_Socket4.Open(ip))
@@ -177,7 +179,7 @@ void CG3Protocol::PresenceTask(void)
 				Buffer.Append(m_GwAddress);
 			}
 
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>extant = nullptr;
 			while ( (extant = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -219,7 +221,7 @@ void CG3Protocol::PresenceTask(void)
 					clients->AddClient(std::make_shared<CG3Client>(Terminal, Ip));
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 
 			m_PresenceSocket.Send(Buffer, ReqIp);
 		}
@@ -260,7 +262,7 @@ void CG3Protocol::ConfigTask(void)
 
 			if (isRepeaterCall)
 			{
-				if ((Call.HasSameCallsign(GetReflectorCallsign())) && (g_Refl..IsValidModule(Call.GetCSModule())))
+				if ((Call.HasSameCallsign(GetReflectorCallsign())) && (g_Refl.IsValidModule(Call.GetCSModule())))
 				{
 					Buffer.data()[3] = 0x00; // ok
 				}
@@ -343,7 +345,7 @@ void CG3Protocol::IcmpTask(void)
 	{
 		if (iIcmpType == ICMP_DEST_UNREACH)
 		{
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -354,7 +356,7 @@ void CG3Protocol::IcmpTask(void)
 					clients->RemoveClient(client);
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 	}
 }
@@ -378,7 +380,7 @@ void CG3Protocol::Task(void)
 	{
 		CIp ClIp;
 		CIp *BaseIp = nullptr;
-		CClients *clients = g_Refl..GetClients();
+		CClients *clients = g_Refl.GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
 		while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -394,7 +396,7 @@ void CG3Protocol::Task(void)
 				break;
 			}
 		}
-		g_Refl..ReleaseClients();
+		g_Refl.ReleaseClients();
 
 		if (BaseIp != nullptr)
 		{
@@ -454,7 +456,7 @@ void CG3Protocol::HandleQueue(void)
 		if ( EncodeDvPacket(*packet, buffer) )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -470,7 +472,7 @@ void CG3Protocol::HandleQueue(void)
 					}
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -487,7 +489,7 @@ void CG3Protocol::HandleKeepalives(void)
 	CBuffer keepalive((uint8_t *)"PING", 4);
 
 	// iterate on clients
-	CClients *clients = g_Refl..GetClients();
+	CClients *clients = g_Refl.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -502,7 +504,7 @@ void CG3Protocol::HandleKeepalives(void)
 			Send(keepalive, client->GetIp());
 		}
 	}
-	g_Refl..ReleaseClients();
+	g_Refl.ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -527,7 +529,7 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		CClients *clients = g_Refl..GetClients();
+		CClients *clients = g_Refl.GetClients();
 		auto it = clients->begin();
 		std::shared_ptr<CClient>client = nullptr;
 		while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -554,7 +556,7 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 					}
 					else
 					{
-						g_Refl..ReleaseClients();
+						g_Refl.ReleaseClients();
 						return;
 					}
 				}
@@ -563,19 +565,19 @@ void CG3Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 				rpt1 = client->GetCallsign();
 
 				// and try to open the stream
-				if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
+				if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
 				{
 					// keep the handle
 					m_Streams[stream->GetStreamId()] = stream;
 				}
 
 				// update last heard
-				g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
-				g_Refl..ReleaseUsers();
+				g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
+				g_Refl.ReleaseUsers();
 			}
 		}
 		// release
-		g_Refl..ReleaseClients();
+		g_Refl.ReleaseClients();
 	}
 }
 
@@ -672,14 +674,14 @@ void CG3Protocol::NeedReload(void)
 {
 	struct stat fileStat;
 
-	if (::stat(TERMINALOPTIONS_PATH, &fileStat) != -1)
+	if (::stat(m_TerminalPath.c_str(), &fileStat) != -1)
 	{
 		if (m_LastModTime != fileStat.st_mtime)
 		{
 			ReadOptions();
 
 			// we have new options - iterate on clients for potential removal
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::g3, it)) != nullptr )
@@ -690,7 +692,7 @@ void CG3Protocol::NeedReload(void)
 					clients->RemoveClient(client);
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 	}
 }
@@ -701,7 +703,7 @@ void CG3Protocol::ReadOptions(void)
 	int opts = 0;
 
 
-	std::ifstream file(TERMINALOPTIONS_PATH);
+	std::ifstream file(m_TerminalPath.c_str());
 	if (file.is_open())
 	{
 		m_GwAddress = 0u;
@@ -742,12 +744,12 @@ void CG3Protocol::ReadOptions(void)
 				}
 			}
 		}
-		std::cout << "G3 handler loaded " << opts << " options from file " << TERMINALOPTIONS_PATH << std::endl;
+		std::cout << "G3 handler loaded " << opts << " options from file " << m_TerminalPath << std::endl;
 		file.close();
 
 		struct stat fileStat;
 
-		if (::stat(TERMINALOPTIONS_PATH, &fileStat) != -1)
+		if (::stat(m_TerminalPath.c_str(), &fileStat) != -1)
 		{
 			m_LastModTime = fileStat.st_mtime;
 		}

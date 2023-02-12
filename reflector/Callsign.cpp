@@ -19,10 +19,7 @@
 
 #include <string.h>
 #include <cctype>
-#include "DMRIdDirFile.h"
-#include "DMRIdDirHttp.h"
-#include "NXDNIdDirFile.h"
-#include "NXDNIdDirHttp.h"
+#include "Global.h"
 #include "Callsign.h"
 
 // if a client is using special characters '.', '-' or '/', he's out of luck!
@@ -277,7 +274,7 @@ void CCallsign::SetNXDNid(uint16_t nxdnid, bool UpdateCallsign)
 	m_uiNXDNid = nxdnid;
 	if ( UpdateCallsign )
 	{
-		g_LDid.Lock();
+		g_LNid.Lock();
 		{
 			const CCallsign *callsign = g_LNid.FindCallsign(nxdnid);
 			if ( callsign != nullptr )

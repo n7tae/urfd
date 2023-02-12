@@ -21,11 +21,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include "Reflector.h"
-#include "LookupDmr.h"
-
-extern CReflector g_ref;
-extern CConfigure g_cfg;
+#include "Global.h"
 
 void CLookupDmr::ClearContents()
 {
@@ -35,11 +31,11 @@ void CLookupDmr::ClearContents()
 
 void CLookupDmr::LoadParameters()
 {
-	g_cfg.GetRefreshType(g_cfg.j.dmriddb.mode, m_Type);
-	g_cfg.GetUnsigned(g_cfg.j.dmriddb.refreshmin, m_Refresh);
-	g_cfg.GetString(g_cfg.j.dmriddb.filepath, m_Path);
-	g_cfg.GetString(g_cfg.j.dmriddb.hostname, m_Host);
-	g_cfg.GetString(g_cfg.j.dmriddb.suffix, m_Suffix);
+	m_Type = g_Conf.GetRefreshType(g_Conf.j.dmriddb.mode);
+	m_Refresh = g_Conf.GetUnsigned(g_Conf.j.dmriddb.refreshmin);
+	m_Path.assign(g_Conf.GetString(g_Conf.j.dmriddb.filepath));
+	m_Host.assign(g_Conf.GetString(g_Conf.j.dmriddb.hostname));
+	m_Suffix.assign(g_Conf.GetString(g_Conf.j.dmriddb.suffix));
 }
 
 uint32_t CLookupDmr::FindDmrid(const CCallsign &callsign)
@@ -204,7 +200,7 @@ bool CLookupDmr::HttpGet(const char *hostname, const char *filename, int port, C
 			{
 				// send the GET request
 				char request[DMRID_HTTPGET_SIZEMAX];
-				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_ref.GetCallsign().GetCS().c_str());
+				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Conf.j.names.cs).c_str());
 				::write(sock_id, request, strlen(request));
 
 				// config receive timeouts

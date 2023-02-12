@@ -18,11 +18,10 @@
 
 
 #include <string.h>
+
+#include "Global.h"
 #include "DPlusClient.h"
 #include "DPlusProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
@@ -97,8 +96,8 @@ void CDplusProtocol::Task(void)
 				Send(Buffer, Ip);
 
 				// create the client and append
-				g_Refl..GetClients()->AddClient(std::make_shared<CDplusClient>(Callsign, Ip));
-				g_Refl..ReleaseClients();
+				g_Refl.GetClients()->AddClient(std::make_shared<CDplusClient>(Callsign, Ip));
+				g_Refl.ReleaseClients();
 			}
 			else
 			{
@@ -113,7 +112,7 @@ void CDplusProtocol::Task(void)
 			std::cout << "DPlus disconnect packet from " << Ip << std::endl;
 
 			// find client
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dplus);
 			if ( client != nullptr )
 			{
@@ -123,21 +122,21 @@ void CDplusProtocol::Task(void)
 				EncodeDisconnectPacket(&Buffer);
 				Send(Buffer, Ip);
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 		else if ( IsValidKeepAlivePacket(Buffer) )
 		{
 			//std::cout << "DPlus keepalive packet from " << Ip << std::endl;
 
 			// find all clients with that callsign & ip and keep them alive
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Ip, EProtocol::dplus, it)) != nullptr )
 			{
 				client->Alive();
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 		else
 		{
@@ -185,10 +184,10 @@ void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// first, check module is valid
-		if ( g_Refl..IsValidModule(rpt2.GetCSModule()) )
+		if ( g_Refl.IsValidModule(rpt2.GetCSModule()) )
 		{
 			// find this client
-			std::shared_ptr<CClient>client = g_Refl..GetClients()->FindClient(Ip, EProtocol::dplus);
+			std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::dplus);
 			if ( client )
 			{
 				// now we know if it's a dextra dongle or a genuine dplus node
@@ -204,18 +203,18 @@ void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header
 				// get client callsign
 				rpt1 = client->GetCallsign();
 				// and try to open the stream
-				if ( (stream = g_Refl..OpenStream(Header, client)) != nullptr )
+				if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
 				{
 					// keep the handle
 					m_Streams[stream->GetStreamId()] = stream;
 				}
 			}
 			// release
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 
 			// update last heard
-			g_Refl..GetUsers()->Hearing(my, rpt1, rpt2);
-			g_Refl..ReleaseUsers();
+			g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
+			g_Refl.ReleaseUsers();
 		}
 		else
 		{
@@ -253,7 +252,7 @@ void CDplusProtocol::HandleQueue(void)
 			// and push it to all our clients who are not streaming in
 			// note that for dplus protocol, all stream of all modules are push to all clients
 			// it's client who decide which stream he's interrrested in
-			CClients *clients = g_Refl..GetClients();
+			CClients *clients = g_Refl.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::dplus, it)) != nullptr )
@@ -290,7 +289,7 @@ void CDplusProtocol::HandleQueue(void)
 					}
 				}
 			}
-			g_Refl..ReleaseClients();
+			g_Refl.ReleaseClients();
 		}
 	}
 	m_Queue.Unlock();
@@ -343,7 +342,7 @@ void CDplusProtocol::HandleKeepalives(void)
 	EncodeKeepAlivePacket(&keepalive);
 
 	// iterate on clients
-	CClients *clients = g_Refl..GetClients();
+	CClients *clients = g_Refl.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::dplus, it)) != nullptr )
@@ -371,7 +370,7 @@ void CDplusProtocol::HandleKeepalives(void)
 			clients->RemoveClient(client);
 		}
 	}
-	g_Refl..ReleaseClients();
+	g_Refl.ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

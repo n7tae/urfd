@@ -18,7 +18,7 @@
 
 
 #include "Timer.h"
-#include "GateKeeper.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -49,9 +49,9 @@ bool CGateKeeper::Init(void)
 {
 
 	// load lists from files
-	m_NodeWhiteList.LoadFromFile(WHITELIST_PATH);
-	m_NodeBlackList.LoadFromFile(BLACKLIST_PATH);
-	m_PeerList.LoadFromFile(INTERLINKLIST_PATH);
+	m_NodeWhiteList.LoadFromFile(g_Conf.GetString(g_Conf.j.files.white));
+	m_NodeBlackList.LoadFromFile(g_Conf.GetString(g_Conf.j.files.black));
+	m_PeerList.LoadFromFile(g_Conf.GetString(g_Conf.j.files.interlink));
 
 	// reset run flag
 	keep_running = true;

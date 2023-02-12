@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Client.h"
 
 class CG3Client : public CClient

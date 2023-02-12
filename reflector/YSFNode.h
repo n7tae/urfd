@@ -18,7 +18,7 @@
 
 #pragma once
 
-
+#include <cstdint>
 
 class CYsfNode
 {

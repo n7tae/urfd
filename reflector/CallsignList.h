@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <list>
+#include <mutex>
+
 #include "CallsignListItem.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -29,15 +32,12 @@ public:
 	// constructor
 	CCallsignList();
 
-	// destructor
-	virtual ~CCallsignList() {}
-
 	// locks
 	void Lock(void)                        { m_Mutex.lock(); }
 	void Unlock(void)                      { m_Mutex.unlock(); }
 
 	// file io
-	virtual bool LoadFromFile(const char *);
+	virtual bool LoadFromFile(const std::string &str);
 	bool ReloadFromFile(void);
 	bool NeedReload(void);
 
@@ -61,7 +61,7 @@ protected:
 
 	// data
 	std::mutex      m_Mutex;
-	const char *    m_Filename;
+	std::string     m_Filename;
 	time_t          m_LastModTime;
 	std::list<CCallsignListItem> m_Callsigns;
 };

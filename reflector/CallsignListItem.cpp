@@ -18,6 +18,8 @@
 
 #include <string.h>
 
+#include "Global.h"
+
 #include "CallsignListItem.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +33,7 @@ CCallsignListItem::CCallsignListItem()
 
 CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const CIp &ip, const char *modules)
 {
+	const std::string mods(g_Conf.GetString(g_Conf.j.modules.modules));
 	m_Callsign = callsign;
 	memset(m_szUrl, 0, sizeof(m_szUrl));
 	m_Ip = ip;
@@ -39,14 +42,14 @@ CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const CIp &ip, c
 		memset(m_Modules, 0, sizeof(m_Modules));
 		if ( modules[0] == '*' )
 		{
-			memcpy(m_Modules, ACTIVE_MODULES, sizeof(ACTIVE_MODULES));
+			memcpy(m_Modules, mods.c_str(), mods.size());
 		}
 		else
 		{
 			int n = MIN(::strlen(modules), sizeof(m_Modules)-1);
 			for (int i=0, j=0; i<n; i++)
 			{
-				if (strchr(ACTIVE_MODULES, modules[i]))
+				if (std::string::npos != mods.find(modules[i]))
 				{
 					m_Modules[j++] = modules[i];
 				}
@@ -57,6 +60,7 @@ CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const CIp &ip, c
 
 CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const char *url, const char *modules)
 {
+	const std::string mods(g_Conf.GetString(g_Conf.j.modules.modules));
 	m_Callsign = callsign;
 	::strncpy(m_szUrl, url, URL_MAXLEN);
 	m_Ip = CIp(m_szUrl);
@@ -65,14 +69,14 @@ CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const char *url,
 		memset(m_Modules, 0, sizeof(m_Modules));
 		if ( modules[0] == '*' )
 		{
-			memcpy(m_Modules, ACTIVE_MODULES, sizeof(ACTIVE_MODULES));
+			memcpy(m_Modules, mods.c_str(), mods.size());
 		}
 		else
 		{
 			int n = MIN(::strlen(modules), sizeof(m_Modules)-1);
 			for (int i=0, j=0; i<n; i++)
 			{
-				if (strchr(ACTIVE_MODULES, modules[i]))
+				if (std::string::npos != mods.find(modules[i]))
 				{
 					m_Modules[j++] = modules[i];
 				}

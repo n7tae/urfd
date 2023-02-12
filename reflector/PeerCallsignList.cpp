@@ -16,11 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <fstream>
 #include <string.h>
 
 #include "PeerCallsignList.h"
 
-bool CPeerCallsignList::LoadFromFile(const char *filename)
+bool CPeerCallsignList::LoadFromFile(const std::string &filename)
 {
 	bool ok = false;
 	char sz[256];

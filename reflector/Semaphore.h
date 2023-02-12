@@ -18,7 +18,8 @@
 
 #pragma once
 
-
+#include <mutex>
+#include <condition_variable>
 
 class CSemaphore
 {
@@ -39,6 +40,6 @@ protected:
 	// data
 	std::mutex              m_Mutex;
 	std::condition_variable m_Condition;
-	size_t                  m_Count;
+	std::size_t             m_Count;
 
 };

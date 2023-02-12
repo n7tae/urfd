@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Timer.h"
 #include "IP.h"
 #include "Callsign.h"
@@ -44,13 +45,13 @@ public:
 	const CCallsign &GetCallsign(void) const            { return m_Callsign; }
 	const CIp &GetIp(void) const                        { return m_Ip; }
 	bool HasModule(void) const                          { return m_Callsign.HasModule(); }
-	char GetCSModule(void) const                          { return m_Callsign.GetCSModule(); }
+	char GetCSModule(void) const                        { return m_Callsign.GetCSModule(); }
 	bool HasReflectorModule(void) const                 { return m_ReflectorModule != ' '; }
 	char GetReflectorModule(void) const                 { return m_ReflectorModule; }
 
 	// set
-	void SetCSModule(char c)                              { m_Callsign.SetCSModule(c); }
-	void SetReflectorModule(char c)                     { m_ReflectorModule = c; }
+	void SetCSModule(char c)                             { m_Callsign.SetCSModule(c); }
+	void SetReflectorModule(char c)                      { m_ReflectorModule = c; }
 
 	// identity
 	virtual EProtocol GetProtocol(void) const            { return EProtocol::none; }

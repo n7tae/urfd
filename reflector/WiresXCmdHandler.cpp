@@ -22,11 +22,9 @@
 #include "YSFFich.h"
 #include "YSFPayload.h"
 #include "YSFClient.h"
-#include "YSFNodeDirFile.h"
-#include "YSFNodeDirHttp.h"
 #include "YSFUtils.h"
-#include "Reflector.h"
 #include "WiresXCmdHandler.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -61,8 +59,8 @@ CWiresxCmdHandler::~CWiresxCmdHandler()
 bool CWiresxCmdHandler::Init(void)
 {
 	// fill our wiresx info
-	m_ReflectorWiresxInfo.SetCallsign(g_Refl..GetCallsign());
-	m_ReflectorWiresxInfo.SetNode(g_Refl..GetCallsign());
+	m_ReflectorWiresxInfo.SetCallsign(g_Refl.GetCallsign());
+	m_ReflectorWiresxInfo.SetNode(g_Refl.GetCallsign());
 	m_ReflectorWiresxInfo.SetName("Reflector");
 
 	// reset stop flag
@@ -141,7 +139,6 @@ void CWiresxCmdHandler::Task(void)
 	// handle it
 	if ( bCmd )
 	{
-		const char *modules = ACTIVE_MODULES;
 		// fill our info object
 		Info = m_ReflectorWiresxInfo;
 		g_LYtr.FindFrequencies(Cmd.GetCallsign(), &uiNodeTxFreq, &uiNodeRxFreq);
@@ -149,13 +146,13 @@ void CWiresxCmdHandler::Task(void)
 
 		// find our client and the module it's currentlink linked to
 		cModule = ' ';
-		CClients *clients = g_Refl..GetClients();
+		CClients *clients = g_Refl.GetClients();
 		std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 		if ( client )
 		{
 			cModule = client->GetReflectorModule();
 		}
-		g_Refl..ReleaseClients();
+		g_Refl.ReleaseClients();
 
 		// and crack the cmd
 		switch ( Cmd.GetCmd() )
@@ -173,19 +170,19 @@ void CWiresxCmdHandler::Task(void)
 			break;
 		case WIRESX_CMD_CONN_REQ:
 			cModule = 'A' + (char)(Cmd.GetArg() - 1);
-			if (::strchr(modules, cModule))
+			if (g_Refl.IsValidModule(cModule))
 			{
 				std::cout << "Wires-X CONN_REQ command to link on module " << cModule << " from " << Cmd.GetCallsign() << " at " << Cmd.GetIp() << std::endl;
 				// acknowledge
 				ReplyToWiresxConnReqPacket(Cmd.GetIp(), Info, cModule);
 				// change client's module
-				CClients *clients = g_Refl..GetClients();
+				CClients *clients = g_Refl.GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 				if ( client )
 				{
 					client->SetReflectorModule(cModule);
 				}
-				g_Refl..ReleaseClients();
+				g_Refl.ReleaseClients();
 			}
 			else
 			{
@@ -198,13 +195,13 @@ void CWiresxCmdHandler::Task(void)
 			ReplyToWiresxDiscReqPacket(Cmd.GetIp(), Info);
 			// change client's module
 			{
-				CClients *clients = g_Refl..GetClients();
+				CClients *clients = g_Refl.GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 				if ( client != nullptr )
 				{
 					client->SetReflectorModule(' ');
 				}
-				g_Refl..ReleaseClients();
+				g_Refl.ReleaseClients();
 			}
 			break;
 		case WIRESX_CMD_UNKNOWN:
@@ -337,8 +334,8 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
 
 	// number of entries
-	const char *modules = ACTIVE_MODULES;
-	uint NB_OF_MODULES = ::strlen(modules);
+	const std::string modules(g_Conf.GetString(g_Conf.j.modules.modules));
+	uint NB_OF_MODULES = modules.size();
 	uint total = NB_OF_MODULES;
 	uint n = NB_OF_MODULES - Start;
 	if (n > 20U)
@@ -741,8 +738,8 @@ bool CWiresxCmdHandler::DebugTestDecodePacket(const CBuffer &Buffer)
 				std::cout << "Trailer" << std::endl;
 				std::cout << "length of payload : " << len << std::endl;
 				dump.Set(command, len);
-				dump.DebugDump(g_Refl..m_DebugFile);
-				dump.DebugDumpAscii(g_Refl..m_DebugFile);
+				dump.DebugDump(g_Refl.m_DebugFile);
+				dump.DebugDumpAscii(g_Refl.m_DebugFile);
 				break;
 			case YSF_FI_COMMUNICATIONS:
 				if ( Fich.getDT() == YSF_DT_DATA_FR_MODE )
