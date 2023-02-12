@@ -133,4 +133,6 @@ protected:
 
 	// config data
 	char m_AutolinkModule;
+	unsigned m_RegistrationId;
+	std::string m_RegistrationName, m_RegistrationDesc;
 };

@@ -73,4 +73,6 @@ protected:
 	// time
 	CTimer m_LastKeepaliveTime;
 	CTimer m_LastPeersLinkTime;
+	// config data;
+	bool m_HasTranscoder;
 };

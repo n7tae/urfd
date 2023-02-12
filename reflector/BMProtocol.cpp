@@ -27,6 +27,7 @@
 
 bool CBMProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	m_HasTranscoder = g_Conf.IsString(g_Keys.modules.tcmodules);
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
@@ -225,11 +226,10 @@ void CBMProtocol::HandleQueue(void)
 						break;
 					case EProtoRev::ambe:
 					default:
-#ifdef TRANSCODED_MODULES
-						Send(buffer, client->GetIp());
-#else
-						Send(bufferLegacy, client->GetIp());
-#endif
+						if (m_HasTranscoder)
+							Send(buffer, client->GetIp());
+						else
+							Send(bufferLegacy, client->GetIp());
 						break;
 					}
 				}

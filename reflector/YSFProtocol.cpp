@@ -25,6 +25,9 @@
 #include "YSFProtocol.h"
 #include "Global.h"
 
+#define REG_NAME_SIZE 16
+#define REG_DESC_SIZE 14
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 CYsfProtocol::CYsfProtocol()
@@ -39,6 +42,11 @@ bool CYsfProtocol::Initialize(const char *type, const EProtocol ptype, const uin
 {
 	// config data
 	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.ysf.autolinkmod);
+	m_RegistrationId = g_Conf.GetUnsigned(g_Keys.ysf.ysfreflectordb.id);
+	m_RegistrationName.assign(g_Conf.GetString(g_Keys.ysf.ysfreflectordb.name));
+	m_RegistrationDesc.assign(g_Conf.GetString(g_Keys.ysf.ysfreflectordb.description));
+	m_RegistrationName.resize(REG_NAME_SIZE, ' ');
+	m_RegistrationDesc.resize(REG_DESC_SIZE, ' ');
 
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -982,32 +990,20 @@ bool CYsfProtocol::IsValidOptionsPacket(const CBuffer &Buffer) const
 bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 {
 	uint8_t tag[] = { 'Y','S','F','S' };
-	uint8_t description[14];
-	uint8_t callsign[16];
-#ifdef YSF_REFLECTOR_DESCRIPTION
-	const std::string desc = YSF_REFLECTOR_DESCRIPTION;
-#else
-	const std::string desc("URF Reflector");
-#endif
+	uint8_t description[REG_DESC_SIZE];
+	uint8_t callsign[REG_NAME_SIZE];
 	// tag
 	Buffer->Set(tag, sizeof(tag));
 	// hash
-	memset(callsign, ' ', sizeof(callsign));
-#ifdef YSF_REFLECTOR_NAME
-	const std::string cs = YSF_REFLECTOR_NAME;
-	memcpy(callsign, cs.c_str(), cs.size() > 16 ? 16 : cs.size());
-#else
-	g_Refl.GetCallsign().GetCallsign(callsign);
-#endif
+	memcpy(callsign, m_RegistrationName.c_str(), 16);
 	char sz[16];
-	::sprintf(sz, "%05u", CalcHash(callsign, 16) % 100000U);
+	::sprintf(sz, "%05u", CalcHash(callsign, REG_NAME_SIZE) % 100000U);
 	Buffer->Append((uint8_t *)sz, 5);
 	// name
-	Buffer->Append(callsign, 16);
+	Buffer->Append(callsign, REG_NAME_SIZE);
 	// description
-	memset(description, ' ', sizeof(description));
-	memcpy(description, desc.c_str(), desc.size() > 14 ? 14 : desc.size());
-	Buffer->Append(description, 14);
+	memcpy(description, m_RegistrationDesc.c_str(), REG_DESC_SIZE);
+	Buffer->Append(description, REG_DESC_SIZE);
 	// connected clients
 	CClients *clients = g_Refl.GetClients();
 	int count = MIN(999, clients->GetSize());
@@ -1021,10 +1017,7 @@ bool CYsfProtocol::EncodeServerStatusPacket(CBuffer *Buffer) const
 
 uint32_t CYsfProtocol::CalcHash(const uint8_t *buffer, int len) const
 {
-#ifdef YSF_REFLECTOR_ID
-	uint32_t hash = YSF_REFLECTOR_ID;
-#else
-	uint32_t hash = 0U;
+	uint32_t hash = m_RegistrationId;
 
 	for ( int i = 0; i < len; i++)
 	{
@@ -1032,7 +1025,6 @@ uint32_t CYsfProtocol::CalcHash(const uint8_t *buffer, int len) const
 		hash += (hash << 10);
 		hash ^= (hash >> 6);
 	}
-#endif
 
 	hash += (hash << 3);
 	hash ^= (hash >> 11);
