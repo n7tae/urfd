@@ -50,9 +50,9 @@ const uint8_t REC80[] = {0x80U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
 bool CP25Protocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// config data
-	m_ReflectorId = g_Conf.GetUnsigned(g_Conf.j.p25.reflectorid);
-	m_DefaultId   = g_Conf.GetUnsigned(g_Conf.j.mmdvm.defaultid);
-	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Conf.j.p25.autolinkmod);
+	m_ReflectorId = g_Conf.GetUnsigned(g_Keys.p25.reflectorid);
+	m_DefaultId   = g_Conf.GetUnsigned(g_Keys.mmdvm.defaultid);
+	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.p25.autolinkmod);
 
 	m_uiStreamId = 0;
 	// base class

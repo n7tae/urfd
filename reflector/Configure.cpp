@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <regex>
 
-#include "Configure.h"
+#include "Global.h"
 
 // ini file keywords
 #define JAUTOLINKMODULE          "AutoLinkModule"
@@ -183,7 +183,7 @@ bool CConfigure::ReadData(const std::string &path)
 	bool rval = false;
 	ESection section = ESection::none;
 	counter = 0;
-	REFLECTOR::DB *pdb;
+	SJsonKeys::DB *pdb;
 
 	//data.ysfalmodule = 0;
 	//data.DPlusPort = data.DCSPort = data.DExtraPort = data.BMPort = data.DMRPlusPort = 0;
@@ -287,32 +287,32 @@ bool CConfigure::ReadData(const std::string &path)
 		{
 			case ESection::names:
 				if (0 == key.compare(JCALLSIGN))
-					data[j.names.cs] = value;
+					data[g_Keys.names.cs] = value;
 				else if (0 == key.compare(JSYSOPEMAIL))
-					data[j.names.email] = value;
+					data[g_Keys.names.email] = value;
 				else if (0 == key.compare(JCOUNTRY))
-					data[j.names.country] = value.substr(0,2);
+					data[g_Keys.names.country] = value.substr(0,2);
 				else if (0 == key.compare(JSPONSOR))
-					data[j.names.sponsor] = value;
+					data[g_Keys.names.sponsor] = value;
 				else
 					badParam(key);
 				break;
 			case ESection::ip:
 				if (0 == key.compare(JIPV4BINDING))
 				{
-					data[j.ip.ipv4bind] = value;
+					data[g_Keys.ip.ipv4bind] = value;
 				}
 				else if (0 == key.compare(JIPV6BINDING))
 				{
-					data[j.ip.ipv6bind] = value;
+					data[g_Keys.ip.ipv6bind] = value;
 				}
 				else if (0 == key.compare(JIPV4EXTERNAL))
 				{
-					data[j.ip.ipv4address] = value;
+					data[g_Keys.ip.ipv4address] = value;
 				}
 				else if (0 == key.compare(JIPV6EXTERNAL))
 				{
-					data[j.ip.ipv6address] = value;
+					data[g_Keys.ip.ipv6address] = value;
 				}
 				else if (0 == key.compare(JTRANSCODER))
 				{
@@ -320,7 +320,7 @@ bool CConfigure::ReadData(const std::string &path)
 					{
 						std::cout << "WARNING: Line #" << counter << ": malformed transcoder address, '" << value << "', resetting..." << std::endl;
 					}
-					data[j.ip.transcoder] = "local";
+					data[g_Keys.ip.transcoder] = "local";
 				}
 				else
 					badParam(key);
@@ -334,7 +334,7 @@ bool CConfigure::ReadData(const std::string &path)
 						std::cerr << "ERROR: line #" << counter <<  ": no letters found in Modules: '" << m << "'" << std::endl;
 						rval = true;
 					} else
-						data[j.modules.modules] = m;
+						data[g_Keys.modules.modules] = m;
 				}
 				else if (0 == key.compare(JTRANSCODED))
 				{
@@ -344,7 +344,7 @@ bool CConfigure::ReadData(const std::string &path)
 						std::cerr << "ERROR: line #" << counter << ": no letters found in Transcoded: '" << m << "'" << std::endl;
 						rval = true;
 					} else
-						data[j.modules.tcmodules] = m;
+						data[g_Keys.modules.tcmodules] = m;
 				}
 				else if (0 == key.compare(0, 11, "Description"))
 				{
@@ -358,79 +358,79 @@ bool CConfigure::ReadData(const std::string &path)
 				break;
 			case ESection::bm:
 				if (0 == key.compare(JPORT))
-					data[j.bm.port] = getUnsigned(value, "Brandmeister Port", 1024, 65535, 10002);
+					data[g_Keys.bm.port] = getUnsigned(value, "Brandmeister Port", 1024, 65535, 10002);
 				else
 					badParam(key);
 				break;
 			case ESection::dcs:
 				if (0 == key.compare(JPORT))
-					data[j.dcs.port] = getUnsigned(value, "DCS Port", 1024, 65535, 30051);
+					data[g_Keys.dcs.port] = getUnsigned(value, "DCS Port", 1024, 65535, 30051);
 				else
 					badParam(key);
 				break;
 			case ESection::dextra:
 				if (0 == key.compare(JPORT))
-					data[j.dextra.port] = getUnsigned(value, "DExtra Port", 1024, 65535, 30001);
+					data[g_Keys.dextra.port] = getUnsigned(value, "DExtra Port", 1024, 65535, 30001);
 				else
 					badParam(key);
 				break;
 			case ESection::dmrplus:
 				if (0 == key.compare(JPORT))
-					data[j.dmrplus.port] = getUnsigned(value, "DMRPlus Port", 1024, 65535, 8880);
+					data[g_Keys.dmrplus.port] = getUnsigned(value, "DMRPlus Port", 1024, 65535, 8880);
 				else
 					badParam(key);
 				break;
 			case ESection::dplus:
 				if (0 == key.compare(JPORT))
-					data[j.dplus.port] = getUnsigned(value, "DPlus Port", 1024, 65535, 20001);
+					data[g_Keys.dplus.port] = getUnsigned(value, "DPlus Port", 1024, 65535, 20001);
 				else
 					badParam(key);
 				break;
 			case ESection::m17:
 				if (0 == key.compare(JPORT))
-					data[j.m17.port] = getUnsigned(value, "M17 Port", 1024, 65535, 17000);
+					data[g_Keys.m17.port] = getUnsigned(value, "M17 Port", 1024, 65535, 17000);
 				else
 					badParam(key);
 				break;
 			case ESection::mmdvm:
 				if (0 == key.compare(JPORT))
-					data[j.mmdvm.port] = getUnsigned(value, "MMDVM Port", 1024, 65535, 62030);
+					data[g_Keys.mmdvm.port] = getUnsigned(value, "MMDVM Port", 1024, 65535, 62030);
 				else if (0 == key.compare(JDEFAULTID))
-					data[j.mmdvm.defaultid] = getUnsigned(value, "MMDVM DefaultID", 0, 9999999, 0);
+					data[g_Keys.mmdvm.defaultid] = getUnsigned(value, "MMDVM DefaultID", 0, 9999999, 0);
 				else
 					badParam(key);
 				break;
 			case ESection::nxdn:
 				if (0 == key.compare(JPORT))
-					data[j.nxdn.port] = getUnsigned(value, "NDXN Port", 1024, 65535, 41400);
+					data[g_Keys.nxdn.port] = getUnsigned(value, "NDXN Port", 1024, 65535, 41400);
 				else if (0 == key.compare(JAUTOLINKMODULE))
-					setAutolink(JNXDN, j.nxdn.autolinkmod, value);
+					setAutolink(JNXDN, g_Keys.nxdn.autolinkmod, value);
 				else if (0 == key.compare(JREFLECTORID))
-					data[j.nxdn.reflectorid] = getUnsigned(value, "NXDN ReflectorID", 0, 65535, 0);
+					data[g_Keys.nxdn.reflectorid] = getUnsigned(value, "NXDN ReflectorID", 0, 65535, 0);
 				else
 					badParam(key);
 				break;
 			case ESection::p25:
 				if (0 == key.compare(JPORT))
-					data[j.p25.port] = getUnsigned(value, "P25 Port", 1024, 65535, 41000);
+					data[g_Keys.p25.port] = getUnsigned(value, "P25 Port", 1024, 65535, 41000);
 				else if (0 == key.compare(JAUTOLINKMODULE))
-					setAutolink(JP25, j.p25.autolinkmod, value);
+					setAutolink(JP25, g_Keys.p25.autolinkmod, value);
 				else if (0 == key.compare(JREFLECTORID))
-					data[j.p25.reflectorid] = getUnsigned(value, "P25 ReflectorID", 0, 16777215, 0);
+					data[g_Keys.p25.reflectorid] = getUnsigned(value, "P25 ReflectorID", 0, 16777215, 0);
 				else
 					badParam(key);
 				break;
 			case ESection::urf:
 				if (0 == key.compare(JPORT))
-					data[j.urf.port] = getUnsigned(value, "URF Port", 1024, 65535, 10017);
+					data[g_Keys.urf.port] = getUnsigned(value, "URF Port", 1024, 65535, 10017);
 				else
 					badParam(key);
 				break;
 			case ESection::usrp:
 				if (0 == key.compare(JPORT))
-					data[j.usrp.port] = getUnsigned(value, "USRP Port", 1024, 65535, 34001);
+					data[g_Keys.usrp.port] = getUnsigned(value, "USRP Port", 1024, 65535, 34001);
 				else if (0 == key.compare(JAUTOLINKMODULE))
-					setAutolink(JUSRP, j.usrp.autolinkmod, value);
+					setAutolink(JUSRP, g_Keys.usrp.autolinkmod, value);
 				else if (0 == key.compare(JDEFAULTCALLSIGN))
 				{
 					std::string cs;
@@ -438,35 +438,35 @@ bool CConfigure::ReadData(const std::string &path)
 						if (isalnum(c))
 							cs.append(1, toupper(c));
 					if (cs.size() > 7) cs.resize(7);
-					data[j.usrp.defaultcallsign] = cs;
+					data[g_Keys.usrp.defaultcallsign] = cs;
 				}
 				else if (0 == key.compare(JCLIENTSPATH))
-					data[j.usrp.clientfilepath] = value;
+					data[g_Keys.usrp.clientfilepath] = value;
 				else
 					badParam(key);
 				break;
 			case ESection::ysf:
 				if (0 == key.compare(JPORT))
-					data[j.ysf.port] = getUnsigned(value, "YSF Port", 1024, 65535, 42000);
+					data[g_Keys.ysf.port] = getUnsigned(value, "YSF Port", 1024, 65535, 42000);
 				else if (0 == key.compare(JAUTOLINKMODULE))
-					setAutolink(JYSF, j.ysf.autolinkmod, value);
+					setAutolink(JYSF, g_Keys.ysf.autolinkmod, value);
 				else if (0 == key.compare(JDEFAULTTXFREQ))
-					data[j.ysf.defaulttxfreq] = getUnsigned(value, "YSF DefaultTxFreq", 40000000, 2600000000, 439000000);
+					data[g_Keys.ysf.defaulttxfreq] = getUnsigned(value, "YSF DefaultTxFreq", 40000000, 2600000000, 439000000);
 				else if (0 == key.compare(JDEFAULTRXFREQ))
-					data[j.ysf.defaultrxfreq] = getUnsigned(value, "YSF DefaultRxFreq", 40000000, 2600000000, 439000000);
+					data[g_Keys.ysf.defaultrxfreq] = getUnsigned(value, "YSF DefaultRxFreq", 40000000, 2600000000, 439000000);
 				else if (0 == key.compare(JREGISTRATIONID))
-					data[j.ysf.ysfreflectordb.id] = getUnsigned(value, "YSF RegistrationID", 0, 9999999, 0);
+					data[g_Keys.ysf.ysfreflectordb.id] = getUnsigned(value, "YSF RegistrationID", 0, 9999999, 0);
 				else if (0 == key.compare(JREGISTRATIONNAME))
 				{
 					std::string name(value);
 					if (name.size() > 13) name.resize(13);
-					data[j.ysf.ysfreflectordb.name] = name;
+					data[g_Keys.ysf.ysfreflectordb.name] = name;
 				}
 				else if (0 == key.compare(JREGISTRATIONDESCRIPTION))
 				{
 					std::string desc(value);
 					if (desc.size() > 16) desc.resize(16);
-					data[j.ysf.ysfreflectordb.description] = desc;
+					data[g_Keys.ysf.ysfreflectordb.description] = desc;
 				}
 				else
 					badParam(key);
@@ -476,9 +476,9 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::ysffreq:
 				switch (section)
 				{
-					case ESection::dmrid:   pdb = &j.dmriddb;   break;
-					case ESection::nxdnid:  pdb = &j.nxdniddb;  break;
-					case ESection::ysffreq: pdb = &j.ysftxrxdb; break;
+					case ESection::dmrid:   pdb = &g_Keys.dmriddb;   break;
+					case ESection::nxdnid:  pdb = &g_Keys.nxdniddb;  break;
+					case ESection::ysffreq: pdb = &g_Keys.ysftxrxdb; break;
 				}
 				if (0 == key.compare(JHOSTNAME))
 					data[pdb->hostname] = value;
@@ -503,17 +503,17 @@ bool CConfigure::ReadData(const std::string &path)
 				break;
 			case ESection::files:
 				if (0 == key.compare(JPIDPATH))
-					data[j.files.pid] = value;
+					data[g_Keys.files.pid] = value;
 				else if (0 == key.compare(JJSONPATH))
-					data[j.files.json] = value;
+					data[g_Keys.files.json] = value;
 				else if (0 == key.compare(JWHITELISTPATH))
-					data[j.files.white] = value;
+					data[g_Keys.files.white] = value;
 				else if (0 == key.compare(JBLACKLISTPATH))
-					data[j.files.black] = value;
+					data[g_Keys.files.black] = value;
 				else if (0 == key.compare(JINTERLINKPATH))
-					data[j.files.interlink] = value;
+					data[g_Keys.files.interlink] = value;
 				else if (0 == key.compare(JG3TERMINALPATH))
-					data[j.files.terminal] = value;
+					data[g_Keys.files.terminal] = value;
 				else
 					badParam(key);
 				break;
@@ -526,9 +526,9 @@ bool CConfigure::ReadData(const std::string &path)
 
 	////////////////////////////// check the input
 	// Names section
-	if (isDefined(ErrorLevel::fatal, JNAMES, JCALLSIGN, j.names.cs, rval))
+	if (isDefined(ErrorLevel::fatal, JNAMES, JCALLSIGN, g_Keys.names.cs, rval))
 	{
-		const auto cs = data[j.names.cs].get<std::string>();
+		const auto cs = data[g_Keys.names.cs].get<std::string>();
 		auto RefRegEx = std::regex("^URF([A-Z0-9]){3,3}$", std::regex::extended);
 		if (! std::regex_match(cs, RefRegEx))
 		{
@@ -537,19 +537,19 @@ bool CConfigure::ReadData(const std::string &path)
 		}
 	}
 
-	isDefined(ErrorLevel::mild, JNAMES, JSYSOPEMAIL, j.names.email, rval);
-	isDefined(ErrorLevel::mild, JNAMES, JCOUNTRY, j.names.country, rval);
-	isDefined(ErrorLevel::mild, JNAMES, JSPONSOR, j.names.sponsor, rval);
+	isDefined(ErrorLevel::mild, JNAMES, JSYSOPEMAIL, g_Keys.names.email, rval);
+	isDefined(ErrorLevel::mild, JNAMES, JCOUNTRY, g_Keys.names.country, rval);
+	isDefined(ErrorLevel::mild, JNAMES, JSPONSOR, g_Keys.names.sponsor, rval);
 
 	// IP Address section
 	// ipv4 bind and external
-	if (isDefined(ErrorLevel::fatal, JIPADDRESSES, JIPV4BINDING, j.ip.ipv4bind, rval))
+	if (isDefined(ErrorLevel::fatal, JIPADDRESSES, JIPV4BINDING, g_Keys.ip.ipv4bind, rval))
 	{
-		if (std::regex_match(data[j.ip.ipv4bind].get<std::string>(), IPv4RegEx))
+		if (std::regex_match(data[g_Keys.ip.ipv4bind].get<std::string>(), IPv4RegEx))
 		{
-			if (data.contains(j.ip.ipv4address))
+			if (data.contains(g_Keys.ip.ipv4address))
 			{
-				auto v4 = data[j.ip.ipv4address].get<std::string>();
+				auto v4 = data[g_Keys.ip.ipv4address].get<std::string>();
 				if (std::regex_match(v4, IPv4RegEx))
 				{
 					if (ipv4.compare(v4))
@@ -565,7 +565,7 @@ bool CConfigure::ReadData(const std::string &path)
 			{
 				// make sure curl worked!
 				if (std::regex_match(ipv4, IPv4RegEx))
-					data[j.ip.ipv4address] = ipv4;
+					data[g_Keys.ip.ipv4address] = ipv4;
 				else
 				{
 					std::cerr << "ERROR: could not detect IPv4 address at this time" << std::endl;
@@ -575,19 +575,19 @@ bool CConfigure::ReadData(const std::string &path)
 		}
 		else
 		{
-			std::cerr << "ERROR: IPv4 binding address, " << data[j.ip.ipv4address].get<std::string>() << ", is malformed" << std::endl;
+			std::cerr << "ERROR: IPv4 binding address, " << data[g_Keys.ip.ipv4address].get<std::string>() << ", is malformed" << std::endl;
 			rval = true;
 		}
 	}
 
 	// ipv6 bind and external
-	if (data.contains(j.ip.ipv6bind))
+	if (data.contains(g_Keys.ip.ipv6bind))
 	{
-		if (std::regex_match(data[j.ip.ipv6bind].get<std::string>(), IPv6RegEx))
+		if (std::regex_match(data[g_Keys.ip.ipv6bind].get<std::string>(), IPv6RegEx))
 		{
-			if (data.contains(j.ip.ipv6address))
+			if (data.contains(g_Keys.ip.ipv6address))
 			{
-				auto v6 = data[j.ip.ipv6address].get<std::string>();
+				auto v6 = data[g_Keys.ip.ipv6address].get<std::string>();
 				if (std::regex_match(v6, IPv6RegEx))
 				{
 					if (ipv6.compare(v6))
@@ -603,7 +603,7 @@ bool CConfigure::ReadData(const std::string &path)
 			{
 				// make sure curl worked!
 				if (std::regex_match(ipv6, IPv6RegEx))
-					data[j.ip.ipv6address] = ipv6;
+					data[g_Keys.ip.ipv6address] = ipv6;
 				else
 				{
 					std::cerr << "ERROR: could not detect IPv6 address at this time" << std::endl;
@@ -613,23 +613,23 @@ bool CConfigure::ReadData(const std::string &path)
 		}
 		else
 		{
-			std::cerr << "ERROR: IPv6 binding address, " << data[j.ip.ipv6address].get<std::string>() << ", is malformed" << std::endl;
+			std::cerr << "ERROR: IPv6 binding address, " << data[g_Keys.ip.ipv6address].get<std::string>() << ", is malformed" << std::endl;
 			rval = true;
 		}
 	}
 	else
 	{
-		data[j.ip.ipv4bind] = nullptr;
-		data[j.ip.ipv6address] = nullptr;
+		data[g_Keys.ip.ipv4bind] = nullptr;
+		data[g_Keys.ip.ipv6address] = nullptr;
 	}
 
 	// Modules section
-	if (isDefined(ErrorLevel::fatal, JMODULES, JMODULES, j.modules.modules, rval))
+	if (isDefined(ErrorLevel::fatal, JMODULES, JMODULES, g_Keys.modules.modules, rval))
 	{
-		const auto mods(data[j.modules.modules].get<std::string>());
-		if (data.contains(j.modules.tcmodules))
+		const auto mods(data[g_Keys.modules.modules].get<std::string>());
+		if (data.contains(g_Keys.modules.tcmodules))
 		{
-			const auto tcmods(data[j.modules.tcmodules].get<std::string>());
+			const auto tcmods(data[g_Keys.modules.tcmodules].get<std::string>());
 
 			// how many transcoded modules
 			auto size = tcmods.size();
@@ -637,7 +637,7 @@ bool CConfigure::ReadData(const std::string &path)
 				std::cout << "WARNING: [" << JMODULES << "] " << JTRANSCODED << " doesn't define three (or one) modules" << std::endl;
 
 			// make sure each transcoded module is configured
-			for (auto c : data[j.modules.tcmodules])
+			for (auto c : data[g_Keys.modules.tcmodules])
 			{
 				if (std::string::npos == mods.find(c))
 				{
@@ -647,69 +647,69 @@ bool CConfigure::ReadData(const std::string &path)
 			}
 		}
 		else
-			data[j.modules.tcmodules] = nullptr;
+			data[g_Keys.modules.tcmodules] = nullptr;
 
 		// finally, check the module descriptions
 		for (unsigned i=0; i<26; i++)
 		{
 			if (std::string::npos == mods.find('A'+i))
 			{
-				if (data.contains(j.modules.descriptor[i]))
+				if (data.contains(g_Keys.modules.descriptor[i]))
 				{
-					std::cout << "WARNING: " << j.modules.descriptor[i] << " defined for an unconfigured module. Deleting..." << std::endl;
-					data.erase(j.modules.descriptor[i]);
+					std::cout << "WARNING: " << g_Keys.modules.descriptor[i] << " defined for an unconfigured module. Deleting..." << std::endl;
+					data.erase(g_Keys.modules.descriptor[i]);
 				}
 			}
 			else
 			{
-				if (! data.contains(j.modules.descriptor[i]))
+				if (! data.contains(g_Keys.modules.descriptor[i]))
 				{
 					std::string value("Module ");
 					value.append(1, 'A'+i);
-					std::cout << "WARNING: " << j.modules.descriptor[i] << " not found. Setting to " << value << std::endl;
-					data[j.modules.descriptor[i]] = value;
+					std::cout << "WARNING: " << g_Keys.modules.descriptor[i] << " not found. Setting to " << value << std::endl;
+					data[g_Keys.modules.descriptor[i]] = value;
 				}
 			}
 		}
 	}
 
 	// "simple" protocols with only a Port
-	isDefined(ErrorLevel::fatal, JBRANDMEISTER, JPORT, j.bm.port, rval);
-	isDefined(ErrorLevel::fatal, JDCS, JPORT, j.dcs.port, rval);
-	isDefined(ErrorLevel::fatal, JDEXTRA, JPORT, j.dextra.port, rval);
-	isDefined(ErrorLevel::fatal, JDMRPLUS, JPORT, j.dmrplus.port, rval);
-	isDefined(ErrorLevel::fatal, JDPLUS, JPORT, j.dplus.port, rval);
-	isDefined(ErrorLevel::fatal, JM17, JPORT, j.m17.port, rval);
-	isDefined(ErrorLevel::fatal, JURF, JPORT, j.urf.port, rval);
+	isDefined(ErrorLevel::fatal, JBRANDMEISTER, JPORT, g_Keys.bm.port, rval);
+	isDefined(ErrorLevel::fatal, JDCS, JPORT, g_Keys.dcs.port, rval);
+	isDefined(ErrorLevel::fatal, JDEXTRA, JPORT, g_Keys.dextra.port, rval);
+	isDefined(ErrorLevel::fatal, JDMRPLUS, JPORT, g_Keys.dmrplus.port, rval);
+	isDefined(ErrorLevel::fatal, JDPLUS, JPORT, g_Keys.dplus.port, rval);
+	isDefined(ErrorLevel::fatal, JM17, JPORT, g_Keys.m17.port, rval);
+	isDefined(ErrorLevel::fatal, JURF, JPORT, g_Keys.urf.port, rval);
 	// MMDVM
-	isDefined(ErrorLevel::fatal, JMMDVM, JPORT, j.mmdvm.port, rval);
-	isDefined(ErrorLevel::fatal, JMMDVM, JDEFAULTID, j.mmdvm.defaultid, rval);
+	isDefined(ErrorLevel::fatal, JMMDVM, JPORT, g_Keys.mmdvm.port, rval);
+	isDefined(ErrorLevel::fatal, JMMDVM, JDEFAULTID, g_Keys.mmdvm.defaultid, rval);
 	// NXDN
-	isDefined(ErrorLevel::fatal, JNXDN, JPORT, j.nxdn.port, rval);
-	checkAutoLink(JNXDN, JAUTOLINKMODULE, j.nxdn.autolinkmod, rval);
-	isDefined(ErrorLevel::fatal, JNXDN, JREFLECTORID, j.nxdn.reflectorid, rval);
+	isDefined(ErrorLevel::fatal, JNXDN, JPORT, g_Keys.nxdn.port, rval);
+	checkAutoLink(JNXDN, JAUTOLINKMODULE, g_Keys.nxdn.autolinkmod, rval);
+	isDefined(ErrorLevel::fatal, JNXDN, JREFLECTORID, g_Keys.nxdn.reflectorid, rval);
 	// P25
-	isDefined(ErrorLevel::fatal, JP25, JPORT, j.p25.port, rval);
-	checkAutoLink(JP25, JAUTOLINKMODULE, j.p25.autolinkmod, rval);
-	isDefined(ErrorLevel::fatal, JP25, JREFLECTORID, j.p25.reflectorid, rval);
+	isDefined(ErrorLevel::fatal, JP25, JPORT, g_Keys.p25.port, rval);
+	checkAutoLink(JP25, JAUTOLINKMODULE, g_Keys.p25.autolinkmod, rval);
+	isDefined(ErrorLevel::fatal, JP25, JREFLECTORID, g_Keys.p25.reflectorid, rval);
 	// USRP
-	isDefined(ErrorLevel::fatal, JUSRP, JPORT, j.usrp.port, rval);
-	checkAutoLink(JUSRP, JAUTOLINKMODULE, j.usrp.autolinkmod, rval);
-	isDefined(ErrorLevel::fatal, JUSRP, JDEFAULTCALLSIGN, j.usrp.defaultcallsign, rval);
-	isDefined(ErrorLevel::fatal, JUSRP, JCLIENTSPATH, j.usrp.clientfilepath, rval);
+	isDefined(ErrorLevel::fatal, JUSRP, JPORT, g_Keys.usrp.port, rval);
+	checkAutoLink(JUSRP, JAUTOLINKMODULE, g_Keys.usrp.autolinkmod, rval);
+	isDefined(ErrorLevel::fatal, JUSRP, JDEFAULTCALLSIGN, g_Keys.usrp.defaultcallsign, rval);
+	isDefined(ErrorLevel::fatal, JUSRP, JCLIENTSPATH, g_Keys.usrp.clientfilepath, rval);
 	// YSF
-	isDefined(ErrorLevel::fatal, JYSF, JPORT, j.ysf.port, rval);
-	checkAutoLink(JYSF, JAUTOLINKMODULE, j.ysf.autolinkmod, rval);
-	isDefined(ErrorLevel::fatal, JYSF, JDEFAULTRXFREQ, j.ysf.defaultrxfreq, rval);
-	isDefined(ErrorLevel::fatal, JYSF, JDEFAULTTXFREQ, j.ysf.defaulttxfreq, rval);
-	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONID, j.ysf.ysfreflectordb.id, rval);
-	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONNAME, j.ysf.ysfreflectordb.name, rval);
-	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONDESCRIPTION, j.ysf.ysfreflectordb.description, rval);
+	isDefined(ErrorLevel::fatal, JYSF, JPORT, g_Keys.ysf.port, rval);
+	checkAutoLink(JYSF, JAUTOLINKMODULE, g_Keys.ysf.autolinkmod, rval);
+	isDefined(ErrorLevel::fatal, JYSF, JDEFAULTRXFREQ, g_Keys.ysf.defaultrxfreq, rval);
+	isDefined(ErrorLevel::fatal, JYSF, JDEFAULTTXFREQ, g_Keys.ysf.defaulttxfreq, rval);
+	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONID, g_Keys.ysf.ysfreflectordb.id, rval);
+	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONNAME, g_Keys.ysf.ysfreflectordb.name, rval);
+	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONDESCRIPTION, g_Keys.ysf.ysfreflectordb.description, rval);
 	// Databases
-	std::list<std::pair<const std::string, const struct REFLECTOR::DB *>> dbs = {
-		{ JDMRIDDB,   &j.dmriddb   },
-		{ JNXDNIDDB,  &j.nxdniddb  },
-		{ JYSFTXRXDB, &j.ysftxrxdb }
+	std::list<std::pair<const std::string, const struct SJsonKeys::DB *>> dbs = {
+		{ JDMRIDDB,   &g_Keys.dmriddb   },
+		{ JNXDNIDDB,  &g_Keys.nxdniddb  },
+		{ JYSFTXRXDB, &g_Keys.ysftxrxdb }
 	};
 	for ( auto &item : dbs )
 	{
@@ -720,12 +720,12 @@ bool CConfigure::ReadData(const std::string &path)
 		isDefined(ErrorLevel::fatal, item.first, JFILEPATH,   item.second->filepath,   rval);
 	}
 	// Other files
-	isDefined(ErrorLevel::fatal, JFILES, JPIDPATH,        j.files.pid,       rval);
-	isDefined(ErrorLevel::fatal, JFILES, JJSONPATH,       j.files.json,      rval);
-	isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH,  j.files.white,     rval);
-	isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH,  j.files.black,     rval);
-	isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH,  j.files.interlink, rval);
-	isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, j.files.terminal,  rval);
+	isDefined(ErrorLevel::fatal, JFILES, JPIDPATH,        g_Keys.files.pid,       rval);
+	isDefined(ErrorLevel::fatal, JFILES, JJSONPATH,       g_Keys.files.json,      rval);
+	isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH,  g_Keys.files.white,     rval);
+	isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH,  g_Keys.files.black,     rval);
+	isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH,  g_Keys.files.interlink, rval);
+	isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, g_Keys.files.terminal,  rval);
 
 	return rval;
 }
@@ -752,8 +752,8 @@ void CConfigure::checkAutoLink(const std::string &section, const std::string &pn
 {
 	if (data.contains(key))
 	{
-		auto ismods = data.contains(j.modules.modules);
-		const auto mods(ismods ? data[j.modules.modules].get<std::string>() : "");
+		auto ismods = data.contains(g_Keys.modules.modules);
+		const auto mods(ismods ? data[g_Keys.modules.modules].get<std::string>() : "");
 		const auto c = data[key].get<std::string>().at(0);
 		if (std::string::npos == mods.find(c))
 		{
@@ -913,16 +913,18 @@ bool CConfigure::IsString(const std::string &key) const
 }
 
 #ifdef INICHECK
+SJsonKeys g_Keys;
 int main(int argc, char *argv[])
 {
-	if (argc == 2 || argc == 3)
+	if (3 == argc && strlen(argv[1]) > 1 && '-' == argv[1][0])
 	{
 		CConfigure d;
-		auto rval = d.ReadData(argv[argc-1]);
-		d.Dump((2==argc) ? false : true);
+		auto rval = d.ReadData(argv[2]);
+		if ('q' != argv[1][1])
+			d.Dump(('n' == argv[1][1]) ? true : false);
 		return rval ? EXIT_FAILURE : EXIT_SUCCESS;
 	}
-	std::cerr << "Usage: " << argv[0] << " <x> FILENAME\nWhere <x> is anything.\nThis option only shows values whose key begins with an uppercase letter." << std::endl;
+	std::cerr << "Usage: " << argv[0] << " -(q|n|v) FILENAME\nWhere:\n\t-q just prints warnings and errors.\n\t-n also prints keys that begin with an uppercase letter.\n\t-v prints all keys, warnings and errors." << std::endl;
 	return EXIT_SUCCESS;
 }
 #endif

@@ -38,7 +38,7 @@ CYsfProtocol::CYsfProtocol()
 bool CYsfProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// config data
-	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Conf.j.ysf.autolinkmod);
+	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.ysf.autolinkmod);
 
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))

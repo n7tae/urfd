@@ -21,6 +21,7 @@
 #include "LookupDmr.h"
 #include "LookupNxdn.h"
 #include "LookupYsf.h"
+#include "JsonKeys.h"
 
 extern CReflector  g_Refl;
 extern CGateKeeper g_Gate;
@@ -29,3 +30,4 @@ extern CVersion    g_Vers;
 extern CLookupDmr  g_LDid;
 extern CLookupNxdn g_LNid;
 extern CLookupYsf  g_LYtr;
+extern SJsonKeys   g_Keys;

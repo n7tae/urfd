@@ -31,13 +31,13 @@ void CLookupYsf::ClearContents()
 
 void CLookupYsf::LoadParameters()
 {
-	m_Type = g_Conf.GetRefreshType(g_Conf.j.ysftxrxdb.mode);
-	m_Refresh = g_Conf.GetUnsigned(g_Conf.j.ysftxrxdb.refreshmin);
-	m_Path.assign(g_Conf.GetString(g_Conf.j.ysftxrxdb.filepath));
-	m_Host.assign(g_Conf.GetString(g_Conf.j.ysftxrxdb.hostname));
-	m_Suffix.assign(g_Conf.GetString(g_Conf.j.ysftxrxdb.suffix));
-	m_DefaultTx = g_Conf.GetUnsigned(g_Conf.j.ysf.defaulttxfreq);
-	m_DefaultRx = g_Conf.GetUnsigned(g_Conf.j.ysf.defaultrxfreq);
+	m_Type = g_Conf.GetRefreshType(g_Keys.ysftxrxdb.mode);
+	m_Refresh = g_Conf.GetUnsigned(g_Keys.ysftxrxdb.refreshmin);
+	m_Path.assign(g_Conf.GetString(g_Keys.ysftxrxdb.filepath));
+	m_Host.assign(g_Conf.GetString(g_Keys.ysftxrxdb.hostname));
+	m_Suffix.assign(g_Conf.GetString(g_Keys.ysftxrxdb.suffix));
+	m_DefaultTx = g_Conf.GetUnsigned(g_Keys.ysf.defaulttxfreq);
+	m_DefaultRx = g_Conf.GetUnsigned(g_Keys.ysf.defaultrxfreq);
 }
 
 bool CLookupYsf::LoadContentFile(CBuffer &buffer)
@@ -178,7 +178,7 @@ bool CLookupYsf::HttpGet(const char *hostname, const char *filename, int port, C
 			{
 				// send the GET request
 				char request[YSFNODE_HTTPGET_SIZEMAX];
-				sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Conf.j.names.cs).c_str());
+				sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Keys.names.cs).c_str());
 				write(sock_id, request, strlen(request));
 
 				// config receive timeouts

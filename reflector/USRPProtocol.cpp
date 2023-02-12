@@ -38,8 +38,8 @@ const uint8_t TLV_TAG_SET_INFO = 8;
 bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// config data
-	m_DefaultCallsign.assign(g_Conf.GetString(g_Conf.j.usrp.defaultcallsign));
-	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Conf.j.usrp.autolinkmod);
+	m_DefaultCallsign.assign(g_Conf.GetString(g_Keys.usrp.defaultcallsign));
+	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.usrp.autolinkmod);
 	CBuffer buffer;
 	m_uiStreamId = 0;
 	CCallsign cs(m_DefaultCallsign.c_str());
@@ -51,7 +51,7 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
-	file.open(g_Conf.GetString(g_Conf.j.usrp.clientfilepath), std::ios::in | std::ios::binary | std::ios::ate);
+	file.open(g_Conf.GetString(g_Keys.usrp.clientfilepath), std::ios::in | std::ios::binary | std::ios::ate);
 	if ( file.is_open() )
 	{
 		// read file

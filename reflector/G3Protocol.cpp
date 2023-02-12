@@ -33,8 +33,8 @@ bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, con
 // everything is hard coded until ICOM gets their act together and start supporting IPv6
 {
 	//config data
-	m_TerminalPath.assign(g_Conf.GetString(g_Conf.j.files.terminal));
-	const std::string ipv4address(g_Conf.GetString(g_Conf.j.ip.ipv4bind));
+	m_TerminalPath.assign(g_Conf.GetString(g_Keys.files.terminal));
+	const std::string ipv4address(g_Conf.GetString(g_Keys.ip.ipv4bind));
 
 	ReadOptions();
 

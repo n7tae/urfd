@@ -53,8 +53,8 @@ CNXDNProtocol::CNXDNProtocol()
 bool CNXDNProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// config value
-	m_ReflectorId = g_Conf.GetUnsigned(g_Conf.j.nxdn.reflectorid);
-	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Conf.j.nxdn.autolinkmod);
+	m_ReflectorId = g_Conf.GetUnsigned(g_Keys.nxdn.reflectorid);
+	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.nxdn.autolinkmod);
 
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))

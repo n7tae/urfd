@@ -30,6 +30,7 @@ CVersion    g_Vers(3,0,0); // The major byte should only change if the interlink
 CLookupDmr  g_LDid;
 CLookupNxdn g_LNid;
 CLookupYsf  g_LYtr;
+SJsonKeys   g_Keys;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -45,8 +46,8 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 
 	// remove pidfile
-	const std::string pidpath(g_Conf.GetString(g_Conf.j.files.pid));
-	const std::string callsign(g_Conf.GetString(g_Conf.j.names.cs));
+	const std::string pidpath(g_Conf.GetString(g_Keys.files.pid));
+	const std::string callsign(g_Conf.GetString(g_Keys.names.cs));
 	remove(pidpath.c_str());
 
 	// splash

@@ -31,11 +31,11 @@ void CLookupNxdn::ClearContents()
 
 void CLookupNxdn::LoadParameters()
 {
-	m_Type = g_Conf.GetRefreshType(g_Conf.j.nxdniddb.mode);
-	m_Refresh = g_Conf.GetUnsigned(g_Conf.j.nxdniddb.refreshmin);
-	m_Path.assign(g_Conf.GetString(g_Conf.j.nxdniddb.filepath));
-	m_Host.assign(g_Conf.GetString(g_Conf.j.nxdniddb.hostname));
-	m_Suffix.assign(g_Conf.GetString(g_Conf.j.nxdniddb.suffix));
+	m_Type = g_Conf.GetRefreshType(g_Keys.nxdniddb.mode);
+	m_Refresh = g_Conf.GetUnsigned(g_Keys.nxdniddb.refreshmin);
+	m_Path.assign(g_Conf.GetString(g_Keys.nxdniddb.filepath));
+	m_Host.assign(g_Conf.GetString(g_Keys.nxdniddb.hostname));
+	m_Suffix.assign(g_Conf.GetString(g_Keys.nxdniddb.suffix));
 }
 
 const CCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid)
@@ -202,7 +202,7 @@ bool CLookupNxdn::HttpGet(const char *hostname, const char *filename, int port, 
 			{
 				// send the GET request
 				char request[NXDNID_HTTPGET_SIZEMAX];
-				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Conf.j.names.cs).c_str());
+				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Keys.names.cs).c_str());
 				::write(sock_id, request, strlen(request));
 
 				// config receive timeouts

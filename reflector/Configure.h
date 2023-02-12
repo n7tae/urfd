@@ -32,54 +32,6 @@ enum class ESection { none, names, ip, modules, urf, dplus, dextra, dcs, dmrplus
 class CConfigure
 {
 public:
-	// json names
-	struct REFLECTOR {
-		struct BM { const std::string port; } bm;
-		struct DCS { const std::string port; } dcs;
-		struct DEXTRA { const std::string port; } dextra;
-		struct DMRPLUS { const std::string port; } dmrplus;
-		struct DPLUS { const std::string port; } dplus;
-		struct M17 { const std::string port; } m17;
-		struct URF { const std::string port; } urf;
-		struct NAMES { const std::string cs, email, country, sponsor; } names;
-		struct IP { const std::string ipv4bind, ipv4address, ipv6bind, ipv6address, transcoder; } ip;
-		struct MODULES { const std::string modules, tcmodules, descriptor[26]; } modules;
-		struct USRP { const std::string port, autolinkmod, defaultcallsign, clientfilepath; } usrp;
-		struct P25NXDN { const std::string port, autolinkmod, reflectorid; } p25, nxdn;
-		struct YSF {
-			const std::string port, autolinkmod, defaulttxfreq, defaultrxfreq;
-			struct YSLREG { const std::string id, name, description; } ysfreflectordb;
-		} ysf;
-		struct MMDVM { const std::string port, defaultid; } mmdvm;
-		struct DB { const std::string hostname, suffix, mode, refreshmin, filepath; } dmriddb, nxdniddb, ysftxrxdb;
-		struct FILES { const std::string pid, json, white, black, interlink, terminal; } files;
-	} j = {
-		{ "BrandMeisterPort" },
-		{ "DCSPort" },
-		{ "DExtraPort" },
-		{ "DMRPlusPort" },
-		{ "DPlusPort" },
-		{ "M17Port" },
-		{ "URFPort" },
-		{ "Callsign", "SysopEmail", "Country", "Sponsor" },
-		{ "ipv4bind", "IPv4Address", "ipv6bind", "IPv6Address", "tcaddress" },
-		{ "Modules", "TranscodedModules", "DescriptionA", "DescriptionB", "DescriptionC",
-		  "DescriptionD", "DescriptionE", "DescriptionF", "DescriptionG", "DescriptionH",
-		  "DescriptionI", "DescriptionJ", "DescriptionK", "DescriptionL", "DescriptionM",
-		  "DescriptionN", "DescriptionO", "DescriptionP", "DescriptionQ", "DescriptionR",
-		  "DescriptionS", "DescriptionT", "DescriptionU", "DescriptionV", "DescriptionW",
-		  "DescriptionX", "DescriptionY", "DescriptionZ" },
-		{ "USRPPort", "USRPAutolinkMod", "usrpDefaultCallsign", "usrpClientfilePath" },
-		{ "P25Port",  "P25AutolinkMod",   "P25ReflectorID" },
-		{ "NXDNPort", "NXDNAutolinkMod", "NXDNReflectorID" },
-		{ "YSFPort", "YSFAutoLinkMod", "YSFDefaultTxFreq", "YSFDefaultRxFreq", { "ysfrefdbid", "ysfrefdbname", "ysfrefdbdesc" } },
-		{ "MMDVMPort", "mmdvmdefaultid" },
-		{  "dmrIdDbHost",  "dmrIdDbSuffix",  "dmrIdDbMode",  "dmrIdDbRefresh",  "dmrIdDbFilePath" },
-		{ "nxdnIdDbHost", "nxdnIdDbSuffix", "nxdnIdDbMode", "nxdnIdDbRefresh", "nxdnIdDbFilePath" },
-		{  "ysfIdDbHost",  "ysfIdDbSuffix",  "ysfIdDbMode",  "ysfIdDbRefresh",  "ysfIdDbFilePath" },
-		{ "pidFilePath", "jsonFilePath", "whitelistFilePath", "blacklistFilePath", "interlinkFilePath", "g3TerminalFilePath" }
-	};
-
 	CConfigure();
 	bool ReadData(const std::string &path);
 	void Dump(bool justpublic) const;

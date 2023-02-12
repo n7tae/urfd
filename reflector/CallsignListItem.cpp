@@ -33,7 +33,7 @@ CCallsignListItem::CCallsignListItem()
 
 CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const CIp &ip, const char *modules)
 {
-	const std::string mods(g_Conf.GetString(g_Conf.j.modules.modules));
+	const std::string mods(g_Conf.GetString(g_Keys.modules.modules));
 	m_Callsign = callsign;
 	memset(m_szUrl, 0, sizeof(m_szUrl));
 	m_Ip = ip;
@@ -60,7 +60,7 @@ CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const CIp &ip, c
 
 CCallsignListItem::CCallsignListItem(const CCallsign &callsign, const char *url, const char *modules)
 {
-	const std::string mods(g_Conf.GetString(g_Conf.j.modules.modules));
+	const std::string mods(g_Conf.GetString(g_Keys.modules.modules));
 	m_Callsign = callsign;
 	::strncpy(m_szUrl, url, URL_MAXLEN);
 	m_Ip = CIp(m_szUrl);

@@ -48,7 +48,7 @@ static uint8_t g_DmrSyncMSData[]     = { 0x0D,0x5D,0x7F,0x77,0xFD,0x75,0x70 };
 
 bool CDmrmmdvmProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
-	m_DefaultId = g_Conf.GetUnsigned(g_Conf.j.mmdvm.defaultid);
+	m_DefaultId = g_Conf.GetUnsigned(g_Keys.mmdvm.defaultid);
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;

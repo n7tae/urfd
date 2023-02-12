@@ -334,7 +334,7 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
 
 	// number of entries
-	const std::string modules(g_Conf.GetString(g_Conf.j.modules.modules));
+	const std::string modules(g_Conf.GetString(g_Keys.modules.modules));
 	uint NB_OF_MODULES = modules.size();
 	uint total = NB_OF_MODULES;
 	uint n = NB_OF_MODULES - Start;

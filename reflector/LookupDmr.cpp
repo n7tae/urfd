@@ -31,11 +31,11 @@ void CLookupDmr::ClearContents()
 
 void CLookupDmr::LoadParameters()
 {
-	m_Type = g_Conf.GetRefreshType(g_Conf.j.dmriddb.mode);
-	m_Refresh = g_Conf.GetUnsigned(g_Conf.j.dmriddb.refreshmin);
-	m_Path.assign(g_Conf.GetString(g_Conf.j.dmriddb.filepath));
-	m_Host.assign(g_Conf.GetString(g_Conf.j.dmriddb.hostname));
-	m_Suffix.assign(g_Conf.GetString(g_Conf.j.dmriddb.suffix));
+	m_Type = g_Conf.GetRefreshType(g_Keys.dmriddb.mode);
+	m_Refresh = g_Conf.GetUnsigned(g_Keys.dmriddb.refreshmin);
+	m_Path.assign(g_Conf.GetString(g_Keys.dmriddb.filepath));
+	m_Host.assign(g_Conf.GetString(g_Keys.dmriddb.hostname));
+	m_Suffix.assign(g_Conf.GetString(g_Keys.dmriddb.suffix));
 }
 
 uint32_t CLookupDmr::FindDmrid(const CCallsign &callsign)
@@ -200,7 +200,7 @@ bool CLookupDmr::HttpGet(const char *hostname, const char *filename, int port, C
 			{
 				// send the GET request
 				char request[DMRID_HTTPGET_SIZEMAX];
-				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Conf.j.names.cs).c_str());
+				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Keys.names.cs).c_str());
 				::write(sock_id, request, strlen(request));
 
 				// config receive timeouts

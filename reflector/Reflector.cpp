@@ -47,9 +47,9 @@ CReflector::~CReflector()
 bool CReflector::Start(void)
 {
 	// get config stuff
-	m_Callsign = CCallsign(g_Conf.GetString(g_Conf.j.names.cs).c_str(), false);
-	m_Modules.assign(g_Conf.GetString(g_Conf.j.modules.modules));
-	std::string tcmods(g_Conf.GetString(g_Conf.j.modules.tcmodules));
+	m_Callsign = CCallsign(g_Conf.GetString(g_Keys.names.cs).c_str(), false);
+	m_Modules.assign(g_Conf.GetString(g_Keys.modules.modules));
+	std::string tcmods(g_Conf.GetString(g_Keys.modules.tcmodules));
 
 	// let's go!
 	keep_running = true;
@@ -323,7 +323,7 @@ void CReflector::RouterThread(const char ThisModule)
 
 void CReflector::XmlReportThread()
 {
-	const std::string path(g_Conf.GetString(g_Conf.j.files.json));
+	const std::string path(g_Conf.GetString(g_Keys.files.json));
 	while (keep_running)
 	{
 		// report to xml file

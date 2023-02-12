@@ -64,7 +64,7 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 	// create our sockets
 	if (has_ipv4)
 	{
-		const std::string ipv4binding(g_Conf.GetString(g_Conf.j.ip.ipv4bind));
+		const std::string ipv4binding(g_Conf.GetString(g_Keys.ip.ipv4bind));
 		CIp ip4(AF_INET, port, ipv4binding.c_str());
 		if ( ip4.IsSet() )
 		{
@@ -74,11 +74,11 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 		std::cout << "Listening on " << ip4 << std::endl;
 	}
 
-	if (g_Conf.IsString(g_Conf.j.ip.ipv6bind))
+	if (g_Conf.IsString(g_Keys.ip.ipv6bind))
 	{
 		if (has_ipv6)
 		{
-			const std::string ipv6binding(g_Conf.j.ip.ipv6bind);
+			const std::string ipv6binding(g_Keys.ip.ipv6bind);
 			CIp ip6(AF_INET6, port, ipv6binding.c_str());
 			if ( ip6.IsSet() )
 			{
