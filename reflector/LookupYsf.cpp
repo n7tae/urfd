@@ -58,10 +58,8 @@ bool CLookupYsf::LoadContentFile(CBuffer &buffer)
 			buffer.resize((int)size + 1);
 			file.seekg(0, std::ios::beg);
 			file.read((char *)buffer.data(), (int)size);
-
-			// close file
-			file.close();
 		}
+		file.close();
 	}
 	return buffer.size() > 0;
 }

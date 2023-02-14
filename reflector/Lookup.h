@@ -53,6 +53,7 @@ public:
 	// locks
 	void Lock(void)   { m_Mutex.lock();   }
 	void Unlock(void) { m_Mutex.unlock(); }
+	bool Dump(void);
 
 protected:
 	std::time_t GetLastModTime();

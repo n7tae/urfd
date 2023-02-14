@@ -77,10 +77,8 @@ bool CLookupDmr::LoadContentFile(CBuffer &buffer)
 			buffer.resize((int)size+1);
 			file.seekg(0, std::ios::beg);
 			file.read((char *)buffer.data(), (int)size);
-
-			// close file
-			file.close();
 		}
+		file.close();
 	}
 
 	// done
@@ -89,7 +87,7 @@ bool CLookupDmr::LoadContentFile(CBuffer &buffer)
 
 bool CLookupDmr::LoadContentHttp(CBuffer &buf)
 {
-	// get file from xlxapi server
+	// get file from http://xlxapi.rlx.lu/api/exportdmr.php
 	return HttpGet(m_Host.c_str(), m_Suffix.c_str(), 80, buf);
 }
 

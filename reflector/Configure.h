@@ -47,7 +47,6 @@ private:
 	nlohmann::json data;
 	std::regex IPv4RegEx, IPv6RegEx;
 
-	void CurlAddresses(std::string &v4, std::string &v6) const;
 	std::string getDataRefreshType(ERefreshType t) const;
 	unsigned getUnsigned(const std::string &value, const std::string &label, unsigned min, unsigned max, unsigned defaultvalue) const;
 	void badParam(const std::string &param) const;

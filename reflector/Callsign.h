@@ -95,7 +95,6 @@ protected:
 	char         m_Callsign[CALLSIGN_LEN];
 	char         m_Suffix[CALLSUFFIX_LEN];
 	char         m_Module;
-	mutable char m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
 	uint32_t     m_uiDmrid;
 	uint16_t     m_uiNXDNid;
 	uint64_t     m_coded; // M17 encoded callsign

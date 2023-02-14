@@ -41,8 +41,8 @@ all : $(EXE) $(INICHECK)
 $(EXE) : $(OBJS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-$(INICHECK) : Configure.cpp Configure.h
-	$(CXX) -DINICHECK $(CFLAGS) $< -o $(INICHECK) -lcurl
+$(INICHECK) : Configure.cpp CurlGet.cpp
+	$(CXX) -DINICHECK $(CFLAGS) Configure.cpp CurlGet.cpp -o $(INICHECK) -lcurl
 
 %.o : %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@

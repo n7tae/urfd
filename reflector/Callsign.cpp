@@ -408,6 +408,8 @@ bool CCallsign::operator ==(const CCallsign &callsign) const
 
 CCallsign::operator const char *() const
 {
+	static char m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
+
 	// empty
 	memset(m_sz, 0, sizeof(m_sz));
 	// callsign

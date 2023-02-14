@@ -93,3 +93,13 @@ void CLookup::Thread()
 			std::this_thread::sleep_for(std::chrono::seconds(3));
 	}
 }
+
+bool CLookup::Dump()
+{
+	CBuffer buf;
+	LoadParameters();
+	auto rval = LoadContentHttp(buf);
+	if (rval)
+		std::cout << (const char *)buf.data();
+	return rval;
+}
