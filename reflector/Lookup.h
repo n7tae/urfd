@@ -18,20 +18,20 @@
 
 #pragma once
 
-#include <map>
 #include <atomic>
 #include <future>
-#include "Buffer.h"
+#include <iostream>
 #include "Callsign.h"
 #include "Configure.h"
 
 // compare function for std::map::find
 
-struct CCallsignCompare
+struct CCallsignHash
 {
-	bool operator() (const CCallsign &cs1, const CCallsign &cs2) const
+	std::size_t operator() (const CCallsign &cs) const
 	{
-		return cs1.HasLowerCallsign(cs2);
+		std::hash<std::string> hash;
+		return hash(cs.GetCS());
 	}
 };
 
@@ -42,10 +42,7 @@ class CLookup
 {
 public:
 	// constructor
-	CLookup() : keep_running(true), m_LastModTime(0) {}
-
-	// destructor
-	virtual ~CLookup();
+	CLookup() : keep_running(true), m_LastModTime(0), m_LastLoadTime(0) {}
 
 	void LookupInit();
 	void LookupClose();
@@ -62,16 +59,15 @@ protected:
 	void Thread();
 
 	// refresh
-	virtual bool LoadContentFile(CBuffer &buf)       = 0;
-	virtual bool LoadContentHttp(CBuffer &buf)       = 0;
-	virtual void RefreshContentFile(const CBuffer &) = 0;
-	virtual void RefreshContentHttp(const CBuffer &) = 0;
+	bool LoadContentHttp(std::stringstream &ss);
+	bool LoadContentFile(std::stringstream &ss);
+	virtual void UpdateContent(std::stringstream &ss) = 0;
 
 	std::mutex        m_Mutex;
 	ERefreshType      m_Type;
 	unsigned          m_Refresh;
-	std::string       m_Path, m_Host, m_Suffix;
-	std::time_t       m_LastModTime;
+	std::string       m_Path, m_Url;
+	std::time_t       m_LastModTime, m_LastLoadTime;
 
 	std::atomic<bool> keep_running;
 	std::future<void> m_Future;

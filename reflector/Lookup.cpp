@@ -16,15 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <iostream>
+#include <fstream>
+#include <unordered_map>
 #include <thread>
 #include <sys/stat.h>
+#include "CurlGet.h"
 #include "Lookup.h"
-
-CLookup::~CLookup()
-{
-	LookupClose();
-}
 
 void CLookup::LookupClose()
 {
@@ -52,54 +49,78 @@ void CLookup::LookupInit()
 
 void CLookup::Thread()
 {
+	const unsigned long wait_cycles = m_Refresh * 6u; // the number of while loops in m_Refresh
+	unsigned long count = 0;
 	while (keep_running)
 	{
-		bool loaded = false;
+		std::stringstream ss;
+		bool http_loaded = false;
+		bool file_loaded = false;
 
-		if (m_Type != ERefreshType::file)	// get the HTTP contents
+		// load http section first, if configured and m_Refresh minutes have lapsed
+		// on the first pass through this while loop (count == 0)
+		if (ERefreshType::file != m_Type && 0ul == count++ % wait_cycles)
 		{
-			CBuffer buf;
-			loaded = LoadContentHttp(buf);
-			if (loaded)
+			// if SIG_INT was received at this point in time,
+			// in might take a bit more than 10 seconds to soft close
+			http_loaded = LoadContentHttp(ss);
+		}
+
+		// load the file if http was loaded or if we haven't loaded since the last mod time
+		if (ERefreshType::http != m_Type)
+		{
+			GetLastModTime();
+			if (http_loaded || m_LastLoadTime < m_LastModTime)
 			{
-				Lock();
+				file_loaded = LoadContentFile(ss);
+				time(&m_LastLoadTime);
+			}
+		}
+
+		// now update the map(s) if anything was loaded
+		if (http_loaded || file_loaded)
+		{
+			Lock();
+			// if m_Type == ERefreshType::both, and if something was deleted from the file,
+			// it won't be purged from the map(s) until http is loaded
+			// It would be a lot of work (iterating on an unordered_map) to do otherwise!
+			if (http_loaded || ERefreshType::file == m_Type)
 				ClearContents();
-				RefreshContentHttp(buf);
-				Unlock();
-			}
+			UpdateContent(ss);
+			Unlock();
 		}
 
-
-		if (m_Type != ERefreshType::http)	// get the file contents
-		{
-			auto lastTime = GetLastModTime();
-			if (lastTime > m_LastModTime)
-			{
-				CBuffer buf;
-				if (LoadContentFile(buf))
-				{
-					Lock();
-					if (! loaded)
-						ClearContents();
-					RefreshContentFile(buf);
-					Unlock();
-					m_LastModTime = lastTime;
-				}
-			}
-		}
-
-		// now wait for a while...
-		for (unsigned i=0; i<20u*m_Refresh && keep_running; i++)
-			std::this_thread::sleep_for(std::chrono::seconds(3));
+		// now wait for 10 seconds
+		std::this_thread::sleep_for(std::chrono::seconds(10));
 	}
+}
+
+bool CLookup::LoadContentHttp(std::stringstream &ss)
+{
+	CCurlGet get;
+	auto code = get.GetURL(m_Url, ss);
+	return CURLE_OK == code;
+}
+
+bool CLookup::LoadContentFile(std::stringstream &ss)
+{
+	bool rval = false;
+    std::ifstream file(m_Path);
+    if ( file )
+    {
+        ss << file.rdbuf();
+        file.close();
+		rval = true;
+    }
+	return rval;
 }
 
 bool CLookup::Dump()
 {
-	CBuffer buf;
+	std::stringstream ss;
 	LoadParameters();
-	auto rval = LoadContentHttp(buf);
+	auto rval = LoadContentHttp(ss);
 	if (rval)
-		std::cout << (const char *)buf.data();
+		std::cout << ss.str() << std::endl;
 	return rval;
 }

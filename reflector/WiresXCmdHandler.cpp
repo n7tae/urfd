@@ -141,7 +141,7 @@ void CWiresxCmdHandler::Task(void)
 	{
 		// fill our info object
 		Info = m_ReflectorWiresxInfo;
-		g_LYtr.FindFrequencies(Cmd.GetCallsign(), &uiNodeTxFreq, &uiNodeRxFreq);
+		g_LYtr.FindFrequencies(Cmd.GetCallsign(), uiNodeTxFreq, uiNodeRxFreq);
 		Info.SetFrequencies(uiNodeTxFreq, uiNodeRxFreq);
 
 		// find our client and the module it's currentlink linked to

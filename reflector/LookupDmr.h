@@ -23,21 +23,16 @@
 class CLookupDmr : public CLookup
 {
 public:
+	~CLookupDmr() {}
 	uint32_t FindDmrid(const CCallsign &cs);
 	const CCallsign *FindCallsign(uint32_t dmrid);
 
 protected:
 	void ClearContents();
 	void LoadParameters();
-	bool LoadContentFile(CBuffer &buf);
-	bool LoadContentHttp(CBuffer &buf);
-	void RefreshContentFile(const CBuffer &);
-	void RefreshContentHttp(const CBuffer &);
+	void UpdateContent(std::stringstream &ss);
 
 private:
-	std::map <uint32_t, CCallsign> m_CallsignMap;
-	std::map <CCallsign, uint32_t, CCallsignCompare> m_DmridMap;
-
-	bool IsValidDmrId(const char *);
-	bool HttpGet(const char *, const char *, int, CBuffer &);
+	std::unordered_map<uint32_t, CCallsign> m_CallsignMap;
+	std::unordered_map<CCallsign, uint32_t, CCallsignHash> m_DmridMap;
 };

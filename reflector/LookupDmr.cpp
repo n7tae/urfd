@@ -17,7 +17,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <iostream>
-#include <string.h>
+#include <string>
 #include <sys/socket.h>
 #include <netdb.h>
 
@@ -34,8 +34,7 @@ void CLookupDmr::LoadParameters()
 	m_Type = g_Conf.GetRefreshType(g_Keys.dmriddb.mode);
 	m_Refresh = g_Conf.GetUnsigned(g_Keys.dmriddb.refreshmin);
 	m_Path.assign(g_Conf.GetString(g_Keys.dmriddb.filepath));
-	m_Host.assign(g_Conf.GetString(g_Keys.dmriddb.hostname));
-	m_Suffix.assign(g_Conf.GetString(g_Keys.dmriddb.suffix));
+	m_Url.assign(g_Conf.GetString(g_Keys.dmriddb.url));
 }
 
 uint32_t CLookupDmr::FindDmrid(const CCallsign &callsign)
@@ -59,198 +58,27 @@ const CCallsign *CLookupDmr::FindCallsign(uint32_t dmrid)
 	return nullptr;
 }
 
-bool CLookupDmr::LoadContentFile(CBuffer &buffer)
+void CLookupDmr::UpdateContent(std::stringstream &ss)
 {
-	buffer.clear();
-	std::ifstream file;
-	std::streampos size;
-
-	// open file
-	file.open(m_Path, std::ios::in | std::ios::binary | std::ios::ate);
-	if ( file.is_open() )
+	std::string line;
+	while (std::getline(ss, line))
 	{
-		// read file
-		size = file.tellg();
-		if ( size > 0 )
+		std::string cs_str, id_str;
+		std::istringstream iss(line);
+		std::getline(iss, id_str, ';');
+		std::getline(iss, cs_str, ';');
+		auto lid = stol(id_str);
+		if (lid > 0 && lid < 0x1000000 && cs_str.size() < CALLSIGN_LEN)
 		{
-			// read file into buffer
-			buffer.resize((int)size+1);
-			file.seekg(0, std::ios::beg);
-			file.read((char *)buffer.data(), (int)size);
-		}
-		file.close();
-	}
-
-	// done
-	return buffer.size() > 0;
-}
-
-bool CLookupDmr::LoadContentHttp(CBuffer &buf)
-{
-	// get file from http://xlxapi.rlx.lu/api/exportdmr.php
-	return HttpGet(m_Host.c_str(), m_Suffix.c_str(), 80, buf);
-}
-
-void CLookupDmr::RefreshContentFile(const CBuffer &buffer)
-{
-	// crack it
-	char *ptr1 = (char *)buffer.data();
-	char *ptr2;
-
-	// get next line
-	while ( (ptr2 = strchr(ptr1, '\n')) != nullptr )
-	{
-		*ptr2 = 0;
-		// get items
-		char *dmrid;
-		char *callsign;
-		if ( ((dmrid = strtok(ptr1, ";")) != nullptr) && IsValidDmrId(dmrid) )
-		{
-			if ( ((callsign = ::strtok(nullptr, ";")) != nullptr) )
-			{
-				// new entry
-				uint32_t ui = atoi(dmrid);
-				CCallsign cs(callsign, ui);
-				if ( cs.IsValid() )
-				{
-					m_CallsignMap.insert(std::pair<uint32_t,CCallsign>(ui, cs));
-					m_DmridMap.insert(std::pair<CCallsign,uint32_t>(cs,ui));
-				}
-			}
-		}
-		// next line
-		ptr1 = ptr2+1;
-	}
-
-	std::cout << "Read " << m_DmridMap.size() << " DMR ids from file " << m_Refresh << std::endl;
-}
-
-void CLookupDmr::RefreshContentHttp(const CBuffer &buffer)
-{
-	char *ptr1 = (char *)buffer.data();
-	char *ptr2;
-	// get next line
-	while ( (ptr2 = strchr(ptr1, '\n')) != nullptr )
-	{
-		*ptr2 = 0;
-		// get items
-		char *dmrid;
-		char *callsign;
-		if ( ((dmrid = strtok(ptr1, ";")) != nullptr) && IsValidDmrId(dmrid) )
-		{
-			if ( ((callsign = strtok(nullptr, ";")) != nullptr) )
-			{
-				// new entry
-				uint32_t ui = atoi(dmrid);
-				CCallsign cs(callsign, ui);
-				if ( cs.IsValid() )
-				{
-					m_CallsignMap.insert(std::pair<uint32_t, CCallsign>(ui, cs));
-					m_DmridMap.insert(std::pair<CCallsign, uint32_t>(cs,ui));
-				}
-			}
-		}
-		// next line
-		ptr1 = ptr2+1;
-	}
-
-	std::cout << "Read " << m_DmridMap.size() << " DMR ids from " << m_Host << " database " << std::endl;
-}
-
-bool CLookupDmr::IsValidDmrId(const char *sz)
-{
-	bool ok = false;
-	size_t n = strlen(sz);
-	if ( (n > 0) && (n <= 8) )
-	{
-		ok = true;
-		for ( size_t i = 0; (i < n) && ok; i++ )
-		{
-			ok = ok && isdigit(sz[i]);
-		}
-	}
-	return ok;
-}
-
-#define DMRID_HTTPGET_SIZEMAX       (256)
-
-bool CLookupDmr::HttpGet(const char *hostname, const char *filename, int port, CBuffer &buffer)
-{
-	buffer.clear();
-	int sock_id;
-
-	// open socket
-	if ( (sock_id = socket(AF_INET, SOCK_STREAM, 0)) >= 0 )
-	{
-		// get hostname address
-		struct sockaddr_in servaddr;
-		struct hostent *hp;
-		memset(&servaddr, 0, sizeof(servaddr));
-		if( (hp = gethostbyname(hostname)) != nullptr)
-		{
-			// dns resolved
-			memcpy((char *)&servaddr.sin_addr.s_addr, (char *)hp->h_addr, hp->h_length);
-			servaddr.sin_port = htons(port);
-			servaddr.sin_family = AF_INET;
-
-			// connect
-			if (connect(sock_id, (struct sockaddr *)&servaddr, sizeof(servaddr)) == 0)
-			{
-				// send the GET request
-				char request[DMRID_HTTPGET_SIZEMAX];
-				::sprintf(request, "GET /%s HTTP/1.0\r\nFrom: %s\r\nUser-Agent: urfd\r\n\r\n", filename, g_Conf.GetString(g_Keys.names.cs).c_str());
-				::write(sock_id, request, strlen(request));
-
-				// config receive timeouts
-				fd_set read_set;
-				struct timeval timeout;
-				timeout.tv_sec = 5;
-				timeout.tv_usec = 0;
-				FD_ZERO(&read_set);
-				FD_SET(sock_id, &read_set);
-
-				// get the reply back
-				bool done = false;
-				do
-				{
-					char buf[1440];
-					ssize_t len = 0;
-					select(sock_id+1, &read_set, nullptr, nullptr, &timeout);
-					//if ( (ret > 0) || ((ret < 0) && (errno == EINPROGRESS)) )
-					//if ( ret >= 0 )
-					//{
-					usleep(5000);
-					len = read(sock_id, buf, 1440);
-					if ( len > 0 )
-					{
-						buffer.Append((uint8_t *)buf, (int)len);
-					}
-					//}
-					done = (len <= 0);
-
-				}
-				while (!done);
-				buffer.Append((uint8_t)0);
-
-				// and disconnect
-				close(sock_id);
-			}
-			else
-			{
-				std::cout << "Cannot establish connection with host " << hostname << std::endl;
-			}
+			auto id = uint32_t(lid);
+			CCallsign cs(cs_str.c_str(), id);
+			m_DmridMap[cs] = id;
+			m_CallsignMap[id] = cs;
 		}
 		else
 		{
-			std::cout << "Host " << hostname << " not found" << std::endl;
+			std::cout << "DMR Id '" << id_str << ';' << cs_str << ";' is malformed" << std::endl;
 		}
-
 	}
-	else
-	{
-		std::cout << "Failed to open wget socket" << std::endl;
-	}
-
-	// done
-	return buffer.size() > 1;
+	std::cout << "DMR Id database size now is " << m_DmridMap.size() << std::endl;
 }

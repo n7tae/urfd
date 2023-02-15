@@ -49,7 +49,6 @@
 #define JFILES                   "Files"
 #define JFILEPATH                "FilePath"
 #define JG3TERMINALPATH          "G3TerminalPath"
-#define JHOSTNAME                "Hostname"
 #define JINTERLINKPATH           "InterlinkPath"
 #define JIPADDRESSES             "IpAddresses"
 #define JIPV4BINDING             "IPv4Binding"
@@ -73,11 +72,11 @@
 #define JREGISTRATIONID          "RegistrationID"
 #define JREGISTRATIONNAME        "RegistrationName"
 #define JSPONSOR                 "Sponsor"
-#define JSUFFIX                  "Suffix"
 #define JSYSOPEMAIL              "SysopEmail"
 #define JTRANSCODED              "Transcoded"
 #define JTRANSCODER              "Transcoder"
 #define JURF                     "URF"
+#define JURL                     "URL"
 #define JUSRP                    "USRP"
 #define JWHITELISTPATH           "WhitelistPath"
 #define JYSF                     "YSF"
@@ -142,11 +141,10 @@ bool CConfigure::ReadData(const std::string &path)
 		{
 			ipv4.assign(ss.str());
 			trim(ipv4);
-			ss.clear();
 		}
+		ss.str(std::string());
 		if (CURLE_OK == curl.GetURL("https://ipv6.icanhazip.com", ss))
 		{
-			std::cout << ss.str();
 			ipv6.assign(ss.str());
 			trim(ipv6);
 		}
@@ -436,10 +434,8 @@ bool CConfigure::ReadData(const std::string &path)
 					case ESection::nxdnid:  pdb = &g_Keys.nxdniddb;  break;
 					case ESection::ysffreq: pdb = &g_Keys.ysftxrxdb; break;
 				}
-				if (0 == key.compare(JHOSTNAME))
-					data[pdb->hostname] = value;
-				else if (0 == key.compare(JSUFFIX))
-					data[pdb->suffix] = value;
+				if (0 == key.compare(JURL))
+					data[pdb->url] = value;
 				else if (0 == key.compare(JMODE))
 				{
 					if ((0==value.compare("file")) || (0==value.compare("http")) || (0==value.compare("both")))
@@ -562,7 +558,6 @@ bool CConfigure::ReadData(const std::string &path)
 					data[g_Keys.ip.ipv6address] = ipv6;
 				else
 				{
-					std::cout << ipv6;
 					std::cerr << "ERROR: could not detect IPv6 address at this time" << std::endl;
 					rval = true;
 				}
@@ -670,8 +665,7 @@ bool CConfigure::ReadData(const std::string &path)
 	};
 	for ( auto &item : dbs )
 	{
-		isDefined(ErrorLevel::fatal, item.first, JHOSTNAME,   item.second->hostname,   rval);
-		isDefined(ErrorLevel::fatal, item.first, JSUFFIX,     item.second->suffix,     rval);
+		isDefined(ErrorLevel::fatal, item.first, JURL,        item.second->url,        rval);
 		isDefined(ErrorLevel::fatal, item.first, JMODE,       item.second->mode,       rval);
 		isDefined(ErrorLevel::fatal, item.first, JREFRESHMIN, item.second->refreshmin, rval);
 		isDefined(ErrorLevel::fatal, item.first, JFILEPATH,   item.second->filepath,   rval);

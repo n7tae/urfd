@@ -21,25 +21,20 @@
 #include "YSFNode.h"
 #include "Lookup.h"
 
-using CsNodeMap = std::map<CCallsign, CYsfNode, CCallsignCompare>;
+using CsNodeMap = std::unordered_map<CCallsign, CYsfNode, CCallsignHash>;
 
 class CLookupYsf : public CLookup
 {
 public:
-	bool FindFrequencies(const CCallsign &, uint32_t *, uint32_t *);
+	void FindFrequencies(const CCallsign &, uint32_t &, uint32_t &);
 
 protected:
 	void ClearContents();
 	void LoadParameters();
-	bool LoadContentFile(CBuffer &buf);
-	bool LoadContentHttp(CBuffer &buf);
-	void RefreshContentFile(const CBuffer &);
-	void RefreshContentHttp(const CBuffer &);
+	void UpdateContent(std::stringstream &ss);
 
 private:
 	CsNodeMap m_map;
-
-	bool HttpGet(const char *, const char *, int, CBuffer &);
 
 	unsigned m_DefaultTx, m_DefaultRx;
 };
