@@ -24,15 +24,15 @@ class CLookupDmr : public CLookup
 {
 public:
 	~CLookupDmr() {}
-	uint32_t FindDmrid(const CCallsign &cs);
-	const CCallsign *FindCallsign(uint32_t dmrid);
+	const uint32_t FindDmrid(const UCallsign &ucs) const;
+	const UCallsign *FindCallsign(uint32_t dmrid) const;
 
 protected:
 	void ClearContents();
 	void LoadParameters();
-	void UpdateContent(std::stringstream &ss);
+	void UpdateContent(std::stringstream &ss, Eaction action);
 
 private:
-	std::unordered_map<uint32_t, CCallsign> m_CallsignMap;
-	std::unordered_map<CCallsign, uint32_t, CCallsignHash> m_DmridMap;
+	std::unordered_map<uint32_t, UCallsign> m_CallsignMap;
+	std::unordered_map<UCallsign, uint32_t, CCallsignHash> m_DmridMap;
 };

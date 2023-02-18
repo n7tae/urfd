@@ -37,7 +37,7 @@ void CLookupNxdn::LoadParameters()
 	m_Url.assign(g_Conf.GetString(g_Keys.nxdniddb.url));
 }
 
-const CCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid)
+const UCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid) const
 {
 	auto found = m_CallsignMap.find(nxdnid);
 	if ( found != m_CallsignMap.end() )
@@ -47,37 +47,57 @@ const CCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid)
 	return nullptr;
 }
 
-uint16_t CLookupNxdn::FindNXDNid(const CCallsign &callsign)
+const uint16_t CLookupNxdn::FindNXDNid(const UCallsign &ucs) const
 {
-	auto found = m_NxdnidMap.find(callsign);
+	auto found = m_NxdnidMap.find(ucs);
 	if ( found != m_NxdnidMap.end() )
 	{
-		return (found->second);
+		return found->second;
 	}
 	return 0;
 }
 
-void CLookupNxdn::UpdateContent(std::stringstream &ss)
+void CLookupNxdn::UpdateContent(std::stringstream &ss, Eaction action)
 {
 	std::string line;
 	while (std::getline(ss, line))
 	{
-		std::string cs_str, id_str;
-		std::istringstream iss(line);
-		std::getline(iss, id_str, ',');
-		std::getline(iss, cs_str, ',');
-		auto lid = stol(id_str);
-		if (lid > 0 && lid < 0x10000 && cs_str.size() < CALLSIGN_LEN)
+		bool failed = true;
+		auto l = atol(line.c_str()); // no throw guarantee
+		if (0 < l && l < 0x10000UL)
 		{
-			auto id = uint16_t(lid);
-			CCallsign cs(cs_str.c_str(), 0, id);
-			m_NxdnidMap[cs] = id;
-			m_CallsignMap[id] = cs;
+			auto id = uint32_t(l);
+			auto p1 = line.find(',');
+			if (std::string::npos != p1)
+			{
+				auto p2 = line.find(',', ++p1);
+				if (std::string::npos != p2)
+				{
+					const auto cs_str = line.substr(p1, p2-p1);
+					CCallsign cs;
+					cs.SetCallsign(cs_str, false);
+					if (cs.IsValid())
+					{
+						failed = false;
+						if (Eaction::normal == action)
+						{
+							auto key = cs.GetKey();
+							m_NxdnidMap[key] = id;
+							m_CallsignMap[id] = key;
+						}
+						else if (Eaction::parse == action)
+						{
+							std::cout << id << ',' << cs_str << ",\n";
+						}
+					}
+				}
+			}
 		}
-		else
+		if (Eaction::error_only == action && failed)
 		{
-			std::cout << "NXDN Id '" << id_str << ',' << cs_str << ",' is malformed" << std::endl;
+			std::cout << "Bad syntax at line '" << line << "'\n";
 		}
 	}
-	std::cout << "NXDN Id database size now is " << m_NxdnidMap.size() << std::endl;
+	if (Eaction::normal == action)
+		std::cout << "NXDN Id database size: " << m_NxdnidMap.size() << std::endl;
 }

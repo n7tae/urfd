@@ -21,7 +21,7 @@
 #include "YSFNode.h"
 #include "Lookup.h"
 
-using CsNodeMap = std::unordered_map<CCallsign, CYsfNode, CCallsignHash>;
+using CsNodeMap = std::unordered_map<UCallsign, CYsfNode, CCallsignHash>;
 
 class CLookupYsf : public CLookup
 {
@@ -31,7 +31,7 @@ public:
 protected:
 	void ClearContents();
 	void LoadParameters();
-	void UpdateContent(std::stringstream &ss);
+	void UpdateContent(std::stringstream &ss, Eaction action);
 
 private:
 	CsNodeMap m_map;

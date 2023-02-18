@@ -22,6 +22,8 @@ EXE = urfd
 
 INICHECK = inicheck
 
+DBUTIL = dbutil
+
 include configure.mk
 
 ifeq ($(debug), true)
@@ -36,7 +38,7 @@ SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
 
-all : $(EXE) $(INICHECK)
+all : $(EXE) $(INICHECK) $(DBUTIL)
 
 $(EXE) : $(OBJS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
@@ -44,11 +46,14 @@ $(EXE) : $(OBJS)
 $(INICHECK) : Configure.cpp CurlGet.cpp
 	$(CXX) -DINICHECK $(CFLAGS) Configure.cpp CurlGet.cpp -o $(INICHECK) -lcurl
 
+$(DBUTIL) : Main.cpp Configure.cpp CurlGet.cpp Lookup.cpp LookupDmr.cpp LookupNxdn.cpp LookupYsf.cpp YSFNode.cpp Callsign.cpp
+	$(CXX) -DUTILITY $(CFLAGS) -o dbutil Main.cpp Configure.cpp CurlGet.cpp Lookup.cpp LookupDmr.cpp LookupNxdn.cpp LookupYsf.cpp YSFNode.cpp Callsign.cpp -lcurl
+
 %.o : %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
 
 clean :
-	$(RM) *.o *.d $(EXE) $(INICHECK)
+	$(RM) *.o *.d $(EXE) $(INICHECK) $(DBUTIL)
 
 -include $(DEPS)
 

@@ -23,14 +23,14 @@
 class CLookupNxdn : public CLookup
 {
 public:
-	uint16_t FindNXDNid(const CCallsign &callsign);
-	const CCallsign *FindCallsign(uint16_t id);
+	const uint16_t FindNXDNid(const UCallsign &ucs) const;
+	const UCallsign *FindCallsign(const uint16_t id) const;
 protected:
 	void ClearContents();
 	void LoadParameters();
-	void UpdateContent(std::stringstream &ss);
+	void UpdateContent(std::stringstream &ss, Eaction action);
 
 private:
-	std::unordered_map <uint32_t, CCallsign> m_CallsignMap;
-	std::unordered_map <CCallsign, uint32_t, CCallsignHash> m_NxdnidMap;
+	std::unordered_map <uint32_t, UCallsign> m_CallsignMap;
+	std::unordered_map <UCallsign, uint32_t, CCallsignHash> m_NxdnidMap;
 };

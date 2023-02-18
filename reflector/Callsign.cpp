@@ -31,98 +31,113 @@
 CCallsign::CCallsign()
 {
 	// blank all
-	memset(m_Callsign, ' ', CALLSIGN_LEN);
-	memset(m_Suffix, ' ', CALLSUFFIX_LEN);
+	memset(m_Callsign.c, ' ', CALLSIGN_LEN);
+	memset(m_Suffix.c, ' ', CALLSUFFIX_LEN);
 	m_Module = ' ';
 	m_uiDmrid = 0;
 	m_coded = 0;
 }
 
-CCallsign::CCallsign(const char *sz, uint32_t dmrid, uint16_t nxdnid)
+CCallsign::CCallsign(const CCallsign &cs)
 {
-	// blank all
-	memset(m_Callsign, ' ', CALLSIGN_LEN);
-	memset(m_Suffix, ' ', CALLSUFFIX_LEN);
-	m_Module = ' ';
+	m_Callsign.l = cs.m_Callsign.l;
+	m_Suffix.u = cs.m_Suffix.u;
+	m_Module = cs.m_Module;
+	if (m_Callsign.l)
+		CSIn();
+}
+
+CCallsign::CCallsign(const std::string &cs, uint32_t dmrid, uint16_t nxdnid) : CCallsign()
+{
+	// and populate
 	m_uiDmrid = dmrid;
 	m_uiNXDNid = nxdnid;
-
-	// and populate
-	auto len = strlen(sz);
+	auto len = cs.size();
 	if ( len > 0 )
 	{
 		// callsign valid
-		memcpy(m_Callsign, sz, MIN(len, CALLSIGN_LEN-1));
-		if ( len > CALLSIGN_LEN )
+		memcpy(m_Callsign.c, cs.c_str(), MIN(len, CALLSIGN_LEN-1));
+		if ( len >= CALLSIGN_LEN )
 		{
-			m_Module = sz[len-1];
+			m_Module = cs.back();
 		}
 
-		// Calculate the M17 coded callsign
-		CSIn();
-
-		// dmrid ok ?
-		if ( m_uiDmrid == 0 )
+		auto key = GetKey();
+		if (0 == m_uiDmrid)
 		{
 			g_LDid.Lock();
-			{
-				m_uiDmrid = g_LDid.FindDmrid(*this);
-			}
+			m_uiDmrid = g_LDid.FindDmrid(key);
 			g_LDid.Unlock();
 		}
-		if ( m_uiNXDNid == 0 )
+
+		if (0 == m_uiNXDNid)
 		{
 			g_LNid.Lock();
-			{
-				m_uiNXDNid = g_LNid.FindNXDNid(*this);
-			}
+			m_uiNXDNid = g_LNid.FindNXDNid(key);
 			g_LNid.Unlock();
 		}
 	}
-	else if ( m_uiDmrid != 0 )
+	else if (dmrid)
 	{
 		g_LDid.Lock();
-		{
-			const CCallsign *callsign = g_LDid.FindCallsign(m_uiDmrid);
-			if ( callsign != nullptr )
-			{
-				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
-			}
-		}
+		auto pItem = g_LDid.FindCallsign(dmrid);
+		if (pItem)
+			m_Callsign = *pItem;
 		g_LDid.Unlock();
 
-		if ( m_uiNXDNid == 0 )
+		if (m_Callsign.l && 0 == nxdnid)
 		{
 			g_LNid.Lock();
-			{
-				m_uiNXDNid = g_LNid.FindNXDNid(*this);
-			}
+			m_uiNXDNid = g_LNid.FindNXDNid(GetKey());
 			g_LNid.Unlock();
 		}
-		CSIn();
 	}
-	else if ( m_uiNXDNid != 0 )
+	else if (nxdnid)
 	{
 		g_LNid.Lock();
-		{
-			const CCallsign *callsign = g_LNid.FindCallsign(m_uiNXDNid);
-			if ( callsign != nullptr )
-			{
-				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
-			}
-		}
+		auto pItem = g_LNid.FindCallsign(nxdnid);
+		if (pItem)
+			m_Callsign = *pItem;
 		g_LNid.Unlock();
 
-		if ( m_uiDmrid == 0 )
+		if (m_Callsign.l && 0 == dmrid)
 		{
 			g_LDid.Lock();
-			{
-				m_uiDmrid = g_LDid.FindDmrid(*this);
-			}
+			m_uiDmrid = g_LDid.FindDmrid(GetKey());
 			g_LDid.Unlock();
 		}
-		CSIn();
 	}
+	if (m_Callsign.l)
+		CSIn();
+}
+
+CCallsign::CCallsign(const CCallsign &cs)
+{
+	m_Callsign.l = cs.m_Callsign.l;
+	m_Suffix.u = cs.m_Suffix.u;
+	m_Module = cs.m_Module;
+	m_uiDmrid = cs.m_uiDmrid;
+	m_uiNXDNid = cs.m_uiNXDNid;
+	m_coded = cs.m_coded;
+}
+
+CCallsign::CCallsign(const UCallsign &ucs) : CCallsign()
+{
+	m_Callsign.l = ucs.l;
+}
+
+CCallsign &CCallsign::operator = (const CCallsign &cs)
+{
+	if (this != &cs)
+	{
+		m_Callsign.l = cs.m_Callsign.l;
+		m_Suffix.u = cs.m_Suffix.u;
+		m_Module = cs.m_Module;
+		m_uiDmrid = cs.m_uiDmrid;
+		m_uiNXDNid = cs.m_uiNXDNid;
+		m_coded = cs.m_coded;
+	}
+	return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -138,8 +153,8 @@ bool CCallsign::IsValid(void) const
 	int iNum = 0;
 	for ( i = 0; i < 3; i++ )
 	{
-		valid &= IsLetter(m_Callsign[i]) || IsNumber(m_Callsign[i]);
-		if ( IsNumber(m_Callsign[i]) )
+		valid = valid && (IsLetter(m_Callsign.c[i]) || IsNumber(m_Callsign.c[i]));
+		if ( IsNumber(m_Callsign.c[i]) )
 		{
 			iNum++;
 		}
@@ -148,19 +163,19 @@ bool CCallsign::IsValid(void) const
 	// all remaining char are letter, number or space
 	for ( ; i < CALLSIGN_LEN; i++)
 	{
-		valid &= IsLetter(m_Callsign[i]) || IsNumber(m_Callsign[i]) || IsSpace(m_Callsign[i]);
+		valid = valid && (IsLetter(m_Callsign.c[i]) || IsNumber(m_Callsign.c[i]) || IsSpace(m_Callsign.c[i]));
 	}
 
 	// prefix
 	// all chars are number, letter, special char, or space
 	for ( i = 0; i < CALLSUFFIX_LEN; i++ )
 	{
-		 valid &= IsLetter(m_Suffix[i]) || IsNumber(m_Suffix[i]) || IsSpace(m_Suffix[i]) || IsLetterLC(m_Suffix[i]) || IsSpecialChar(m_Suffix[i]);
+		 valid = valid && (IsLetter(m_Suffix.c[i]) || IsNumber(m_Suffix.c[i]) || IsSpace(m_Suffix.c[i]) || IsLetterLC(m_Suffix.c[i]) || IsSpecialChar(m_Suffix.c[i]));
 	}
 
 	// module
 	// is an letter or space
-	valid &= IsLetter(m_Module) || IsSpace(m_Module);
+	valid = valid && (IsLetter(m_Module) || IsSpace(m_Module));
 
 	// dmrid is not tested, as it can be nullptr
 	// if station does is not dmr registered
@@ -171,41 +186,37 @@ bool CCallsign::IsValid(void) const
 
 bool CCallsign::HasSuffix(void) const
 {
-	bool has = false;
-	for ( int i = 0; i < CALLSUFFIX_LEN; i++ )
-	{
-		has |= (m_Suffix[i] != ' ');
-	}
-	return has;
+	return 0 == memcmp(m_Suffix.c, "    ", 4);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // set
 
-void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
+void CCallsign::SetCallsign(const std::string &s, bool updateids)
 {
 	// set callsign
-	memset(m_Callsign, ' ', CALLSIGN_LEN);
+	memset(m_Callsign.c, ' ', CALLSIGN_LEN);
 	m_Module = ' ';
-	auto len = strlen(sz);
-	memcpy(m_Callsign, sz, MIN(len, CALLSIGN_LEN-1));
-	if ( len > CALLSIGN_LEN )
+	auto len = s.size();
+	memcpy(m_Callsign.c, s.c_str(), MIN(len, CALLSIGN_LEN-1));
+	if ( len >= CALLSIGN_LEN )
 	{
-		m_Module = sz[len-1];
+		m_Module = s.back();
 	}
 	// update M17 coded callsign
 	CSIn();
 	// and update dmrid
-	if ( UpdateDmrid )
+	if (updateids)
 	{
+		auto key = GetKey();
 		g_LDid.Lock();
 		{
-			m_uiDmrid = g_LDid.FindDmrid(*this);
+			m_uiDmrid = g_LDid.FindDmrid(key);
 		}
 		g_LDid.Unlock();
 		g_LNid.Lock();
 		{
-			m_uiNXDNid = g_LNid.FindNXDNid(*this);
+			m_uiNXDNid = g_LNid.FindNXDNid(key);
 		}
 		g_LNid.Unlock();
 	}
@@ -214,14 +225,14 @@ void CCallsign::SetCallsign(const char *sz, bool UpdateDmrid)
 void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 {
 	// set callsign
-	memset(m_Callsign, ' ', CALLSIGN_LEN);
+	memset(m_Callsign.c, ' ', CALLSIGN_LEN);
 	m_Module = ' ';
-	memcpy(m_Callsign, buffer, MIN(len, (int)CALLSIGN_LEN-1));
+	memcpy(m_Callsign.c, buffer, MIN(len, (int)CALLSIGN_LEN-1));
 	for ( unsigned i = 0; i < CALLSIGN_LEN; i++ )
 	{
-		if ( m_Callsign[i] == 0 )
+		if ( m_Callsign.c[i] == 0 )
 		{
-			m_Callsign[i] = ' ';
+			m_Callsign.c[i] = ' ';
 		}
 	}
 	if ( (len >= (int)CALLSIGN_LEN) && ((char)buffer[CALLSIGN_LEN-1] != 0) )
@@ -231,14 +242,15 @@ void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 	CSIn();
 	if ( UpdateDmrid )
 	{
+		auto key = GetKey();
 		g_LDid.Lock();
 		{
-			m_uiDmrid = g_LDid.FindDmrid(*this);
+			m_uiDmrid = g_LDid.FindDmrid(key);
 		}
 		g_LDid.Unlock();
 		g_LNid.Lock();
 		{
-			m_uiNXDNid = g_LNid.FindNXDNid(*this);
+			m_uiNXDNid = g_LNid.FindNXDNid(key);
 		}
 		g_LNid.Unlock();
 	}
@@ -251,13 +263,14 @@ void CCallsign::SetDmrid(uint32_t dmrid, bool UpdateCallsign)
 	{
 		g_LDid.Lock();
 		{
-			const CCallsign *callsign = g_LDid.FindCallsign(dmrid);
+			auto callsign = g_LDid.FindCallsign(dmrid);
 			if ( callsign != nullptr )
 			{
-				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
+				m_Callsign.l = callsign->l;
 			}
 		}
 		g_LDid.Unlock();
+		CSIn();
 	}
 }
 
@@ -276,13 +289,14 @@ void CCallsign::SetNXDNid(uint16_t nxdnid, bool UpdateCallsign)
 	{
 		g_LNid.Lock();
 		{
-			const CCallsign *callsign = g_LNid.FindCallsign(nxdnid);
+			auto callsign = g_LNid.FindCallsign(nxdnid);
 			if ( callsign != nullptr )
 			{
-				memcpy(m_Callsign, callsign->m_Callsign, CALLSIGN_LEN);
+				m_Callsign.l = callsign->l;
 			}
 		}
 		g_LNid.Unlock();
+		CSIn();
 	}
 }
 
@@ -301,17 +315,17 @@ void CCallsign::SetCSModule(char c)
 }
 
 
-void CCallsign::SetSuffix(const char *sz)
+void CCallsign::SetSuffix(const std::string &s)
 {
-	memset(m_Suffix, ' ', CALLSUFFIX_LEN);
-	memcpy(m_Suffix, sz, MIN(strlen(sz), CALLSUFFIX_LEN));
+	memset(m_Suffix.c, ' ', CALLSUFFIX_LEN);
+	memcpy(m_Suffix.c, s.c_str(), MIN(s.size(), CALLSUFFIX_LEN));
 }
 
 void CCallsign::SetSuffix(const uint8_t *buffer, int len)
 {
 	len = MIN(len, (int)CALLSUFFIX_LEN);
-	memset(m_Suffix, ' ', CALLSUFFIX_LEN);
-	memcpy(m_Suffix, buffer, len);
+	memset(m_Suffix.c, ' ', CALLSUFFIX_LEN);
+	memcpy(m_Suffix.c, buffer, len);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +335,7 @@ void CCallsign::PatchCallsign(int off, const char *patch, int len)
 {
 	if ( off < CALLSIGN_LEN )
 	{
-		memcpy(m_Callsign, patch, MIN(len, (int)CALLSIGN_LEN - off));
+		memcpy(m_Callsign.c, patch, MIN(len, (int)CALLSIGN_LEN - off));
 	}
 	CSIn();
 }
@@ -330,9 +344,24 @@ void CCallsign::PatchCallsign(int off, const char *patch, int len)
 ////////////////////////////////////////////////////////////////////////////////////////
 // get
 
+const UCallsign CCallsign::GetKey() const
+{
+	UCallsign rval;
+	rval.l = 0;
+	for (unsigned i=0; i<CALLSIGN_LEN; i++)
+	{
+		auto c = m_Callsign.c[i];
+		if (IsLetter(c) || IsNumber(c))
+			rval.c[i] = c;
+		else
+			break;
+	}
+	return rval;
+}
+
 void CCallsign::GetCallsign(uint8_t *buffer) const
 {
-	memcpy(buffer, m_Callsign, CALLSIGN_LEN);
+	memcpy(buffer, m_Callsign.c, CALLSIGN_LEN);
 	if ( HasModule() )
 	{
 		buffer[CALLSIGN_LEN-1] = m_Module;
@@ -342,51 +371,52 @@ void CCallsign::GetCallsign(uint8_t *buffer) const
 void CCallsign::GetCallsignString(char *sz) const
 {
 	unsigned i;
-	for ( i = 0; (i < CALLSIGN_LEN) && (m_Callsign[i] != ' '); i++ )
+	for ( i = 0; (i < CALLSIGN_LEN) && (m_Callsign.c[i] != ' '); i++ )
 	{
-		sz[i] = m_Callsign[i];
+		sz[i] = m_Callsign.c[i];
 	}
 	sz[i] = 0;
 }
 
-const std::string CCallsign::GetCS(unsigned len) const
+const std::string CCallsign::GetCS() const
 {
-	std::string rval(m_Callsign, CALLSIGN_LEN);
-	rval.append(1, m_Module);
+	std::string rval(m_Callsign.c, CALLSIGN_LEN);
+	if (' ' != m_Module)
+		rval.append(1, m_Module);
 	return rval;
 }
 
 void CCallsign::GetSuffix(uint8_t *buffer) const
 {
-	memcpy(buffer, m_Suffix, CALLSUFFIX_LEN);
+	memcpy(buffer, m_Suffix.c, CALLSUFFIX_LEN);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // compare
 
-bool CCallsign::HasSameCallsign(const CCallsign &Callsign) const
+bool CCallsign::HasSameCallsign(const CCallsign &cs) const
 {
-	return (memcmp(m_Callsign, Callsign.m_Callsign, CALLSIGN_LEN) == 0);
+	return (memcmp(m_Callsign.c, cs.m_Callsign.c, CALLSIGN_LEN) == 0);
 }
 
-bool CCallsign::HasSameCallsignWithWildcard(const CCallsign &callsign) const
+bool CCallsign::HasSameCallsignWithWildcard(const CCallsign &cs) const
 {
 	bool same = true;
 	bool done = false;
 
 	for ( unsigned i = 0; (i < CALLSIGN_LEN) && same && !done; i++ )
 	{
-		if ( !(done = ((m_Callsign[i] == '*') || (callsign[i] == '*'))) )
+		if ( !(done = ((m_Callsign.c[i] == '*') || (cs.m_Callsign.c[i] == '*'))) )
 		{
-			same &= (m_Callsign[i] == callsign[i]);
+			same = same && (m_Callsign.c[i] == cs.m_Callsign.c[i]);
 		}
 	}
 	return same;
 }
 
-bool CCallsign::HasLowerCallsign(const CCallsign &Callsign) const
+bool CCallsign::HasLowerCallsign(const CCallsign &cs) const
 {
-	return (memcmp(m_Callsign, Callsign.m_Callsign, CALLSIGN_LEN) < 0);
+	return (memcmp(m_Callsign.c, cs.m_Callsign.c, CALLSIGN_LEN) < 0);
 }
 
 bool CCallsign::HasSameModule(const CCallsign &Callsign) const
@@ -398,36 +428,33 @@ bool CCallsign::HasSameModule(const CCallsign &Callsign) const
 ////////////////////////////////////////////////////////////////////////////////////////
 // operators
 
-bool CCallsign::operator ==(const CCallsign &callsign) const
+bool CCallsign::operator ==(const CCallsign &cs) const
 {
-	return ((memcmp(callsign.m_Callsign, m_Callsign, CALLSIGN_LEN) == 0) && (m_Module == callsign.m_Module)
-			&& (memcmp(callsign.m_Suffix, m_Suffix, CALLSUFFIX_LEN) == 0)
-			&& (m_uiDmrid == callsign.m_uiDmrid)
-		   );
+	return (cs.m_Callsign.l == m_Callsign.l) && (m_Module == cs.m_Module) && (cs.m_Suffix.u == m_Suffix.u) && (m_uiDmrid == cs.m_uiDmrid) && (m_uiNXDNid == cs.m_uiNXDNid);
 }
 
 CCallsign::operator const char *() const
 {
-	static char m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
+	static char sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
 
 	// empty
-	memset(m_sz, 0, sizeof(m_sz));
+	memset(sz, 0, sizeof(sz));
 	// callsign
-	memcpy(m_sz, m_Callsign, CALLSIGN_LEN);
+	memcpy(sz, m_Callsign.c, CALLSIGN_LEN);
 	// module
 	if ( HasModule() )
 	{
-		m_sz[CALLSIGN_LEN] = m_Module;
+		sz[CALLSIGN_LEN] = m_Module;
 	}
 	// suffix
 	if ( HasSuffix() )
 	{
-		::strcat(m_sz, " / ");
-		::strncat(m_sz, m_Suffix, CALLSUFFIX_LEN);
+		::strcat(sz, " / ");
+		::strncat(sz, m_Suffix.c, CALLSUFFIX_LEN);
 	}
 
 	// done
-	return m_sz;
+	return sz;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -499,7 +526,7 @@ void CCallsign::CSIn()
 	m_coded = pos;
 	m_coded *= 40;
 	for( int i=CALLSIGN_LEN-2; i>=0; i-- ) {
-		pos = m17_alphabet.find(m_Callsign[i]);
+		pos = m17_alphabet.find(m_Callsign.c[i]);
 		if (pos == std::string::npos) {
 			pos = 0;
 		}

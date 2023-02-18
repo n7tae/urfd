@@ -24,14 +24,16 @@
 #include "Callsign.h"
 #include "Configure.h"
 
+enum class Eaction { normal, parse, error_only };
+
 // compare function for std::map::find
 
 struct CCallsignHash
 {
-	std::size_t operator() (const CCallsign &cs) const
+	std::size_t operator() (const UCallsign &ucs) const
 	{
-		std::hash<std::string> hash;
-		return hash(cs.GetCS());
+		std::hash<uint64_t> hash;
+		return hash(ucs.l);
 	}
 };
 
@@ -50,7 +52,7 @@ public:
 	// locks
 	void Lock(void)   { m_Mutex.lock();   }
 	void Unlock(void) { m_Mutex.unlock(); }
-	bool Dump(void);
+	bool Utility(Eaction action);
 
 protected:
 	std::time_t GetLastModTime();
@@ -61,7 +63,7 @@ protected:
 	// refresh
 	bool LoadContentHttp(std::stringstream &ss);
 	bool LoadContentFile(std::stringstream &ss);
-	virtual void UpdateContent(std::stringstream &ss) = 0;
+	virtual void UpdateContent(std::stringstream &ss, Eaction action) = 0;
 
 	std::mutex        m_Mutex;
 	ERefreshType      m_Type;

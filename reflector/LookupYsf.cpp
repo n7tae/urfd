@@ -39,34 +39,43 @@ void CLookupYsf::LoadParameters()
 	m_DefaultRx = g_Conf.GetUnsigned(g_Keys.ysf.defaultrxfreq);
 }
 
-void CLookupYsf::UpdateContent(std::stringstream &ss)
+void CLookupYsf::UpdateContent(std::stringstream &ss, Eaction action)
 {
 	std::string line;
 	while (std::getline(ss, line))
 	{
+		CCallsign cs;
 		std::string cs_str, tx_str, rx_str;
 		std::istringstream iss(line);
 		std::getline(iss, cs_str, ';');
 		std::getline(iss, tx_str, ';');
 		std::getline(iss, rx_str, ';');
-		auto ltx = stol(tx_str);
-		auto lrx = stol(rx_str);
-		if (ltx > 40000000 && ltx < 0x100000000 && lrx > 40000000 && lrx < 0x100000000 && CCallsign(cs_str.c_str()).IsValid())
+		cs.SetCallsign(cs_str, false);
+		auto ltx = atol(tx_str.c_str());
+		auto lrx = atol(rx_str.c_str());
+		if (ltx > 40000000 && ltx < 0x100000000 && lrx > 40000000 && lrx < 0x100000000 && cs.IsValid())
 		{
-			m_map.emplace(CCallsign(cs_str.c_str()), CYsfNode(uint32_t(ltx), uint32_t(lrx)));
+			if (Eaction::parse == action)
+			{
+				std::cout << cs_str << ';' << tx_str << ';' << rx_str << ";\n";
+			}
+			else if (Eaction::normal == action)
+			{
+				m_map[cs.GetKey()] = CYsfNode(ltx, lrx);
+			}
 		}
-		else
+		else if (Eaction::error_only == action)
 		{
-			std::cout << "YSF value '" << cs_str << ';' << tx_str << ';' << rx_str << ";' is malformed" << std::endl;
+			std::cout << "YSF value '" << line << ";' is malformed" << std::endl;
 		}
 	}
 	std::cout << "DMR Id database size now is " << m_map.size() << std::endl;
 }
 
-void CLookupYsf::FindFrequencies(const CCallsign &callsign, uint32_t &txfreq, uint32_t &rxfreq)
+void CLookupYsf::FindFrequencies(const CCallsign &cs, uint32_t &txfreq, uint32_t &rxfreq)
 {
-	auto found = m_map.find(callsign);
-	if ( found != m_map.end() )
+	auto found = m_map.find(cs.GetKey());
+	if (found != m_map.end())
 	{
 		txfreq = found->second.GetTxFrequency();
 		rxfreq = found->second.GetRxFrequency();

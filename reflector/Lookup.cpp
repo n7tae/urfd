@@ -86,7 +86,7 @@ void CLookup::Thread()
 			// It would be a lot of work (iterating on an unordered_map) to do otherwise!
 			if (http_loaded || ERefreshType::file == m_Type)
 				ClearContents();
-			UpdateContent(ss);
+			UpdateContent(ss, Eaction::normal);
 			Unlock();
 		}
 
@@ -115,7 +115,7 @@ bool CLookup::LoadContentFile(std::stringstream &ss)
 	return rval;
 }
 
-bool CLookup::Dump()
+bool CLookup::Utility(Eaction action)
 {
 	std::stringstream ss;
 	LoadParameters();

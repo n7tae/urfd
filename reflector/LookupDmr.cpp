@@ -37,10 +37,9 @@ void CLookupDmr::LoadParameters()
 	m_Url.assign(g_Conf.GetString(g_Keys.dmriddb.url));
 }
 
-uint32_t CLookupDmr::FindDmrid(const CCallsign &callsign)
+const uint32_t CLookupDmr::FindDmrid(const UCallsign &ucs) const
 {
-
-	auto found = m_DmridMap.find(callsign);
+	auto found = m_DmridMap.find(ucs);
 	if ( found != m_DmridMap.end() )
 	{
 		return (found->second);
@@ -48,7 +47,7 @@ uint32_t CLookupDmr::FindDmrid(const CCallsign &callsign)
 	return 0;
 }
 
-const CCallsign *CLookupDmr::FindCallsign(uint32_t dmrid)
+const UCallsign *CLookupDmr::FindCallsign(const uint32_t dmrid) const
 {
 	auto found = m_CallsignMap.find(dmrid);
 	if ( found != m_CallsignMap.end() )
@@ -58,27 +57,47 @@ const CCallsign *CLookupDmr::FindCallsign(uint32_t dmrid)
 	return nullptr;
 }
 
-void CLookupDmr::UpdateContent(std::stringstream &ss)
+void CLookupDmr::UpdateContent(std::stringstream &ss, Eaction action)
 {
 	std::string line;
 	while (std::getline(ss, line))
 	{
-		std::string cs_str, id_str;
-		std::istringstream iss(line);
-		std::getline(iss, id_str, ';');
-		std::getline(iss, cs_str, ';');
-		auto lid = stol(id_str);
-		if (lid > 0 && lid < 0x1000000 && cs_str.size() < CALLSIGN_LEN)
+		bool failed = true;
+		auto l = atol(line.c_str()); // no throw guarantee
+		if (0L < l && l <= 9999999L)
 		{
-			auto id = uint32_t(lid);
-			CCallsign cs(cs_str.c_str(), id);
-			m_DmridMap[cs] = id;
-			m_CallsignMap[id] = cs;
+			auto id = uint32_t(l);
+			auto p1 = line.find(';');
+			if (std::string::npos != p1)
+			{
+				auto p2 = line.find(';', ++p1);
+				if (std::string::npos != p2)
+				{
+					const auto cs_str(line.substr(p1, p2-p1));
+					CCallsign cs;
+					cs.SetCallsign(cs_str, false);
+					if (cs.IsValid())
+					{
+						failed = false;
+						if (Eaction::normal == action)
+						{
+							auto key = cs.GetKey();
+							m_DmridMap[key] = id;
+							m_CallsignMap[id] = key;
+						}
+						else if (Eaction::parse == action)
+						{
+							std::cout << id << ';' << cs_str << ";\n";
+						}
+					}
+				}
+			}
 		}
-		else
+		if (Eaction::error_only == action && failed)
 		{
-			std::cout << "DMR Id '" << id_str << ';' << cs_str << ";' is malformed" << std::endl;
+			std::cout << "Bad syntax at line '" << line << "'\n";
 		}
 	}
-	std::cout << "DMR Id database size now is " << m_DmridMap.size() << std::endl;
+	if (Eaction::normal == action)
+		std::cout << "DMR Id database size: " << m_DmridMap.size() << std::endl;
 }
