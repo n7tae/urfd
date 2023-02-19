@@ -72,7 +72,7 @@ public:
 	void PatchCallsign(int, const char *, int);
 
 	// get
-	const UCallsign GetKey() const;
+	UCallsign GetKey() const;
 	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
 	const std::string GetCS() const;

@@ -23,7 +23,7 @@
 class CLookupNxdn : public CLookup
 {
 public:
-	const uint16_t FindNXDNid(const UCallsign &ucs) const;
+	uint16_t FindNXDNid(const UCallsign &ucs) const;
 	const UCallsign *FindCallsign(const uint16_t id) const;
 protected:
 	void ClearContents();
@@ -32,5 +32,5 @@ protected:
 
 private:
 	std::unordered_map <uint32_t, UCallsign> m_CallsignMap;
-	std::unordered_map <UCallsign, uint32_t, CCallsignHash> m_NxdnidMap;
+	std::unordered_map <UCallsign, uint32_t, CCallsignHash, CCallsignEqual> m_NxdnidMap;
 };

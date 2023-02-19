@@ -37,6 +37,14 @@ struct CCallsignHash
 	}
 };
 
+struct CCallsignEqual
+{
+	bool operator() (const UCallsign &ucs1, const UCallsign &ucs2) const
+	{
+		return ucs1.l == ucs2.l;
+	}
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

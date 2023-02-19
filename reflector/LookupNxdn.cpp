@@ -47,7 +47,7 @@ const UCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid) const
 	return nullptr;
 }
 
-const uint16_t CLookupNxdn::FindNXDNid(const UCallsign &ucs) const
+uint16_t CLookupNxdn::FindNXDNid(const UCallsign &ucs) const
 {
 	auto found = m_NxdnidMap.find(ucs);
 	if ( found != m_NxdnidMap.end() )
@@ -64,7 +64,7 @@ void CLookupNxdn::UpdateContent(std::stringstream &ss, Eaction action)
 	{
 		bool failed = true;
 		auto l = atol(line.c_str()); // no throw guarantee
-		if (0 < l && l < 0x10000UL)
+		if (0 < l && l < 0x10000)
 		{
 			auto id = uint32_t(l);
 			auto p1 = line.find(',');

@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 
 				// define the action
 				case 'p':
-				if (Eaction::err_only == action)
+				if (Eaction::error_only == action)
 				{
 					std::cerr << "You can't specify both -p and -q!\n";
 					usage(std::cerr, argv[0]);
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 					return EXIT_FAILURE;
 				}
 				else
-					action = Eaction::err_only;
+					action = Eaction::error_only;
 				break;
 
 				// finally

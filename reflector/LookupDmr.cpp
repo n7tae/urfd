@@ -37,7 +37,7 @@ void CLookupDmr::LoadParameters()
 	m_Url.assign(g_Conf.GetString(g_Keys.dmriddb.url));
 }
 
-const uint32_t CLookupDmr::FindDmrid(const UCallsign &ucs) const
+uint32_t CLookupDmr::FindDmrid(const UCallsign &ucs) const
 {
 	auto found = m_DmridMap.find(ucs);
 	if ( found != m_DmridMap.end() )

@@ -38,15 +38,6 @@ CCallsign::CCallsign()
 	m_coded = 0;
 }
 
-CCallsign::CCallsign(const CCallsign &cs)
-{
-	m_Callsign.l = cs.m_Callsign.l;
-	m_Suffix.u = cs.m_Suffix.u;
-	m_Module = cs.m_Module;
-	if (m_Callsign.l)
-		CSIn();
-}
-
 CCallsign::CCallsign(const std::string &cs, uint32_t dmrid, uint16_t nxdnid) : CCallsign()
 {
 	// and populate
@@ -222,7 +213,7 @@ void CCallsign::SetCallsign(const std::string &s, bool updateids)
 	}
 }
 
-void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
+void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool updateids)
 {
 	// set callsign
 	memset(m_Callsign.c, ' ', CALLSIGN_LEN);
@@ -240,7 +231,7 @@ void CCallsign::SetCallsign(const uint8_t *buffer, int len, bool UpdateDmrid)
 		m_Module = (char)buffer[CALLSIGN_LEN-1];
 	}
 	CSIn();
-	if ( UpdateDmrid )
+	if (updateids)
 	{
 		auto key = GetKey();
 		g_LDid.Lock();
@@ -344,7 +335,7 @@ void CCallsign::PatchCallsign(int off, const char *patch, int len)
 ////////////////////////////////////////////////////////////////////////////////////////
 // get
 
-const UCallsign CCallsign::GetKey() const
+UCallsign CCallsign::GetKey() const
 {
 	UCallsign rval;
 	rval.l = 0;
