@@ -115,12 +115,12 @@ bool CLookup::LoadContentFile(std::stringstream &ss)
 	return rval;
 }
 
-bool CLookup::Utility(Eaction action)
+bool CLookup::Utility(Eaction action, Esource source)
 {
 	std::stringstream ss;
 	LoadParameters();
-	auto rval = LoadContentHttp(ss);
+	auto rval = (Esource::http == source) ? LoadContentHttp(ss) : LoadContentFile(ss);
 	if (rval)
-		std::cout << ss.str() << std::endl;
+		UpdateContent(ss, action);
 	return rval;
 }

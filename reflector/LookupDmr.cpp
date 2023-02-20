@@ -95,7 +95,7 @@ void CLookupDmr::UpdateContent(std::stringstream &ss, Eaction action)
 		}
 		if (Eaction::error_only == action && failed)
 		{
-			std::cout << "Bad syntax at line '" << line << "'\n";
+			std::cout << line << '\n';
 		}
 	}
 	if (Eaction::normal == action)

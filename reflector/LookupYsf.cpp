@@ -66,10 +66,11 @@ void CLookupYsf::UpdateContent(std::stringstream &ss, Eaction action)
 		}
 		else if (Eaction::error_only == action)
 		{
-			std::cout << "YSF value '" << line << ";' is malformed" << std::endl;
+			std::cout << line << '\n';
 		}
 	}
-	std::cout << "DMR Id database size now is " << m_map.size() << std::endl;
+	if (Eaction::normal == action)
+		std::cout << "DMR Id database size now is " << m_map.size() << std::endl;
 }
 
 void CLookupYsf::FindFrequencies(const CCallsign &cs, uint32_t &txfreq, uint32_t &rxfreq)

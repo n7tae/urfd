@@ -25,6 +25,7 @@
 #include "Configure.h"
 
 enum class Eaction { normal, parse, error_only };
+enum class Esource { http, file };
 
 // compare function for std::map::find
 
@@ -60,7 +61,7 @@ public:
 	// locks
 	void Lock(void)   { m_Mutex.lock();   }
 	void Unlock(void) { m_Mutex.unlock(); }
-	bool Utility(Eaction action);
+	bool Utility(Eaction action, Esource source);
 
 protected:
 	std::time_t GetLastModTime();

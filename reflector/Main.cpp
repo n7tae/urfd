@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
 
 #else  // UTILITY is defined
 
-#include <unistd.h>
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // global objects
 
@@ -92,130 +90,115 @@ CLookupYsf  g_LYtr;
 
 static void usage(std::ostream &os, const char *name)
 {
-	os << "Usage: " << name << " [-d | -n | -y] [-p | -q] inifile\n";
-	os << "Where:\n"
-		"    -d - read the DMR Id http source (default)\n"
-		"    -n - read the NXDN Id http source\n"
-		"    -y - read the YSF Tx/Tx http source\n"
-		"    -p - parse the input, removing bad lines\n"
-		"    -q - parse the input, but only output problem lines in the http source\n"
-		"    infile - an error-free urfd ini file (check it first with inicheck)\n"
-		"Without -p or -q, no parsing is done and the raw http source is output\n"
-	<< std::endl;
+	os << "\nUsage: " << name << " DATABASE SOURCE ACTION INIFILE\n";
+	os << "DATABASE (choose one)\n"
+		"    dmr   : The  DmrId <==> Callsign databases.\n"
+		"    nxdn  : The NxdnId <==> Callsign databases.\n"
+		"    ysf   : The Callsign => Tx/Rx frequency database.\n"
+		"SOURCE (choose one)\n"
+		"    file  : The file specified by the FilePath ini parameter.\n"
+		"    http  : The URL specified by the URL ini paramater.\n"
+		"ACTION (choose one)\n"
+		"    print : Print all lines from the SOURCE that are syntactically correct.\n"
+		"    error : Print only the lines with failed syntax.\n"
+		"INIFILE   : an error-free urfd ini file (check it first with inicheck).\n\n"
+		"Only the first character of DATABASE, SOURCE and ACTION is read.\n"
+        "Example: " << name << " y f e urfd.ini  # Check your YSF Tx/Rx database file specifed in urfd.ini for syntax errors.\n\n";
 }
 
 enum class Edb { none, dmr, nxdn, ysf };
 
 int main(int argc, char *argv[])
 {
-	Edb db = Edb::none;
-	Eaction action = Eaction::normal;
-	while (1)
+	Edb db;
+	Eaction action;
+	Esource source;
+
+	if (5 != argc)
 	{
-		auto c = getopt(argc, argv, "dnypq");
-		if (c < 0)
-		{
-			if (1 == argc)
-			{
-				usage(std::cout, argv[0]);
-				return EXIT_SUCCESS;
-			}
-			break;
-		}
-		else
-		{
-			switch (c)
-			{
-				// define the input souce
-				case 'd':
-				if (Edb::none == db)
-					db = Edb::dmr;
-				else
-				{
-					std::cerr << "You can only select one database!\n";
-					usage(std::cerr, argv[0]);
-					return EXIT_FAILURE;
-				}
-				break;
-
-				case 'n':
-				if (Edb::none == db)
-					db = Edb::nxdn;
-				else
-				{
-					std::cerr << "You can only select one database!\n";
-					usage(std::cerr, argv[0]);
-					return EXIT_FAILURE;
-				}
-				break;
-				case 'y':
-				if (Edb::none == db)
-					db = Edb::ysf;
-				else
-				{
-					std::cerr << "You can only select one database!\n";
-					usage(std::cerr, argv[0]);
-					return EXIT_FAILURE;
-				}
-				break;
-
-				// define the action
-				case 'p':
-				if (Eaction::error_only == action)
-				{
-					std::cerr << "You can't specify both -p and -q!\n";
-					usage(std::cerr, argv[0]);
-					return EXIT_FAILURE;
-				}
-				else
-					action = Eaction::parse;
-				break;
-
-				case 'q':
-				if (Eaction::parse == action)
-				{
-					std::cerr << "You can't specify both -p and -q!\n";
-					usage(std::cerr, argv[0]);
-					return EXIT_FAILURE;
-				}
-				else
-					action = Eaction::error_only;
-				break;
-
-				// finally
-				default:
-				usage(std::cerr, argv[0]);
-				return EXIT_FAILURE;
-				break;
-			}
-		}
-	}
-
-	if (optind + 1 != argc)
-	{
-		std::cerr << argv[0] << ": " << ((optind==argc) ? "No ini file specified!" : "Too many arguments!") << std::endl;
 		usage(std::cerr, argv[0]);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
-	if (g_Conf.ReadData(argv[optind]))
-		return EXIT_FAILURE;
-
-	if (Edb::none == db)
+	switch (argv[1][0])
+	{
+		case 'd':
+		case 'D':
 		db = Edb::dmr;
+		break;
+		case 'n':
+		case 'N':
+		db = Edb::nxdn;
+		break;
+
+		case 'y':
+		case 'Y':
+		db = Edb::ysf;
+		break;
+
+		default:
+		std::cout << "Unrecognized DATABASE: " << argv[1];
+		db = Edb::none;
+		break;
+	}
+
+	switch (argv[2][0])
+	{
+		case 'h':
+		case 'H':
+		source = Esource::http;
+		break;
+
+		case 'f':
+		case 'F':
+		source = Esource::file;
+		break;
+
+		default:
+		std::cerr << "Unrecognized SOURCE: " << argv[2] << std::endl;
+		db = Edb::none;
+		break;
+	}
+
+	switch (argv[3][0])
+	{
+		case 'p':
+		case 'P':
+		action = Eaction::parse;
+		break;
+
+		case 'e':
+		case 'E':
+		action = Eaction::error_only;
+		break;
+
+		default:
+		std::cerr << "Unrecognized ACTION: " << argv[3] << std::endl;
+		db = Edb::none;
+		break;
+	}
+
+	if (db == Edb::none)
+	{
+		usage(std::cerr, argv[0]);
+		return EXIT_FAILURE;
+	}
+
+	if (g_Conf.ReadData(argv[4]))
+		return EXIT_FAILURE;
 
 	switch (db)
 	{
 		case Edb::dmr:
-		g_LDid.Utility(action);
+		g_LDid.Utility(action, source);
 		break;
 
 		case Edb::nxdn:
-		g_LNid.Utility(action);
+		g_LNid.Utility(action, source);
 		break;
 
 		case Edb::ysf:
-		g_LYtr.Utility(action);
+		g_LYtr.Utility(action, source);
 		break;
 	}
 

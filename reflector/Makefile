@@ -37,17 +37,18 @@ LDFLAGS=-pthread -lcurl
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
+DBUTILOBJS = Configure.o CurlGet.o Lookup.o LookupDmr.o LookupNxdn.o LookupYsf.o YSFNode.o Callsign.o
 
 all : $(EXE) $(INICHECK) $(DBUTIL)
 
 $(EXE) : $(OBJS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-$(INICHECK) : Configure.cpp CurlGet.cpp
-	$(CXX) -DINICHECK $(CFLAGS) Configure.cpp CurlGet.cpp -o $(INICHECK) -lcurl
+$(INICHECK) : Configure.cpp CurlGet.o
+	$(CXX) -DINICHECK $(CFLAGS) $< CurlGet.o -o $@ -lcurl
 
-$(DBUTIL) : Main.cpp Configure.cpp CurlGet.cpp Lookup.cpp LookupDmr.cpp LookupNxdn.cpp LookupYsf.cpp YSFNode.cpp Callsign.cpp
-	$(CXX) -DUTILITY $(CFLAGS) -o dbutil Main.cpp Configure.cpp CurlGet.cpp Lookup.cpp LookupDmr.cpp LookupNxdn.cpp LookupYsf.cpp YSFNode.cpp Callsign.cpp -lcurl
+$(DBUTIL) : Main.cpp $(DBUTILOBJS)
+	$(CXX) -DUTILITY $(CFLAGS) $< $(DBUTILOBJS) -o $@ -lcurl
 
 %.o : %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
