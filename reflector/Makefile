@@ -59,8 +59,8 @@ clean :
 -include $(DEPS)
 
 install :
-	$(CP) $(EXE).service /etc/systemd/system/
-	$(CP) $(EXE) $(BINDIR)
+	cp -f $(EXE).service /etc/systemd/system/
+	cp -f $(EXE) $(BINDIR)
 	systemctl enable $(EXE).service
 	systemctl daemon-reload
 	systemctl start $(EXE)
