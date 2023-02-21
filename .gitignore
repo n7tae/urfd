@@ -6,9 +6,6 @@ reflector/urfd.whitelist
 reflector/urfd.interlink
 reflector/urfd.terminal
 configure.mk
-configure.h
-configure.sql
-reflector.cfg
 wiresx/configure.php
 urfd*
 inicheck

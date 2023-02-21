@@ -55,7 +55,6 @@
 #define JIPV4EXTERNAL            "IPv4External"
 #define JIPV6BINDING             "IPv6Binding"
 #define JIPV6EXTERNAL            "IPv6External"
-#define JJSONPATH                "JsonPath"
 #define JM17                     "M17"
 #define JMMDVM                   "MMDVM"
 #define JMODE                    "Mode"
@@ -72,6 +71,7 @@
 #define JREGISTRATIONID          "RegistrationID"
 #define JREGISTRATIONNAME        "RegistrationName"
 #define JSPONSOR                 "Sponsor"
+#define JREFLSTATEPATH           "ReflStatePath"
 #define JSYSOPEMAIL              "SysopEmail"
 #define JTRANSCODED              "Transcoded"
 #define JTRANSCODER              "Transcoder"
@@ -456,8 +456,8 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::files:
 				if (0 == key.compare(JPIDPATH))
 					data[g_Keys.files.pid] = value;
-				else if (0 == key.compare(JJSONPATH))
-					data[g_Keys.files.json] = value;
+				else if (0 == key.compare(JREFLSTATEPATH))
+					data[g_Keys.files.state] = value;
 				else if (0 == key.compare(JWHITELISTPATH))
 					data[g_Keys.files.white] = value;
 				else if (0 == key.compare(JBLACKLISTPATH))
@@ -672,7 +672,7 @@ bool CConfigure::ReadData(const std::string &path)
 	}
 	// Other files
 	isDefined(ErrorLevel::fatal, JFILES, JPIDPATH,        g_Keys.files.pid,       rval);
-	isDefined(ErrorLevel::fatal, JFILES, JJSONPATH,       g_Keys.files.json,      rval);
+	isDefined(ErrorLevel::fatal, JFILES, JREFLSTATEPATH,  g_Keys.files.state,     rval);
 	isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH,  g_Keys.files.white,     rval);
 	isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH,  g_Keys.files.black,     rval);
 	isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH,  g_Keys.files.interlink, rval);

@@ -48,7 +48,7 @@ $(INICHECK) : Configure.cpp CurlGet.o
 	$(CXX) -DINICHECK $(CFLAGS) $< CurlGet.o -o $@ -lcurl
 
 $(DBUTIL) : Main.cpp $(DBUTILOBJS)
-	$(CXX) -DUTILITY $(CFLAGS) $< $(DBUTILOBJS) -o $@ -lcurl
+	$(CXX) -DUTILITY $(CFLAGS) $< $(DBUTILOBJS) -o $@ -pthread -lcurl
 
 %.o : %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
@@ -59,23 +59,15 @@ clean :
 -include $(DEPS)
 
 install :
-	ln -f -s $(shell pwd)/$(EXE).blacklist $(CFGDIR)/$(EXE).blacklist
-	ln -f -s $(shell pwd)/$(EXE).whitelist $(CFGDIR)/$(EXE).whitelist
-	ln -f -s $(shell pwd)/$(EXE).interlink $(CFGDIR)/$(EXE).interlink
-	ln -f -s $(shell pwd)/$(EXE).terminal  $(CFGDIR)/$(EXE).terminal
-	cp -f ../systemd/$(EXE).service /etc/systemd/system/
-	cp -f $(EXE) $(BINDIR)
+	$(CP) ../$(EXE).service /etc/systemd/system/
+	$(CP) $(EXE) $(BINDIR)
 	systemctl enable $(EXE).service
 	systemctl daemon-reload
 	systemctl start $(EXE)
 
 uninstall :
-	rm -f $(CFGDIR)/$(EXE).blacklist
-	rm -f $(CFGDIR)/$(EXE).whitelist
-	rm -f $(CFGDIR)/$(EXE).interlink
-	rm -f $(CFGDIR)/$(EXE).terminal
 	systemctl stop $(EXE).service
-	rm -f $(CFGDIR)/dmrid.dat
 	systemctl disable $(EXE).service
-	rm -f /etc/systemd/system/$(EXE).service
+	$(RM) /etc/systemd/system/$(EXE).service
 	systemctl daemon-reload
+	$(RM) $(BINDIR)/$(EXE)
