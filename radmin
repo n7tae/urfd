@@ -50,7 +50,7 @@ InstallReflector () {
 	if [ ! -e urfd.interlink ]; then
 		cp ../config/urfd.interlink .
 	fi
-	if [[ "$g3support" == true ]] && [ ! -e urfd.terminal ]; then
+	if [ ! -e urfd.terminal ]; then
 		cp ../config/urfd.terminal .
 	fi
 	sudo make install || read -p "<Enter> to continue: " ans
@@ -87,12 +87,18 @@ tcdserv='/etc/systemd/system/tcd.service'
 
 # default values, we only need a few
 tcaddress='none'
-g3support=false
 
-if [ -e reflector.cfg ]; then
-	source reflector.cfg
+if [[ $# -eq 1 ]]; then
+	if [ -e $1 ]; then
+		echo $1 found
+		callsign=$(awk '$1 == "Callsign"{print $3}' $1)
+		tcaddress=$(awk '$1 == "Transcoder"{print $3}' $1)
+	else
+		echo "$1 not found"
+		exit 1
+	fi
 else
-	echo 'No configuration file found...'
+	echo "Usage: ./radmin inifilename"
 	exit 1
 fi
 key='x'
@@ -104,10 +110,10 @@ do
 	if [ "$pcount" -gt 1 ]; then
 		echo
 		ps -aux | head -1
-		ps -aux | grep -e urfd -e tcd | grep -v grep
+		ps -aux | grep -e urfd -e tcd | grep -v grep | grep -v radmin
 	fi
 	echo
-	echo "        Reflector Administration, Version #211204"
+	echo "        Reflector Administration, Version #230221"
 	echo
 	git status | head -1
 	echo
