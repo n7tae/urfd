@@ -59,7 +59,7 @@ clean :
 -include $(DEPS)
 
 install :
-	$(CP) ../$(EXE).service /etc/systemd/system/
+	$(CP) $(EXE).service /etc/systemd/system/
 	$(CP) $(EXE) $(BINDIR)
 	systemctl enable $(EXE).service
 	systemctl daemon-reload
