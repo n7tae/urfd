@@ -20,7 +20,7 @@
 
 #include "Callsign.h"
 #include "Packet.h"
- 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // implementation details
 
@@ -64,9 +64,6 @@ public:
 	CDvHeaderPacket(const CBuffer &buf);
 	static unsigned int GetNetworkSize();
 	void EncodeInterlinkPacket(CBuffer &buf) const;
-
-	// virtual duplication
-	std::unique_ptr<CPacket> Duplicate(void) const;
 
 	// identity
 	bool IsDvHeader(void) const                     { return true; }

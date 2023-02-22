@@ -84,11 +84,6 @@ void CM17Packet::SetCRC(uint16_t crc)
 	m17.crc = htons(crc);
 }
 
-std::unique_ptr<CM17Packet> CM17Packet::Duplicate(void) const
-{
-	return std::unique_ptr<CM17Packet>(new CM17Packet(*this));
-}
-
 bool CM17Packet::IsLastPacket() const
 {
 	return ((0x8000u & ntohs(m17.framenumber)) == 0x8000u);

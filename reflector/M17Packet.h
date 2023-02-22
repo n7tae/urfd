@@ -69,7 +69,6 @@ public:
 	uint16_t GetStreamId() const;
 	uint16_t GetCRC() const;
 	void SetCRC(uint16_t crc);
-	std::unique_ptr<CM17Packet> Duplicate(void) const;
 	bool IsLastPacket() const;
 
 private:

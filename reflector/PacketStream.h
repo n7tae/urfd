@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "PacketQueue.h"
 #include "Timer.h"
 #include "DVHeaderPacket.h"
 #include "Client.h"
@@ -32,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CPacketStream : public CPacketQueue
+class CPacketStream
 {
 public:
 	CPacketStream(char module);
@@ -43,6 +42,7 @@ public:
 	void ClosePacketStream(void);
 
 	// push & pop
+	void ReturnPacket(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
 	void Push(std::unique_ptr<CPacket> packet);
 	void Tickle(void)                               { m_LastPacketTime.start(); }
 
@@ -55,8 +55,14 @@ public:
 	const CCallsign &GetUserCallsign(void) const    { return m_DvHeader.GetMyCallsign(); }
 	char             GetRpt2Module(void) const      { return m_DvHeader.GetRpt2Module(); }
 
+	// pass-through
+	std::unique_ptr<CPacket> Pop()        { return m_Queue.Pop(); }
+	std::unique_ptr<CPacket> PopWait()    { return m_Queue.PopWait(); }
+	bool IsEmpty()                        { return m_Queue.IsEmpty(); }
+
 protected:
 	// data
+	CSafePacketQueue<std::unique_ptr<CPacket>> m_Queue;
 	const char          m_PSModule;
 	bool                m_bOpen;
 	uint16_t            m_uiStreamId;

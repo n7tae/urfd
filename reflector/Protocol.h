@@ -71,16 +71,15 @@ public:
 	virtual bool Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 	virtual void Close(void);
 
-	// queue
-	CPacketQueue *GetQueue(void)        { m_Queue.Lock(); return &m_Queue; }
-	void ReleaseQueue(void)             { m_Queue.Unlock(); }
-
 	// get
 	const CCallsign &GetReflectorCallsign(void)const { return m_ReflectorCallsign; }
 
 	// task
 	void Thread(void);
 	virtual void Task(void) = 0;
+
+	// pass-through
+	void Push(std::shared_ptr<CPacket> p) { m_Queue.Push(p); }
 
 protected:
 	// stream helpers
@@ -118,7 +117,6 @@ protected:
 	void Dump(const char *title, const uint8_t *data, int length);
 #endif
 
-
 	// socket
 	CUdpSocket m_Socket4;
 	CUdpSocket m_Socket6;
@@ -127,7 +125,7 @@ protected:
 	std::unordered_map<uint16_t, std::shared_ptr<CPacketStream>> m_Streams;
 
 	// queue
-	CPacketQueue    m_Queue;
+	CSafePacketQueue<std::shared_ptr<CPacket>> m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;

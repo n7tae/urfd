@@ -40,12 +40,6 @@ public:
 	CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubpid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysfsubpidmax, ECodecType, bool lastpacket);
 	CPacket(const CM17Packet &);
 
-	// destructor
-	virtual ~CPacket() {}
-
-	// virtual duplication
-	virtual std::unique_ptr<CPacket> Duplicate(void) const = 0;
-
 	// identity
 	virtual bool IsDvHeader(void) const = 0;
 	virtual bool IsDvFrame(void) const = 0;

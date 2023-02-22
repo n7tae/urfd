@@ -188,7 +188,6 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 		return nullptr;
 	}
 
-	stream->Lock();
 	// is it available ?
 	if ( stream->OpenPacketStream(*DvHeader, client) )
 	{
@@ -211,7 +210,6 @@ std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderP
 		OnStreamOpen(stream->GetUserCallsign());
 
 	}
-	stream->Unlock();
 	return stream;
 }
 
@@ -220,22 +218,14 @@ void CReflector::CloseStream(std::shared_ptr<CPacketStream> stream)
 	if ( stream != nullptr )
 	{
 		// wait queue is empty. this waits forever
-		bool bEmpty = false;
-		do
+		bool bEmpty = stream->IsEmpty();
+		while (! bEmpty)
 		{
-			stream->Lock();
-			// do not use stream->IsEmpty() has this "may" never succeed
-			// and anyway, the DvLastFramPacket short-circuit the transcoder
-			// loop queues
-			bEmpty = stream->empty();
-			stream->Unlock();
-			if ( !bEmpty )
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			bEmpty = stream->IsEmpty();
 		}
-		while (!bEmpty);
 
 		GetClients();	// lock clients
-		stream->Lock();	// lock stream
 
 		// get and check the master
 		std::shared_ptr<CClient>client = stream->GetOwnerClient();
@@ -253,11 +243,6 @@ void CReflector::CloseStream(std::shared_ptr<CPacketStream> stream)
 		// release clients
 		ReleaseClients();
 
-		// unlock before closing
-		// to avoid double lock in assiociated
-		// codecstream close/thread-join
-		stream->Unlock();
-
 		// and stop the queue
 		stream->ClosePacketStream();
 	}
@@ -270,54 +255,31 @@ void CReflector::RouterThread(const char ThisModule)
 {
 	while (keep_running)
 	{
-		std::unique_ptr<CPacket> packet;
 		auto streamIn = m_Stream[ThisModule];
-		// any packet in our input queue ?
-		streamIn->Lock();
-		if ( !streamIn->empty() )
-		{
-			// get the packet
-			packet = streamIn->pop();
-		}
-		else
-		{
-			packet = nullptr;
-		}
-		streamIn->Unlock();
 
-		// route it
-		if ( packet != nullptr )
-		{
-			// set origin
-			packet->SetPacketModule(ThisModule);
+		// convert the incoming packet to a shared_ptr
+		// wait until s
+		std::shared_ptr<CPacket> packet = std::move(streamIn->PopWait());
 
-			// iterate on all protocols
-			m_Protocols.Lock();
-			for ( auto it=m_Protocols.begin(); it!=m_Protocols.end(); it++ )
+		// set origin
+		packet->SetPacketModule(ThisModule);
+
+		// iterate on all protocols
+		m_Protocols.Lock();
+		for ( auto it=m_Protocols.begin(); it!=m_Protocols.end(); it++ )
+		{
+			// if packet is header, update RPT2 according to protocol
+			if ( packet->IsDvHeader() )
 			{
-				// duplicate packet
-				auto packetClone = packet->Duplicate();
-
-				// if packet is header, update RPT2 according to protocol
-				if ( packetClone->IsDvHeader() )
-				{
-					// get our callsign
-					CCallsign csRPT = (*it)->GetReflectorCallsign();
-					csRPT.SetCSModule(ThisModule);
-					(dynamic_cast<CDvHeaderPacket *>(packetClone.get()))->SetRpt2Callsign(csRPT);
-				}
-
-				// and push it
-				CPacketQueue *queue = (*it)->GetQueue();
-				queue->push(packetClone);
-				(*it)->ReleaseQueue();
+				// get our callsign
+				CCallsign csRPT = (*it)->GetReflectorCallsign();
+				csRPT.SetCSModule(ThisModule);
+				(dynamic_cast<CDvHeaderPacket *>(packet.get()))->SetRpt2Callsign(csRPT);
 			}
-			m_Protocols.Unlock();
+
+			(*it)->Push(packet);
 		}
-		else
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		}
+		m_Protocols.Unlock();
 	}
 }
 

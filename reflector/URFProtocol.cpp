@@ -200,11 +200,10 @@ void CURFProtocol::Task(void)
 
 void CURFProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// check if origin of packet is local
 		// if not, do not stream it out as it will cause
@@ -236,7 +235,6 @@ void CURFProtocol::HandleQueue(void)
 			}
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

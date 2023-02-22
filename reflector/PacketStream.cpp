@@ -83,32 +83,18 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	{
 		Packet->UpdatePids(m_uiPacketCntr++);
 	}
-	// transcoder avaliable ?
-	if ( m_CodecStream )
+	// transcoder avaliable and is this a DvFramePacket?
+	if ( m_CodecStream && Packet->IsDvFrame())
 	{
-		// todo: verify no possibilty of double lock here
-		m_CodecStream->Lock();
-		{
-			// transcoder ready & frame need transcoding ?
-			if (Packet->IsDvFrame())
-			{
-				// yes, push packet to trancoder queue
-				// trancoder will push it after transcoding
-				// is completed
-				m_CodecStream->push(Packet);
-			}
-			else
-			{
-				// no, just bypass transcoder
-				push(Packet);
-			}
-		}
-		m_CodecStream->Unlock();
+		// yes, push packet to trancoder queue
+		// trancoder will push it after transcoding
+		// is completed
+		m_CodecStream->Push(std::move(Packet));
 	}
 	else
 	{
-		// otherwise, push direct push
-		push(Packet);
+		// no, just bypass transcoder
+		Push(std::move(Packet));
 	}
 }
 

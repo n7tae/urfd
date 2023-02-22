@@ -166,14 +166,6 @@ CDvHeaderPacket::CDvHeaderPacket(const CM17Packet &m17) : CPacket(m17)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// virtual duplication
-
-std::unique_ptr<CPacket> CDvHeaderPacket::Duplicate(void) const
-{
-	return std::unique_ptr<CPacket>(new CDvHeaderPacket(*this));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
 // conversion
 
 void CDvHeaderPacket::ConvertToDstarStruct(struct dstar_header *buffer) const

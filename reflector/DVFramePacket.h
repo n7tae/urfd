@@ -62,9 +62,6 @@ public:
 	static unsigned int GetNetworkSize();
 	void EncodeInterlinkPacket(CBuffer &buf) const;
 
-	// virtual duplication
-	std::unique_ptr<CPacket> Duplicate(void) const;
-
 	// identity
 	bool IsDvHeader(void) const           { return false; }
 	bool IsDvFrame(void) const           { return true; }

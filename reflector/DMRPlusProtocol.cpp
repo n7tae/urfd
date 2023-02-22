@@ -218,12 +218,10 @@ void CDmrplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Head
 
 void CDmrplusProtocol::HandleQueue(void)
 {
-
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto mod = packet->GetPacketModule();
@@ -285,7 +283,6 @@ void CDmrplusProtocol::HandleQueue(void)
 			//buffer.DebugDump(g_Refl.m_DebugFile);
 		}
 	}
-	m_Queue.Unlock();
 }
 
 void CDmrplusProtocol::SendBufferToClients(const CBuffer &buffer, uint8_t module)

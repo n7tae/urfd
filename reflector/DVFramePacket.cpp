@@ -214,14 +214,6 @@ void CDvFramePacket::EncodeInterlinkPacket(CBuffer &buf) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// virtual duplication
-
-std::unique_ptr<CPacket> CDvFramePacket::Duplicate(void) const
-{
-	return std::unique_ptr<CPacket>(new CDvFramePacket(*this));
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
 // get
 
 const uint8_t *CDvFramePacket::GetCodecData(ECodecType type) const

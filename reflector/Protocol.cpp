@@ -37,12 +37,10 @@ CProtocol::~CProtocol()
 	Close();
 
 	// empty queue
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while ( !m_Queue.IsEmpty() )
 	{
-		m_Queue.pop();
+		m_Queue.Pop();
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -138,9 +136,7 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 		// set the packet module, the transcoder needs this
 		Frame->SetPacketModule(stream->GetOwnerClient()->GetReflectorModule());
 		// and push
-		stream->Lock();
 		stream->Push(std::move(Frame));
-		stream->Unlock();
 	}
 #ifdef DEBUG
 	else
@@ -176,18 +172,15 @@ void CProtocol::CheckStreamsTimeout(void)
 	for ( auto it=m_Streams.begin(); it!=m_Streams.end(); )
 	{
 		// time out ?
-		it->second->Lock();
 		if ( it->second->IsExpired() )
 		{
 			// yes, close it
-			it->second->Unlock();
 			g_Refl.CloseStream(it->second);
 			// and remove it from the m_Streams map
 			it = m_Streams.erase(it);
 		}
 		else
 		{
-			it->second->Unlock();
 			it++;
 		}
 	}

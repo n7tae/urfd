@@ -229,11 +229,10 @@ void CP25Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 
 void CP25Protocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto module = packet->GetPacketModule();
@@ -276,7 +275,6 @@ void CP25Protocol::HandleQueue(void)
 			}
 		}
 	}
-	m_Queue.Unlock();
 }
 
 

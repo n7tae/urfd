@@ -134,14 +134,14 @@ void CCodecStream::Task(void)
 		m_RTSum += rt;
 		m_RTCount++;
 
-		if ( m_LocalQueue.empty() )
+		if ( m_LocalQueue.IsEmpty() )
 		{
 			std::cout << "Unexpected transcoded packet received from transcoder" << std::endl;
 		}
 		else
 		{
 			// pop the original packet
-			auto Packet = m_LocalQueue.pop();
+			auto Packet = m_LocalQueue.Pop();
 			auto Frame = (CDvFramePacket *)Packet.get();
 
 			// do things look okay?
@@ -160,31 +160,27 @@ void CCodecStream::Task(void)
 			}
 
 			// and push it back to client
-			m_PacketStream->Lock();
-			m_PacketStream->push(Packet);
-			m_PacketStream->Unlock();
+			m_PacketStream->ReturnPacket(std::move(Packet));
 		}
 	}
 
 	// anything in our queue
-	while ( !empty() )
+	auto Packet = m_Queue.Pop();
+	while (Packet)
 	{
-		// yes, pop it from queue
-		auto Packet = pop();
-
 		// we need a CDvFramePacket pointer to access Frame stuff
 		auto Frame = (CDvFramePacket *)Packet.get();
 
-		// push to our local queue so it can wait for the transcoder
-		m_LocalQueue.push(Packet);
+		// push to our local queue where it can wait for the transcoder
+		m_LocalQueue.Push(std::move(Packet));
 
 		// update important stuff in Frame->m_TCPack for the transcoder
-		Frame->SetTCParams(m_uiTotalPackets++);
+		Frame->SetTCParams(m_uiTotalPackets++); // Frame still points to the packet
 
 		// now send to transcoder
-		// this assume that thread pushing the Packet
-		// have verified that the CodecStream is connected
-		// and that the packet needs transcoding
 		m_TCWriter.Send(Frame->GetCodecPacket());
+
+		// get the next packet
+		Packet = m_Queue.Pop();
 	}
 }

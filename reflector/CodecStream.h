@@ -21,15 +21,16 @@
 #include <atomic>
 #include <future>
 
+#include "DVFramePacket.h"
 #include "UnixDgramSocket.h"
-#include "PacketQueue.h"
+#include "SafePacketQueue.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
 class CPacketStream;
 
-class CCodecStream : public CPacketQueue
+class CCodecStream
 {
 public:
 	// constructor
@@ -49,6 +50,9 @@ public:
 	void Thread(void);
 	void Task(void);
 
+	// pass-thru
+	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
+
 protected:
 	// initialization
 	// data
@@ -63,7 +67,7 @@ protected:
 
 	// associated packet stream
 	CPacketStream  *m_PacketStream;
-	CPacketQueue    m_LocalQueue;
+	CSafePacketQueue<std::unique_ptr<CPacket>> m_LocalQueue, m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;

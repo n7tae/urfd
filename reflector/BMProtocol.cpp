@@ -190,11 +190,10 @@ void CBMProtocol::Task(void)
 
 void CBMProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// encode it
 		CBuffer buffer;
@@ -237,7 +236,6 @@ void CBMProtocol::HandleQueue(void)
 			g_Refl.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

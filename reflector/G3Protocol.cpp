@@ -442,14 +442,13 @@ void CG3Protocol::Task(void)
 
 void CG3Protocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// supress host checks
 		m_LastKeepaliveTime.start();
 
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// encode it
 		CBuffer buffer;
@@ -475,7 +474,6 @@ void CG3Protocol::HandleQueue(void)
 			g_Refl.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
