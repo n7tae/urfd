@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CPacketStream::CPacketStream()
+CPacketStream::CPacketStream(char module) : m_PSModule(module)
 {
 	m_bOpen = false;
 	m_uiStreamId = 0;
@@ -31,12 +31,13 @@ CPacketStream::CPacketStream()
 	m_CodecStream = nullptr;
 }
 
-bool CPacketStream::InitPacketStream(bool is_transcoded)
+bool CPacketStream::InitCodecStream()
 {
-	if (is_transcoded)
-		m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this));
-
-	return nullptr == m_CodecStream;
+	m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this));
+	if (m_CodecStream)
+		return m_CodecStream->InitCodecStream(m_PSModule);
+	else
+		return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -35,8 +35,8 @@
 class CPacketStream : public CPacketQueue
 {
 public:
-	CPacketStream();
-	bool InitPacketStream(bool is_transcoded);
+	CPacketStream(char module);
+	bool InitCodecStream();
 
 	// open / close
 	bool OpenPacketStream(const CDvHeaderPacket &, std::shared_ptr<CClient>);
@@ -57,6 +57,7 @@ public:
 
 protected:
 	// data
+	const char          m_PSModule;
 	bool                m_bOpen;
 	uint16_t            m_uiStreamId;
 	uint32_t            m_uiPacketCntr;

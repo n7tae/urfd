@@ -571,7 +571,7 @@ bool CConfigure::ReadData(const std::string &path)
 	}
 	else
 	{
-		data[g_Keys.ip.ipv4bind] = nullptr;
+		data[g_Keys.ip.ipv6bind] = nullptr;
 		data[g_Keys.ip.ipv6address] = nullptr;
 	}
 

@@ -114,6 +114,10 @@ protected:
 	void Send(const CBuffer &buf, const CIp &Ip, uint16_t port) const;
 	void Send(const char    *buf, const CIp &Ip, uint16_t port) const;
 	void Send(const SM17Frame &frame, const CIp &Ip) const;
+#ifdef DEBUG
+	void Dump(const char *title, const uint8_t *data, int length);
+#endif
+
 
 	// socket
 	CUdpSocket m_Socket4;

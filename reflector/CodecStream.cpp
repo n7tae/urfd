@@ -18,9 +18,9 @@
 
 
 #include <string.h>
-#include "CodecStream.h"
 #include "DVFramePacket.h"
-#include "Reflector.h"
+#include "PacketStream.h"
+#include "CodecStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -78,6 +78,9 @@ void CCodecStream::ReportStats()
 
 bool CCodecStream::InitCodecStream(char module)
 {
+#ifdef DEBUG
+	std::cout << "Initializing codec stream for module '" << module << "'" << std::endl;
+#endif
 	m_TCWriter.SetUp(REF2TC);
 	std::string name(TC2REF);
 	name.append(1, module);

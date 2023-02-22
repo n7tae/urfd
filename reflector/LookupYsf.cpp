@@ -70,7 +70,7 @@ void CLookupYsf::UpdateContent(std::stringstream &ss, Eaction action)
 		}
 	}
 	if (Eaction::normal == action)
-		std::cout << "DMR Id database size now is " << m_map.size() << std::endl;
+		std::cout << "YSF frequency database size now is " << m_map.size() << std::endl;
 }
 
 void CLookupYsf::FindFrequencies(const CCallsign &cs, uint32_t &txfreq, uint32_t &rxfreq)

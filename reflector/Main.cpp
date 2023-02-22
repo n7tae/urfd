@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 	if (g_Conf.ReadData(argv[1]))
 		return EXIT_FAILURE;
 
+	std::cout << "IPv4 binding address is '" << g_Conf.GetString(g_Keys.ip.ipv4bind) << "'" << std::endl;
 	// remove pidfile
 	const std::string pidpath(g_Conf.GetString(g_Keys.files.pid));
 	const std::string callsign(g_Conf.GetString(g_Keys.names.cs));
@@ -61,7 +62,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	std::cout << "Reflector " << callsign << "started and listening" << std::endl;
+	std::cout << "Reflector " << callsign << " started and listening" << std::endl;
 
 	// write new pid file
 	std::ofstream ofs(pidpath, std::ofstream::out);
