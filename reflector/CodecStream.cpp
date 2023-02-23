@@ -30,19 +30,6 @@ CCodecStream::CCodecStream(CPacketStream *PacketStream)
 	m_PacketStream = PacketStream;
 }
 
-void CCodecStream::ResetStats(uint16_t streamid, ECodecType type)
-{
-	keep_running = true;
-	m_uiStreamId = streamid;
-	m_uiPid = 0;
-	m_eCodecIn = type;
-	m_RTMin = -1;
-	m_RTMax = -1;
-	m_RTSum = 0;
-	m_RTCount = 0;
-	m_uiTotalPackets = 0;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // destructor
 
@@ -56,6 +43,19 @@ CCodecStream::~CCodecStream()
 	}
 	// and close the socket
 	m_TCReader.Close();
+}
+
+void CCodecStream::ResetStats(uint16_t streamid, ECodecType type)
+{
+	keep_running = true;
+	m_uiStreamId = streamid;
+	m_uiPid = 0;
+	m_eCodecIn = type;
+	m_RTMin = -1;
+	m_RTMax = -1;
+	m_RTSum = 0;
+	m_RTCount = 0;
+	m_uiTotalPackets = 0;
 }
 
 void CCodecStream::ReportStats()
@@ -133,6 +133,10 @@ void CCodecStream::Task(void)
 		}
 		m_RTSum += rt;
 		m_RTCount++;
+#ifdef DEBUG
+		if (0 == m_RTCount % 50)
+			ReportStats();
+#endif
 
 		if ( m_LocalQueue.IsEmpty() )
 		{
@@ -171,16 +175,16 @@ void CCodecStream::Task(void)
 		// we need a CDvFramePacket pointer to access Frame stuff
 		auto Frame = (CDvFramePacket *)Packet.get();
 
-		// push to our local queue where it can wait for the transcoder
-		m_LocalQueue.Push(std::move(Packet));
-
 		// update important stuff in Frame->m_TCPack for the transcoder
-		Frame->SetTCParams(m_uiTotalPackets++); // Frame still points to the packet
+		Frame->SetTCParams(m_uiTotalPackets++);
 
 		// now send to transcoder
 		m_TCWriter.Send(Frame->GetCodecPacket());
 
-		// get the next packet
+		// push to our local queue where it can wait for the transcoder
+		m_LocalQueue.Push(std::move(Packet));
+
+		// get the next packet, if there is one
 		Packet = m_Queue.Pop();
 	}
 }
