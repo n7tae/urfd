@@ -97,7 +97,7 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	else
 	{
 		// no, just bypass transcoder
-		Push(std::move(Packet));
+		m_Queue.Push(std::move(Packet));
 	}
 }
 
