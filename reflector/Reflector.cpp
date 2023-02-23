@@ -85,9 +85,11 @@ bool CReflector::Start(void)
 				if (stream->InitCodecStream())
 					return true;
 			}
+			m_Stream[c] = stream;
 		}
 		else
 		{
+			std::cerr << "Could not make a CPacketStream for module '" << c << "'" << std::endl;
 			return true;
 		}
 		try
@@ -253,14 +255,19 @@ void CReflector::CloseStream(std::shared_ptr<CPacketStream> stream)
 
 void CReflector::RouterThread(const char ThisModule)
 {
+	auto pitem = m_Stream.find(ThisModule);
+	if (m_Stream.end() == pitem)
+	{
+		std::cerr << "Module '" << ThisModule << " CPacketStream doesn't exist! aborting RouterThread()" << std::endl;
+		return;
+	}
+	const auto streamIn = pitem->second;
 	while (keep_running)
 	{
-		auto streamIn = m_Stream[ThisModule];
-
+		// wait until something shows up
+		auto uptmp = streamIn->PopWait();
 		// convert the incoming packet to a shared_ptr
-		// wait until s
-		std::shared_ptr<CPacket> packet = std::move(streamIn->PopWait());
-
+		std::shared_ptr<CPacket> packet = std::move(uptmp);
 		// set origin
 		packet->SetPacketModule(ThisModule);
 
@@ -276,8 +283,9 @@ void CReflector::RouterThread(const char ThisModule)
 				csRPT.SetCSModule(ThisModule);
 				(dynamic_cast<CDvHeaderPacket *>(packet.get()))->SetRpt2Callsign(csRPT);
 			}
-
-			(*it)->Push(packet);
+			// make a copy! after the Push(tmp), tmp will be nullptr!
+			auto tmp = packet;
+			(*it)->Push(tmp);
 		}
 		m_Protocols.Unlock();
 	}

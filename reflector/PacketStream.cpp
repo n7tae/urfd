@@ -37,7 +37,10 @@ bool CPacketStream::InitCodecStream()
 	if (m_CodecStream)
 		return m_CodecStream->InitCodecStream(m_PSModule);
 	else
+	{
+		std::cerr << "Could not create a CCodecStream for module '" << m_PSModule << "'" << std::endl;
 		return true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

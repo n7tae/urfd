@@ -20,7 +20,14 @@
 #include <mutex>
 #include <condition_variable>
 
-// A threadsafe-queue.
+/************************************************************
+ *                 THIS IS IMPORTANT
+ * This template is primarly designed for std::unique_ptr!
+ * If you are going to use it for std::shared_ptr, then
+ * please consider that when you Push(), what you pushed
+ * from will be nullptr after the Push()!
+\************************************************************/
+
 template <class T>
 class CSafePacketQueue
 {
@@ -49,7 +56,7 @@ public:
 		}
 	}
 
-	// If the queue is empty, wait till a element is avaiable.
+	// If the queue is empty, wait until an element is avaiable.
 	T PopWait(void)
 	{
 		std::unique_lock<std::mutex> lock(m);
