@@ -284,7 +284,11 @@ void CReflector::RouterThread(const char ThisModule)
 				// get our callsign
 				CCallsign csRPT = (*it)->GetReflectorCallsign();
 				csRPT.SetCSModule(ThisModule);
-				(dynamic_cast<CDvHeaderPacket *>(tmp.get()))->SetRpt2Callsign(csRPT);
+				//(dynamic_cast<CDvHeaderPacket *>(tmp.get()))->SetRpt2Callsign(csRPT);
+				auto x = dynamic_cast<CDvHeaderPacket *>(tmp.get());
+				x->SetRpt2Callsign(csRPT);
+				if ((*it)->GetPort() == 30001)
+					std::cout << (*it)->GetReflectorCallsign() << ": " << csRPT << " == " << x->GetRpt2Callsign() << std::endl;
 			}
 
 			(*it)->Push(tmp);
