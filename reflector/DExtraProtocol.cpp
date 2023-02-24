@@ -211,6 +211,11 @@ void CDextraProtocol::HandleQueue(void)
 				// is this client busy ?
 				if ( !client->IsAMaster() && (client->GetReflectorModule() == packet->GetPacketModule()) )
 				{
+					if (packet->IsDvHeader())
+					{
+						buffer.Dump("Header packet");
+						std::cout << "Is going to " << client->GetCallsign() << " at " << client->GetIp() << std::endl;
+					}
 					// no, send the packet
 					int n = packet->IsDvHeader() ? 5 : 1;
 					for ( int i = 0; i < n; i++ )
