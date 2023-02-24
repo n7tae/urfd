@@ -275,16 +275,19 @@ void CReflector::RouterThread(const char ThisModule)
 		m_Protocols.Lock();
 		for ( auto it=m_Protocols.begin(); it!=m_Protocols.end(); it++ )
 		{
+			// make a copy! after the Push(tmp), tmp will be nullptr!
+			auto tmp = packet;
+
 			// if packet is header, update RPT2 according to protocol
-			if ( packet->IsDvHeader() )
+			if ( tmp->IsDvHeader() )
 			{
 				// get our callsign
 				CCallsign csRPT = (*it)->GetReflectorCallsign();
 				csRPT.SetCSModule(ThisModule);
-				(dynamic_cast<CDvHeaderPacket *>(packet.get()))->SetRpt2Callsign(csRPT);
+				std::cout << "For protocol on port " << (*it)->GetPort() << ", Rpt2Callsign is " << csRPT << std::endl;
+				(dynamic_cast<CDvHeaderPacket *>(tmp.get()))->SetRpt2Callsign(csRPT);
 			}
-			// make a copy! after the Push(tmp), tmp will be nullptr!
-			auto tmp = packet;
+
 			(*it)->Push(tmp);
 		}
 		m_Protocols.Unlock();

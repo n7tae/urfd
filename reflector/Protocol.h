@@ -73,6 +73,7 @@ public:
 
 	// get
 	const CCallsign &GetReflectorCallsign(void)const { return m_ReflectorCallsign; }
+	uint16_t GetPort(void) const { return m_Port; }
 
 	// task
 	void Thread(void);
@@ -135,7 +136,7 @@ protected:
 	CCallsign       m_ReflectorCallsign;
 
 	// data
-	uint8_t m_Port;
+	uint16_t m_Port;
 	// debug
 	CTimer      m_DebugTimer;
 };
