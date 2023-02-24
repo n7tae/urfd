@@ -133,10 +133,6 @@ void CCodecStream::Task(void)
 		}
 		m_RTSum += rt;
 		m_RTCount++;
-#ifdef DEBUG
-		if (0 == m_RTCount % 50)
-			ReportStats();
-#endif
 
 		if ( m_LocalQueue.IsEmpty() )
 		{

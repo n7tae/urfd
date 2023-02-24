@@ -33,8 +33,8 @@ public:
 	CCallsignList();
 
 	// locks
-	void Lock(void)                        { m_Mutex.lock(); }
-	void Unlock(void)                      { m_Mutex.unlock(); }
+	void Lock(void)   const { m_Mutex.lock();   }
+	void Unlock(void) const { m_Mutex.unlock(); }
 
 	// file io
 	virtual bool LoadFromFile(const std::string &str);
@@ -60,8 +60,8 @@ protected:
 	char *TrimWhiteSpaces(char *);
 
 	// data
-	std::mutex      m_Mutex;
-	std::string     m_Filename;
-	time_t          m_LastModTime;
+	mutable std::mutex m_Mutex;
+	std::string        m_Filename;
+	time_t             m_LastModTime;
 	std::list<CCallsignListItem> m_Callsigns;
 };

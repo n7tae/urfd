@@ -204,17 +204,20 @@ bool CGateKeeper::IsNodeListedOk(const CCallsign &callsign, const CIp &ip, char 
 	{
 		// first check if callsign is in white list
 		// note if white list is empty, everybody is authorized
-		const_cast<CCallsignList &>(m_NodeWhiteList).Lock();
+		m_NodeWhiteList.Lock();
 		if ( !m_NodeWhiteList.empty() )
 		{
 			ok = m_NodeWhiteList.IsCallsignListedWithWildcard(callsign, module);
 		}
-		const_cast<CCallsignList &>(m_NodeWhiteList).Unlock();
+		m_NodeWhiteList.Unlock();
 
 		// then check if not blacklisted
-		const_cast<CCallsignList &>(m_NodeBlackList).Lock();
-		ok &= !m_NodeBlackList.IsCallsignListedWithWildcard(callsign);
-		const_cast<CCallsignList &>(m_NodeBlackList).Unlock();
+		if (ok)
+		{
+			m_NodeBlackList.Lock();
+			ok = !m_NodeBlackList.IsCallsignListedWithWildcard(callsign);
+			m_NodeBlackList.Unlock();
+		}
 	}
 
 	// done
@@ -232,12 +235,12 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 	if ( ok )
 	{
 		// look for an exact match in the list
-		const_cast<CPeerCallsignList &>(m_PeerList).Lock();
+		m_PeerList.Lock();
 		if ( !m_PeerList.empty() )
 		{
 			ok = m_PeerList.IsCallsignListed(callsign, module);
 		}
-		const_cast<CPeerCallsignList &>(m_PeerList).Unlock();
+		m_PeerList.Unlock();
 	}
 
 	// done
@@ -254,12 +257,12 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 	if ( ok )
 	{
 		// look for an exact match in the list
-		const_cast<CPeerCallsignList &>(m_PeerList).Lock();
+		m_PeerList.Lock();
 		if ( !m_PeerList.empty() )
 		{
 			ok = m_PeerList.IsCallsignListed(callsign, modules);
 		}
-		const_cast<CPeerCallsignList &>(m_PeerList).Unlock();
+		m_PeerList.Unlock();
 	}
 
 	// done
