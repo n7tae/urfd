@@ -66,6 +66,7 @@ public:
 	void EncodeInterlinkPacket(CBuffer &buf) const;
 
 	// identity
+	std::unique_ptr<CPacket> Copy(void);
 	bool IsDvHeader(void) const                     { return true; }
 	bool IsDvFrame(void) const                     { return false; }
 

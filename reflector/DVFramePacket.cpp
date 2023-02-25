@@ -167,6 +167,11 @@ CDvFramePacket::CDvFramePacket(const int16_t *usrp, uint16_t streamid, bool isla
 	m_TCPack.codec_in = ECodecType::usrp;
 }
 
+std::unique_ptr<CPacket> CDvFramePacket::Copy(void)
+{
+	return std::unique_ptr<CPacket>(new CDvFramePacket(*this));
+}
+
 // Network
 unsigned int CDvFramePacket::GetNetworkSize()
 {

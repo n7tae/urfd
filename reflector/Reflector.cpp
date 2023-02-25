@@ -265,10 +265,8 @@ void CReflector::RouterThread(const char ThisModule)
 	while (keep_running)
 	{
 		// wait until something shows up
-		auto uptmp = streamIn->PopWait();
-		// convert the incoming packet to a shared_ptr
-		std::shared_ptr<CPacket> packet = std::move(uptmp);
-		// set origin
+		auto packet = streamIn->PopWait();
+
 		packet->SetPacketModule(ThisModule);
 
 		// iterate on all protocols
@@ -276,22 +274,18 @@ void CReflector::RouterThread(const char ThisModule)
 		for ( auto it=m_Protocols.begin(); it!=m_Protocols.end(); it++ )
 		{
 			// make a copy! after the Push(tmp), tmp will be nullptr!
-			auto tmp = packet;
+			auto copy = packet->Copy();
 
 			// if packet is header, update RPT2 according to protocol
-			if ( tmp->IsDvHeader() )
+			if ( copy->IsDvHeader() )
 			{
 				// get our callsign
 				CCallsign csRPT = (*it)->GetReflectorCallsign();
 				csRPT.SetCSModule(ThisModule);
-				//(dynamic_cast<CDvHeaderPacket *>(tmp.get()))->SetRpt2Callsign(csRPT);
-				auto x = dynamic_cast<CDvHeaderPacket *>(tmp.get());
-				x->SetRpt2Callsign(csRPT);
-				if ((*it)->GetPort() == 30001)
-					std::cout << (*it)->GetReflectorCallsign() << ": " << csRPT << " == " << x->GetRpt2Callsign() << std::endl;
+				(dynamic_cast<CDvHeaderPacket *>(copy.get()))->SetRpt2Callsign(csRPT);
 			}
 
-			(*it)->Push(tmp);
+			(*it)->Push(std::move(copy));
 		}
 		m_Protocols.Unlock();
 	}

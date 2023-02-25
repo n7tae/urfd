@@ -41,6 +41,7 @@ public:
 	CPacket(const CM17Packet &);
 
 	// identity
+	virtual std::unique_ptr<CPacket> Copy(void) = 0;
 	virtual bool IsDvHeader(void) const = 0;
 	virtual bool IsDvFrame(void) const = 0;
 	bool IsLastPacket(void) const                { return m_bLastPacket; }

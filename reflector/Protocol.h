@@ -80,7 +80,7 @@ public:
 	virtual void Task(void) = 0;
 
 	// pass-through
-	void Push(std::shared_ptr<CPacket> p) { m_Queue.Push(p); }
+	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
 
 protected:
 	// stream helpers
@@ -126,7 +126,7 @@ protected:
 	std::unordered_map<uint16_t, std::shared_ptr<CPacketStream>> m_Streams;
 
 	// queue
-	CSafePacketQueue<std::shared_ptr<CPacket>> m_Queue;
+	CSafePacketQueue<std::unique_ptr<CPacket>> m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;
