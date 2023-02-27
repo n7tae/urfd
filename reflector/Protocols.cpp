@@ -64,9 +64,12 @@ bool CProtocols::Init(void)
 		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::dmrmmdvm, uint16_t(g_Conf.GetUnsigned(g_Keys.mmdvm.port)), DMR_IPV4, DMR_IPV6))
 			return false;
 
-		m_Protocols.emplace_back(std::unique_ptr<CBMProtocol>(new CBMProtocol));
-		if (! m_Protocols.back()->Initialize("XLX", EProtocol::bm, uint16_t(g_Conf.GetUnsigned(g_Keys.bm.port)), DMR_IPV4, DMR_IPV6))
-			return false;
+		if (g_Conf.GetBoolean(g_Keys.bm.enable))
+		{
+			m_Protocols.emplace_back(std::unique_ptr<CBMProtocol>(new CBMProtocol));
+			if (! m_Protocols.back()->Initialize("XLX", EProtocol::bm, uint16_t(g_Conf.GetUnsigned(g_Keys.bm.port)), DMR_IPV4, DMR_IPV6))
+				return false;
+		}
 
 		m_Protocols.emplace_back(std::unique_ptr<CDmrplusProtocol>(new CDmrplusProtocol));
 		if (! m_Protocols.back()->Initialize(nullptr, EProtocol::dmrplus, uint16_t(g_Conf.GetUnsigned(g_Keys.dmrplus.port)), DMR_IPV4, DMR_IPV6))
@@ -88,17 +91,23 @@ bool CProtocols::Init(void)
 		if (! m_Protocols.back()->Initialize("NXDN", EProtocol::nxdn, uint16_t(g_Conf.GetUnsigned(g_Keys.nxdn.port)), NXDN_IPV4, NXDN_IPV6))
 			return false;
 
-		m_Protocols.emplace_back(std::unique_ptr<CUSRPProtocol>(new CUSRPProtocol));
-		if (! m_Protocols.back()->Initialize("USRP", EProtocol::usrp, uint16_t(g_Conf.GetUnsigned(g_Keys.usrp.port)), USRP_IPV4, USRP_IPV6))
-			return false;
+		if (g_Conf.GetBoolean(g_Keys.usrp.enable))
+		{
+			m_Protocols.emplace_back(std::unique_ptr<CUSRPProtocol>(new CUSRPProtocol));
+			if (! m_Protocols.back()->Initialize("USRP", EProtocol::usrp, uint16_t(g_Conf.GetUnsigned(g_Keys.usrp.port)), USRP_IPV4, 	USRP_IPV6))
+				return false;
+		}
 
 		m_Protocols.emplace_back(std::unique_ptr<CURFProtocol>(new CURFProtocol));
 		if (! m_Protocols.back()->Initialize("URF", EProtocol::urf, uint16_t(g_Conf.GetUnsigned(g_Keys.urf.port)), URF_IPV4, URF_IPV6))
 			return false;
 
-		m_Protocols.emplace_back(std::unique_ptr<CG3Protocol>(new CG3Protocol));
-		if (! m_Protocols.back()->Initialize("XLX", EProtocol::g3, G3_DV_PORT, DMR_IPV4, DMR_IPV6))
+		if (g_Conf.GetBoolean(g_Keys.g3.enable))
+		{
+			m_Protocols.emplace_back(std::unique_ptr<CG3Protocol>(new CG3Protocol));
+			if (! m_Protocols.back()->Initialize("XLX", EProtocol::g3, G3_DV_PORT, DMR_IPV4, DMR_IPV6))
 			return false;
+		}
 
 	}
 	m_Mutex.unlock();

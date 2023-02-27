@@ -25,7 +25,7 @@
 
 enum class ErrorLevel { fatal, mild };
 enum class ERefreshType { file, http, both };
-enum class ESection { none, names, ip, modules, urf, dplus, dextra, dcs, dmrplus, mmdvm, nxdn, bm, ysf, p25, m17, usrp, dmrid, nxdnid, ysffreq, files };
+enum class ESection { none, names, ip, modules, urf, dplus, dextra, dcs, g3, dmrplus, mmdvm, nxdn, bm, ysf, p25, m17, usrp, dmrid, nxdnid, ysffreq, files };
 
 #define IS_TRUE(a) ((a)=='t' || (a)=='T' || (a)=='1')
 
@@ -37,6 +37,7 @@ public:
 	void Dump(bool justpublic) const;
 	std::string GetString(const std::string &key) const;
 	unsigned GetUnsigned(const std::string &key) const;
+	bool GetBoolean(const std::string &key) const;
 	ERefreshType GetRefreshType(const std::string &key) const;
 	bool IsString(const std::string &key) const;
 	char GetAutolinkModule(const std::string &key) const;
@@ -51,6 +52,7 @@ private:
 	unsigned getUnsigned(const std::string &value, const std::string &label, unsigned min, unsigned max, unsigned defaultvalue) const;
 	void badParam(const std::string &param) const;
 	bool checkModules(std::string &m) const;
+	void checkFile(const std::string &section, const std::string &key, const std::string &filepath) const;
 	void setAutolink(const std::string &section, const std::string &key, const std::string &value);
 	bool isDefined(ErrorLevel level, const std::string &section, const std::string &pname, const std::string &key, bool &rval);
 	void checkAutoLink(const std::string &section, const std::string &pname, const std::string &key, bool &rval);

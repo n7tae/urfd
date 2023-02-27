@@ -47,7 +47,7 @@ CReflector::~CReflector()
 bool CReflector::Start(void)
 {
 	// get config stuff
-	m_Callsign = CCallsign(g_Conf.GetString(g_Keys.names.cs).c_str(), false);
+	m_Callsign = CCallsign(g_Conf.GetString(g_Keys.names.callsign).c_str(), false);
 	m_Modules.assign(g_Conf.GetString(g_Keys.modules.modules));
 	std::string tcmods(g_Conf.GetString(g_Keys.modules.tcmodules));
 
@@ -273,15 +273,15 @@ void CReflector::RouterThread(const char ThisModule)
 		m_Protocols.Lock();
 		for ( auto it=m_Protocols.begin(); it!=m_Protocols.end(); it++ )
 		{
-			// make a copy! after the Push(tmp), tmp will be nullptr!
 			auto copy = packet->Copy();
 
 			// if packet is header, update RPT2 according to protocol
 			if ( copy->IsDvHeader() )
 			{
-				// get our callsign
+				// make the protocol-patched reflector callsign
 				CCallsign csRPT = (*it)->GetReflectorCallsign();
 				csRPT.SetCSModule(ThisModule);
+				// and put it in the copy
 				(dynamic_cast<CDvHeaderPacket *>(copy.get()))->SetRpt2Callsign(csRPT);
 			}
 

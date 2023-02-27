@@ -16,6 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
@@ -34,10 +35,8 @@
 #define JBLACKLISTPATH           "BlacklistPath"
 #define JBRANDMEISTER            "Brandmeister"
 #define JCALLSIGN                "Callsign"
-#define JCLIENTSPATH             "ClientFilePath"
 #define JCOUNTRY                 "Country"
 #define JDCS                     "DCS"
-#define JDEFAULTCALLSIGN         "DefaultCallsign"
 #define JDEFAULTID               "DefaultId"
 #define JDEFAULTRXFREQ           "DefaultRxFreq"
 #define JDEFAULTTXFREQ           "DefaultTxFreq"
@@ -46,8 +45,10 @@
 #define JDMRIDDB                 "DMR ID DB"
 #define JDMRPLUS                 "DMRPlus"
 #define JDPLUS                   "DPlus"
+#define JENABLE                  "Enable"
 #define JFILES                   "Files"
 #define JFILEPATH                "FilePath"
+#define JG3                      "G3"
 #define JG3TERMINALPATH          "G3TerminalPath"
 #define JINTERLINKPATH           "InterlinkPath"
 #define JIPADDRESSES             "IpAddresses"
@@ -58,6 +59,7 @@
 #define JM17                     "M17"
 #define JMMDVM                   "MMDVM"
 #define JMODE                    "Mode"
+#define JMODULE                  "Module"
 #define JMODULES                 "Modules"
 #define JNAMES                   "Names"
 #define JNXDNIDDB                "NXDN ID DB"
@@ -178,6 +180,8 @@ bool CConfigure::ReadData(const std::string &path)
 				section = ESection::dplus;
 			else if (0 == hname.compare(JDEXTRA))
 				section = ESection::dextra;
+			else if (0 == hname.compare(JG3))
+				section = ESection::g3;
 			else if (0 == hname.compare(JDMRPLUS))
 				section = ESection::dmrplus;
 			else if (0 == hname.compare(JMMDVM))
@@ -241,7 +245,7 @@ bool CConfigure::ReadData(const std::string &path)
 		{
 			case ESection::names:
 				if (0 == key.compare(JCALLSIGN))
-					data[g_Keys.names.cs] = value;
+					data[g_Keys.names.callsign] = value;
 				else if (0 == key.compare(JSYSOPEMAIL))
 					data[g_Keys.names.email] = value;
 				else if (0 == key.compare(JCOUNTRY))
@@ -313,6 +317,8 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::bm:
 				if (0 == key.compare(JPORT))
 					data[g_Keys.bm.port] = getUnsigned(value, "Brandmeister Port", 1024, 65535, 10002);
+				else if (0 == key.compare(JENABLE))
+					data[g_Keys.bm.enable] = IS_TRUE(value[0]);
 				else
 					badParam(key);
 				break;
@@ -325,6 +331,12 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::dextra:
 				if (0 == key.compare(JPORT))
 					data[g_Keys.dextra.port] = getUnsigned(value, "DExtra Port", 1024, 65535, 30001);
+				else
+					badParam(key);
+				break;
+			case ESection::g3:
+				if (0 == key.compare(JENABLE))
+					data[g_Keys.g3.enable] = IS_TRUE(value[0]);
 				else
 					badParam(key);
 				break;
@@ -381,21 +393,16 @@ bool CConfigure::ReadData(const std::string &path)
 					badParam(key);
 				break;
 			case ESection::usrp:
-				if (0 == key.compare(JPORT))
-					data[g_Keys.usrp.port] = getUnsigned(value, "USRP Port", 1024, 65535, 34001);
-				else if (0 == key.compare(JAUTOLINKMODULE))
-					setAutolink(JUSRP, g_Keys.usrp.autolinkmod, value);
-				else if (0 == key.compare(JDEFAULTCALLSIGN))
-				{
-					std::string cs;
-					for (auto &c : value)
-						if (isalnum(c))
-							cs.append(1, toupper(c));
-					if (cs.size() > 7) cs.resize(7);
-					data[g_Keys.usrp.defaultcallsign] = cs;
-				}
-				else if (0 == key.compare(JCLIENTSPATH))
-					data[g_Keys.usrp.clientfilepath] = value;
+				if (0 == key.compare(JENABLE))
+					data[g_Keys.usrp.enable] = IS_TRUE(value[0]);
+				else if (0 == key.compare(JPORT))
+					data[g_Keys.usrp.port] = getUnsigned(value, "USRP Port", 1024, 65535, 32000);
+				else if (0 == key.compare(JMODULE))
+					data[g_Keys.usrp.module] = value.substr(0, 1);
+				else if (0 == key.compare(JCALLSIGN))
+					data[g_Keys.usrp.callsign] = value;
+				else if (0 == key.compare(JFILEPATH))
+					data[g_Keys.usrp.filepath] = value;
 				else
 					badParam(key);
 				break;
@@ -478,13 +485,13 @@ bool CConfigure::ReadData(const std::string &path)
 
 	////////////////////////////// check the input
 	// Names section
-	if (isDefined(ErrorLevel::fatal, JNAMES, JCALLSIGN, g_Keys.names.cs, rval))
+	if (isDefined(ErrorLevel::fatal, JNAMES, JCALLSIGN, g_Keys.names.callsign, rval))
 	{
-		const auto cs = data[g_Keys.names.cs].get<std::string>();
+		const auto cs = data[g_Keys.names.callsign].get<std::string>();
 		auto RefRegEx = std::regex("^URF([A-Z0-9]){3,3}$", std::regex::extended);
 		if (! std::regex_match(cs, RefRegEx))
 		{
-			std::cerr << "ERROR: [" << JNAMES << "] " << JCALLSIGN << " '" << cs <<  "' is malformed" << std::endl;
+			std::cerr << "ERROR: [" << JNAMES << ']' << JCALLSIGN << " '" << cs <<  "' is malformed" << std::endl;
 			rval = true;
 		}
 	}
@@ -586,7 +593,7 @@ bool CConfigure::ReadData(const std::string &path)
 			// how many transcoded modules
 			auto size = tcmods.size();
 			if (3 != size && 1 != size)
-				std::cout << "WARNING: [" << JMODULES << "] " << JTRANSCODED << " doesn't define three (or one) modules" << std::endl;
+				std::cout << "WARNING: [" << JMODULES << ']' << JTRANSCODED << " doesn't define three (or one) modules" << std::endl;
 
 			// make sure each transcoded module is configured
 			for (auto c : data[g_Keys.modules.tcmodules])
@@ -626,29 +633,68 @@ bool CConfigure::ReadData(const std::string &path)
 	}
 
 	// "simple" protocols with only a Port
-	isDefined(ErrorLevel::fatal, JBRANDMEISTER, JPORT, g_Keys.bm.port, rval);
 	isDefined(ErrorLevel::fatal, JDCS, JPORT, g_Keys.dcs.port, rval);
 	isDefined(ErrorLevel::fatal, JDEXTRA, JPORT, g_Keys.dextra.port, rval);
 	isDefined(ErrorLevel::fatal, JDMRPLUS, JPORT, g_Keys.dmrplus.port, rval);
 	isDefined(ErrorLevel::fatal, JDPLUS, JPORT, g_Keys.dplus.port, rval);
 	isDefined(ErrorLevel::fatal, JM17, JPORT, g_Keys.m17.port, rval);
 	isDefined(ErrorLevel::fatal, JURF, JPORT, g_Keys.urf.port, rval);
+
+	// BM
+	if (isDefined(ErrorLevel::fatal, JBRANDMEISTER, JENABLE, g_Keys.bm.enable, rval))
+	{
+		if (GetBoolean(g_Keys.bm.enable))
+		{
+			isDefined(ErrorLevel::fatal, JBRANDMEISTER, JPORT, g_Keys.bm.port, rval);
+		}
+	}
+
+	// G3
+	isDefined(ErrorLevel::fatal, JG3, JENABLE, g_Keys.g3.enable, rval);
+
 	// MMDVM
 	isDefined(ErrorLevel::fatal, JMMDVM, JPORT, g_Keys.mmdvm.port, rval);
 	isDefined(ErrorLevel::fatal, JMMDVM, JDEFAULTID, g_Keys.mmdvm.defaultid, rval);
+
 	// NXDN
 	isDefined(ErrorLevel::fatal, JNXDN, JPORT, g_Keys.nxdn.port, rval);
 	checkAutoLink(JNXDN, JAUTOLINKMODULE, g_Keys.nxdn.autolinkmod, rval);
 	isDefined(ErrorLevel::fatal, JNXDN, JREFLECTORID, g_Keys.nxdn.reflectorid, rval);
+
 	// P25
 	isDefined(ErrorLevel::fatal, JP25, JPORT, g_Keys.p25.port, rval);
 	checkAutoLink(JP25, JAUTOLINKMODULE, g_Keys.p25.autolinkmod, rval);
 	isDefined(ErrorLevel::fatal, JP25, JREFLECTORID, g_Keys.p25.reflectorid, rval);
+
 	// USRP
-	isDefined(ErrorLevel::fatal, JUSRP, JPORT, g_Keys.usrp.port, rval);
-	checkAutoLink(JUSRP, JAUTOLINKMODULE, g_Keys.usrp.autolinkmod, rval);
-	isDefined(ErrorLevel::fatal, JUSRP, JDEFAULTCALLSIGN, g_Keys.usrp.defaultcallsign, rval);
-	isDefined(ErrorLevel::fatal, JUSRP, JCLIENTSPATH, g_Keys.usrp.clientfilepath, rval);
+	if (isDefined(ErrorLevel::fatal, JUSRP, JENABLE, g_Keys.usrp.enable, rval))
+	{
+		if (GetBoolean(g_Keys.usrp.enable))
+		{
+			if (IsString(g_Keys.modules.tcmodules))
+			{
+				if (isDefined(ErrorLevel::fatal, JUSRP, JMODULE, g_Keys.usrp.module, rval))
+				{
+					if (std::string::npos == GetString(g_Keys.modules.tcmodules).find(GetString(g_Keys.usrp.module).at(0)))
+					{
+						std::cerr << "ERROR: [" << JUSRP << ']' << JMODULE << " is not a transcoded module" << std::endl;
+						rval = true;
+					}
+				}
+				isDefined(ErrorLevel::fatal, JUSRP, JPORT, g_Keys.usrp.port, rval);
+				isDefined(ErrorLevel::fatal, JUSRP, JCALLSIGN, g_Keys.usrp.callsign, rval);
+				//if (isDefined(ErrorLevel::fatal, JUSRP, JFILEPATH, g_Keys.usrp.filepath, rval))
+				if (data.contains(g_Keys.usrp.filepath))
+					checkFile(JUSRP, JFILEPATH, data[g_Keys.usrp.filepath]);
+			}
+			else
+			{
+				std::cerr << "ERROR: " << JUSRP << " requires a transoder" << std::endl;
+				rval = true;
+			}
+		}
+	}
+
 	// YSF
 	isDefined(ErrorLevel::fatal, JYSF, JPORT, g_Keys.ysf.port, rval);
 	checkAutoLink(JYSF, JAUTOLINKMODULE, g_Keys.ysf.autolinkmod, rval);
@@ -657,6 +703,7 @@ bool CConfigure::ReadData(const std::string &path)
 	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONID, g_Keys.ysf.ysfreflectordb.id, rval);
 	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONNAME, g_Keys.ysf.ysfreflectordb.name, rval);
 	isDefined(ErrorLevel::mild, JYSF, JREGISTRATIONDESCRIPTION, g_Keys.ysf.ysfreflectordb.description, rval);
+
 	// Databases
 	std::list<std::pair<const std::string, const struct SJsonKeys::DB *>> dbs = {
 		{ JDMRIDDB,   &g_Keys.dmriddb   },
@@ -665,18 +712,36 @@ bool CConfigure::ReadData(const std::string &path)
 	};
 	for ( auto &item : dbs )
 	{
-		isDefined(ErrorLevel::fatal, item.first, JURL,        item.second->url,        rval);
-		isDefined(ErrorLevel::fatal, item.first, JMODE,       item.second->mode,       rval);
-		isDefined(ErrorLevel::fatal, item.first, JREFRESHMIN, item.second->refreshmin, rval);
-		isDefined(ErrorLevel::fatal, item.first, JFILEPATH,   item.second->filepath,   rval);
+		if (isDefined(ErrorLevel::fatal, item.first, JMODE,       item.second->mode,       rval))
+		{
+			if (ERefreshType::file != GetRefreshType(item.second->mode))
+			{
+				isDefined(ErrorLevel::fatal, item.first, JURL,        item.second->url,        rval);
+				isDefined(ErrorLevel::fatal, item.first, JREFRESHMIN, item.second->refreshmin, rval);
+			}
+			if (ERefreshType::http != GetRefreshType(item.second->mode))
+			{
+				if (isDefined(ErrorLevel::fatal, item.first, JFILEPATH,   item.second->filepath,   rval))
+					checkFile(item.first, JFILEPATH, data[item.second->filepath]);
+			}
+		}
 	}
+
 	// Other files
 	isDefined(ErrorLevel::fatal, JFILES, JPIDPATH,        g_Keys.files.pid,       rval);
 	isDefined(ErrorLevel::fatal, JFILES, JREFLSTATEPATH,  g_Keys.files.state,     rval);
-	isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH,  g_Keys.files.white,     rval);
-	isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH,  g_Keys.files.black,     rval);
-	isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH,  g_Keys.files.interlink, rval);
-	isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, g_Keys.files.terminal,  rval);
+	if (isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH,  g_Keys.files.white,     rval))
+		checkFile(JFILES, JWHITELISTPATH, data[g_Keys.files.white]);
+	if (isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH,  g_Keys.files.black,     rval))
+		checkFile(JFILES, JBLACKLISTPATH, data[g_Keys.files.black]);
+	if (isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH,  g_Keys.files.interlink, rval))
+		checkFile(JFILES, JINTERLINKPATH, data[g_Keys.files.interlink]);
+	if (data.contains(g_Keys.g3.enable) && GetBoolean(g_Keys.g3.enable))
+	{
+		if (isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, g_Keys.files.terminal,  rval))
+			checkFile(JFILES, JG3TERMINALPATH, data[g_Keys.files.terminal]);
+	}
+
 
 	return rval;
 }
@@ -688,12 +753,12 @@ bool CConfigure::isDefined(ErrorLevel level, const std::string &section, const s
 
 	if (ErrorLevel::mild == level)
 	{
-		std::cout << "WARNING: [" << section << "] " << pname << " is not defined" << std::endl;
+		std::cout << "WARNING: [" << section << ']' << pname << " is not defined" << std::endl;
 		data[key] = nullptr;
 	}
 	else
 	{
-		std::cerr << "ERROR: [" << section << "] " << pname << " is not defined" << std::endl;
+		std::cerr << "ERROR: [" << section << ']' << pname << " is not defined" << std::endl;
 		rval = true;
 	}
 	return false;
@@ -708,7 +773,7 @@ void CConfigure::checkAutoLink(const std::string &section, const std::string &pn
 		const auto c = data[key].get<std::string>().at(0);
 		if (std::string::npos == mods.find(c))
 		{
-			std::cerr << "ERROR: [" << section << "] " << pname << " module '" << c << "' not a configured module" << std::endl;
+			std::cerr << "ERROR: [" << section << ']' << pname << " module '" << c << "' not a configured module" << std::endl;
 			rval = true;
 		}
 	}
@@ -765,6 +830,16 @@ void CConfigure::setAutolink(const std::string &section, const std::string &key,
 		data[key] = std::string(1, c);
 	else
 		std::cout << "WARNING: line #" << counter << ": " << section << " AutoLinkModule is invalid: '" << value.substr(0, 1) << "'" << std::endl;
+}
+
+void CConfigure::checkFile(const std::string &section, const std::string &key, const std::string &filepath) const
+{
+	struct stat sstat;
+	auto rval = stat(filepath.c_str(), &sstat);
+	if (rval)
+	{
+		std::cout << "WARNING: [" << section << ']' << key << " \"" << filepath << "\": " << strerror(errno) << std::endl;
+	}
 }
 
 void CConfigure::Dump(bool justpublic) const
@@ -841,6 +916,14 @@ unsigned CConfigure::GetUnsigned(const std::string &key) const
 		std::cerr << "ERROR: GetString(): item at '" << key << "' is not defined" << std::endl;
 	}
 	return u;
+}
+
+bool CConfigure::GetBoolean(const std::string &key) const
+{
+	if (data[key].is_boolean())
+		return data[key];
+	else
+		return false;
 }
 
 char CConfigure::GetAutolinkModule(const std::string &key) const

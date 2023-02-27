@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	std::cout << "IPv4 binding address is '" << g_Conf.GetString(g_Keys.ip.ipv4bind) << "'" << std::endl;
 	// remove pidfile
 	const std::string pidpath(g_Conf.GetString(g_Keys.files.pid));
-	const std::string callsign(g_Conf.GetString(g_Keys.names.cs));
+	const std::string callsign(g_Conf.GetString(g_Keys.names.callsign));
 	remove(pidpath.c_str());
 
 	// splash

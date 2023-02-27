@@ -1,8 +1,5 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
-// Copyright © 2021 Doug McLain AD8DP
+// Copyright © 2023 Doug McLain AD8DP
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,12 +21,9 @@
 #include "Protocol.h"
 #include "DVHeaderPacket.h"
 #include "DVFramePacket.h"
+#include "Timer.h"
+#include "Clients.h"
 
-////////////////////////////////////////////////////////////////////////////////////////
-// define
-
-#define USRP_MODULE_ID             'B'
-////////////////////////////////////////////////////////////////////////////////////////
 // class
 
 class CUSRPStreamCacheItem
@@ -74,7 +68,8 @@ protected:
 	std::unordered_map<char, CUSRPStreamCacheItem> m_StreamsCache;
 	uint32_t m_uiStreamId;
 
-	// config data
-	std::string m_DefaultCallsign;
-	char m_AutolinkModule;
+private:
+	// CConfigure data
+	std::string m_CStr;
+	char m_Module;
 };

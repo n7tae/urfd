@@ -1,8 +1,5 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
-// Copyright © 2021 Doug McLain AD8DP
+// Copyright © 2023 Doug McLain AD8DP
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,13 +34,8 @@ const uint8_t TLV_TAG_SET_INFO = 8;
 
 bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
-	// config data
-	m_DefaultCallsign.assign(g_Conf.GetString(g_Keys.usrp.defaultcallsign));
-	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.usrp.autolinkmod);
 	CBuffer buffer;
 	m_uiStreamId = 0;
-	CCallsign cs(m_DefaultCallsign.c_str());
-	CClients *clients = g_Refl.GetClients();
 	std::ifstream file;
 	std::streampos size;
 
@@ -51,7 +43,10 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
-	file.open(g_Conf.GetString(g_Keys.usrp.clientfilepath), std::ios::in | std::ios::binary | std::ios::ate);
+	m_CStr.assign(g_Conf.GetString(g_Keys.usrp.callsign));
+	m_Module = g_Conf.GetString(g_Keys.usrp.module).at(0);
+
+	file.open(g_Conf.GetString(g_Keys.usrp.filepath), std::ios::in | std::ios::binary | std::ios::ate);
 	if ( file.is_open() )
 	{
 		// read file
@@ -78,24 +73,24 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 			*ptr2 = 0;
 			char *ip;
 			char *port;
-			if ((ip = ::strtok(ptr1, ";")) != nullptr)
-			{
-				if ( ((port = ::strtok(nullptr, ";")) != nullptr) )
-				{
-					uint32_t ui = atoi(port);
-					CIp Ip(AF_INET, ui, ip);
-					auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
-					if (m_AutolinkModule)
-						newclient->SetReflectorModule(m_AutolinkModule);
+			char *clientcs;
 
-					clients->AddClient(newclient);
-				}
+			if ( ((ip = ::strtok(ptr1, ";")) != nullptr) &&
+				((port = ::strtok(nullptr, ";")) != nullptr) &&
+				((clientcs = ::strtok(nullptr, ";")) != nullptr) )
+			{
+				uint32_t ui = atoi(port);
+				CIp Ip(AF_INET, ui, ip);
+				CCallsign cs(clientcs);
+				auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
+				newclient->SetReflectorModule(m_Module);
+				g_Refl.GetClients()->AddClient(newclient);
+				g_Refl.ReleaseClients();
 			}
 			ptr1 = ptr2+1;
 		}
 	}
 
-	g_Refl.ReleaseClients();
 	// update time
 	m_LastKeepaliveTime.start();
 
@@ -279,12 +274,14 @@ bool CUSRPProtocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::u
 		if ( !stream )
 		{
 			m_uiStreamId = static_cast<uint32_t>(::rand());
-			CCallsign csMY = CCallsign(m_DefaultCallsign.c_str());
-			CCallsign rpt1 = CCallsign(m_DefaultCallsign.c_str());
-			CCallsign rpt2 = m_ReflectorCallsign;
-			rpt1.SetCSModule(USRP_MODULE_ID);
+			CCallsign csMY, rpt1, rpt2, csUR;
+			csMY.SetCallsign(m_CStr, false);
+			rpt1.SetCallsign(m_CStr, false);
+			rpt2 = m_ReflectorCallsign;
+			csUR.SetCallsign("CQCQCQ", false);
+			rpt1.SetCSModule(m_Module);
 			rpt2.SetCSModule(' ');
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, true));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, csUR, rpt1, rpt2, m_uiStreamId, true));
 			OnDvHeaderPacketIn(header, Ip);
 		}
 
@@ -310,9 +307,11 @@ bool CUSRPProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffer, 
 			CCallsign csMY = CCallsign("", uiSrcId);
 			CCallsign rpt1 = CCallsign("", uiSrcId);
 			CCallsign rpt2 = m_ReflectorCallsign;
-			rpt1.SetCSModule(USRP_MODULE_ID);
+			CCallsign csUR;
+			csUR.SetCallsign("CQCQCQ", false);
+			rpt1.SetCSModule(m_Module);
 			rpt2.SetCSModule(' ');
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, true));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, csUR, rpt1, rpt2, m_uiStreamId, true));
 		}
 		return true;
 	}
