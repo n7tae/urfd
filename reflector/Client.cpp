@@ -95,22 +95,3 @@ void CClient::WriteXml(std::ofstream &xmlFile)
 	}
 	xmlFile << "</NODE>" << std::endl;
 }
-
-void CClient::GetJsonObject(char *Buffer)
-{
-	char sz[512];
-	char mbstr[100];
-	char cs[16];
-
-	if (std::strftime(mbstr, sizeof(mbstr), "%A %c", std::localtime(&m_LastHeardTime)))
-	{
-		m_Callsign.GetCallsignString(cs);
-
-		::sprintf(sz, "{\"callsign\":\"%s\",\"module\":\"%c\",\"linkedto\":\"%c\",\"time\":\"%s\"}",
-				  cs,
-				  m_Callsign.GetCSModule(),
-				  m_ReflectorModule,
-				  mbstr);
-		::strcat(Buffer, sz);
-	}
-}

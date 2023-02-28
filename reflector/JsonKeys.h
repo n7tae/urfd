@@ -66,6 +66,6 @@ struct SJsonKeys {
 	nxdniddb  { "nxdnIdDbUrl", "nxdnIdDbMode", "nxdnIdDbRefresh", "nxdnIdDbFilePath" },
 	ysftxrxdb {  "ysfIdDbUrl",  "ysfIdDbMode",  "ysfIdDbRefresh",  "ysfIdDbFilePath" };
 
-	struct FILES { const std::string pid, state, white, black, interlink, terminal; }
-	files { "pidFilePath", "stateFilePath", "whitelistFilePath", "blacklistFilePath", "interlinkFilePath", "g3TerminalFilePath" };
+	struct FILES { const std::string pid, xml, json, white, black, interlink, terminal; }
+	files { "pidFilePath", "xmlFilePath", "jsonFilePath", "whitelistFilePath", "blacklistFilePath", "interlinkFilePath", "g3TerminalFilePath" };
 };

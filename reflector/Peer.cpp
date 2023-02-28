@@ -124,21 +124,3 @@ void CPeer::WriteXml(std::ofstream &xmlFile)
 	}
 	xmlFile << "</PEER>" << std::endl;
 }
-
-void CPeer::GetJsonObject(char *Buffer)
-{
-	char sz[512];
-	char mbstr[100];
-	char cs[16];
-
-	if (std::strftime(mbstr, sizeof(mbstr), "%A %c", std::localtime(&m_LastHeardTime)))
-	{
-		m_Callsign.GetCallsignString(cs);
-
-		::sprintf(sz, "{\"callsign\":\"%s\",\"linkedto\":\"%s\",\"time\":\"%s\"}",
-				  cs,
-				  m_ReflectorModules,
-				  mbstr);
-		::strcat(Buffer, sz);
-	}
-}

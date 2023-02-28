@@ -24,7 +24,7 @@ INICHECK = inicheck
 
 DBUTIL = dbutil
 
-include configure.mk
+include urfd.mk
 
 ifeq ($(debug), true)
 CFLAGS = -ggdb3 -DDEBUG -W -Werror -std=c++11 -MMD -MD

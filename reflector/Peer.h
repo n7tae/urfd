@@ -68,7 +68,6 @@ public:
 
 	// reporting
 	virtual void WriteXml(std::ofstream &);
-	virtual void GetJsonObject(char *);
 
 protected:
 	// data

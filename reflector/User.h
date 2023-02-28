@@ -41,7 +41,6 @@ public:
 
 	// reporting
 	void WriteXml(std::ofstream &);
-	void GetJsonObject(char *);
 
 protected:
 	// data

@@ -57,28 +57,6 @@ InstallReflector () {
 	popd
 }
 
-Clean () {
-	pushd reflector
-	make clean
-	popd
-	pushd ../tcd
-	make clean
-	popd
-}
-
-Compile () {
-	local np
-	np=`getconf _NPROCESSORS_ONLN`
-	pushd reflector
-	make -j$np || read -p "<Enter to continue: " ans
-	popd
-	if [[ "$tcaddress" != none ]]; then
-		pushd ../tcd
-		make -j$np || read -p "<Enter to continue: " ans
-		popd
-	fi
-}
-
 # Execution starts here!
 
 # service file locations
@@ -118,10 +96,6 @@ do
 	git status | head -1
 	echo
 	echo "ls : List the configuration file"
-	echo "cl : Clean (remove) compiled objects and executables"
-	echo "gp : Pull the latest software from the repo"
-	echo "br : Change git branch to <value>"
-	echo "co : Compile the system executable(s)"
 	if [ -e $urfserv ]; then
 		if [ -e $urfserv ]; then
 			echo "us : Uninstall the URF reflector"
@@ -164,33 +138,11 @@ do
 		if [ -e reflector/urfd ] && [ ! -e $urfserv ]; then
 			InstallReflector
 		fi
-	elif [[ "$key" == gp* ]]; then
-		echo
-		git pull
-		echo
-		read -p "<Enter> to continue: " ans
-		pushd ../tcd
-		git pull
-		echo
-		read -p "<Enter> to continue: " ans
-		popd
-	elif [[ "$key" == br* ]]; then
-		echo
-		git checkout "$value"
-		echo
-		read -p "<Enter> to continue: " ans
-		pushd ../tcd
-		git checkout "$value"
-		echo
-		read -p "<Enter> to continue: " ans
-		popd
 	elif [[ "$key" == rr* ]]; then
 		if   [ -e $urfserv ]; then
 			sudo systemctl restart urfd
 		fi
 	elif [[ "$key" == tr* ]] && [ -e $tcdserv ]; then sudo systemctl restart tcd
-	elif [[ "$key" == cl* ]]; then Clean
-	elif [[ "$key" == co* ]]; then Compile
 	elif [[ "$key" == tl* ]] && [ -e $tcdserv ]; then sudo journalctl -u tcd -f
 	elif [[ "$key" == rl* ]] && [ -e $urfserv ]; then sudo journalctl -u urfd -f
 	fi

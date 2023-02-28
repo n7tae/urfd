@@ -76,24 +76,3 @@ void CUser::WriteXml(std::ofstream &xmlFile)
 	}
 	xmlFile << "</STATION>" << std::endl;
 }
-
-void CUser::GetJsonObject(char *Buffer)
-{
-	char sz[512];
-	char mbstr[100];
-	char my[16];
-	char rpt1[16];
-
-	if (std::strftime(mbstr, sizeof(mbstr), "%A %c", std::localtime(&m_LastHeardTime)))
-	{
-		m_My.GetCallsignString(my);
-		m_Rpt1.GetCallsignString(rpt1);
-
-		::sprintf(sz, "{\"callsign\":\"%s\",\"node\":\"%s\",\"module\":\"%c\",\"time\":\"%s\"}",
-				  my,
-				  rpt1,
-				  m_Rpt1.GetCSModule(),
-				  mbstr);
-		::strcat(Buffer, sz);
-	}
-}

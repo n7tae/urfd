@@ -56,6 +56,7 @@
 #define JIPV4EXTERNAL            "IPv4External"
 #define JIPV6BINDING             "IPv6Binding"
 #define JIPV6EXTERNAL            "IPv6External"
+#define JJSONPATH                "JsonPath"
 #define JM17                     "M17"
 #define JMMDVM                   "MMDVM"
 #define JMODE                    "Mode"
@@ -73,7 +74,6 @@
 #define JREGISTRATIONID          "RegistrationID"
 #define JREGISTRATIONNAME        "RegistrationName"
 #define JSPONSOR                 "Sponsor"
-#define JREFLSTATEPATH           "ReflStatePath"
 #define JSYSOPEMAIL              "SysopEmail"
 #define JTRANSCODED              "Transcoded"
 #define JTRANSCODER              "Transcoder"
@@ -81,6 +81,7 @@
 #define JURL                     "URL"
 #define JUSRP                    "USRP"
 #define JWHITELISTPATH           "WhitelistPath"
+#define JXMLPATH                 "XmlPath"
 #define JYSF                     "YSF"
 #define JYSFTXRXDB               "YSF TX/RX DB"
 
@@ -463,8 +464,10 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::files:
 				if (0 == key.compare(JPIDPATH))
 					data[g_Keys.files.pid] = value;
-				else if (0 == key.compare(JREFLSTATEPATH))
-					data[g_Keys.files.state] = value;
+				else if (0 == key.compare(JXMLPATH))
+					data[g_Keys.files.xml] = value;
+				else if (0 == key.compare(JJSONPATH))
+					data[g_Keys.files.json] = value;
 				else if (0 == key.compare(JWHITELISTPATH))
 					data[g_Keys.files.white] = value;
 				else if (0 == key.compare(JBLACKLISTPATH))
@@ -728,17 +731,17 @@ bool CConfigure::ReadData(const std::string &path)
 	}
 
 	// Other files
-	isDefined(ErrorLevel::fatal, JFILES, JPIDPATH,        g_Keys.files.pid,       rval);
-	isDefined(ErrorLevel::fatal, JFILES, JREFLSTATEPATH,  g_Keys.files.state,     rval);
-	if (isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH,  g_Keys.files.white,     rval))
+	isDefined(ErrorLevel::fatal, JFILES, JPIDPATH, g_Keys.files.pid, rval);
+	isDefined(ErrorLevel::fatal, JFILES, JXMLPATH, g_Keys.files.xml, rval);
+	if (isDefined(ErrorLevel::fatal, JFILES, JWHITELISTPATH, g_Keys.files.white, rval))
 		checkFile(JFILES, JWHITELISTPATH, data[g_Keys.files.white]);
-	if (isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH,  g_Keys.files.black,     rval))
+	if (isDefined(ErrorLevel::fatal, JFILES, JBLACKLISTPATH, g_Keys.files.black, rval))
 		checkFile(JFILES, JBLACKLISTPATH, data[g_Keys.files.black]);
-	if (isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH,  g_Keys.files.interlink, rval))
+	if (isDefined(ErrorLevel::fatal, JFILES, JINTERLINKPATH, g_Keys.files.interlink, rval))
 		checkFile(JFILES, JINTERLINKPATH, data[g_Keys.files.interlink]);
 	if (data.contains(g_Keys.g3.enable) && GetBoolean(g_Keys.g3.enable))
 	{
-		if (isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, g_Keys.files.terminal,  rval))
+		if (isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, g_Keys.files.terminal, rval))
 			checkFile(JFILES, JG3TERMINALPATH, data[g_Keys.files.terminal]);
 	}
 

@@ -298,7 +298,7 @@ void CReflector::RouterThread(const char ThisModule)
 
 void CReflector::XmlReportThread()
 {
-	const std::string path(g_Conf.GetString(g_Keys.files.state));
+	const std::string path(g_Conf.GetString(g_Keys.files.xml));
 	while (keep_running)
 	{
 		// report to xml file

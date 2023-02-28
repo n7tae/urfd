@@ -1,12 +1,7 @@
 *.o
 *.d
 .vscode
-reflector/urfd.blacklist
-reflector/urfd.whitelist
-reflector/urfd.interlink
-reflector/urfd.terminal
-configure.mk
-wiresx/configure.php
-urfd*
+reflector/urfd.*
+urfd
 inicheck
 dbutil
