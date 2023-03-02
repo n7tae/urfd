@@ -70,6 +70,7 @@ protected:
 
 private:
 	// CConfigure data
-	std::string m_CStr;
+	CCallsign m_Callsign;
 	char m_Module;
+	uint16_t m_txPort;
 };

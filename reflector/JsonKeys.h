@@ -49,8 +49,8 @@ struct SJsonKeys {
 	modules { "Modules", "TranscodedModules",
 		"DescriptionA", "DescriptionB", "DescriptionC", "DescriptionD", "DescriptionE", "DescriptionF", "DescriptionG", "DescriptionH", "DescriptionI", "DescriptionJ", "DescriptionK", "DescriptionL", "DescriptionM", "DescriptionN", "DescriptionO", "DescriptionP", "DescriptionQ", "DescriptionR", "DescriptionS", "DescriptionT", "DescriptionU", "DescriptionV", "DescriptionW", "DescriptionX", "DescriptionY", "DescriptionZ" };
 
-	struct USRP { const std::string enable, port, module, callsign, filepath; }
-	usrp { "usrpEnable", "urspPort", "usrpModule", "usrpCallsign", "usrpFilePath" };
+	struct USRP { const std::string enable, txport,rxport, module, callsign, filepath; }
+	usrp { "usrpEnable", "urspTxPort", "usrpRxPort", "usrpModule", "usrpCallsign", "usrpFilePath" };
 
 	struct P25NXDN { const std::string port, autolinkmod, reflectorid; }
 	p25 { "P25Port",  "P25AutolinkMod",   "P25ReflectorID" },

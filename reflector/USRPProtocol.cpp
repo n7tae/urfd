@@ -1,4 +1,7 @@
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
+
 // urfd -- The universal reflector
+// Copyright © 2023 Thomas A. Early N7TAE
 // Copyright © 2023 Doug McLain AD8DP
 //
 // This program is free software: you can redistribute it and/or modify
@@ -14,7 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+#include "Defines.h"
 #include <string.h>
 #include "USRPClient.h"
 #include "USRPProtocol.h"
@@ -39,13 +42,21 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 	std::ifstream file;
 	std::streampos size;
 
-	// base class
+	// base class, create the listing port for the read-write client
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
-	m_CStr.assign(g_Conf.GetString(g_Keys.usrp.callsign));
-	m_Module = g_Conf.GetString(g_Keys.usrp.module).at(0);
+	m_Module = g_Conf.GetAutolinkModule(g_Keys.usrp.module);
 
+	// create the one special USRP Tx/Rx client
+	m_Callsign.SetCallsign(g_Conf.GetString(g_Keys.usrp.callsign), false);
+	CIp ip(AF_INET, uint16_t(g_Conf.GetUnsigned(g_Keys.usrp.txport)), g_Conf.GetString(g_Keys.ip.ipv4bind).c_str());
+	auto newclient = std::make_shared<CUSRPClient>(m_Callsign, ip);
+	newclient->SetReflectorModule(m_Module);
+	g_Refl.GetClients()->AddClient(newclient);
+	g_Refl.ReleaseClients();
+
+	// now create "listen-only" clients, as many as specified
 	file.open(g_Conf.GetString(g_Keys.usrp.filepath), std::ios::in | std::ios::binary | std::ios::ate);
 	if ( file.is_open() )
 	{
@@ -79,9 +90,10 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 				((port = ::strtok(nullptr, ";")) != nullptr) &&
 				((clientcs = ::strtok(nullptr, ";")) != nullptr) )
 			{
-				uint32_t ui = atoi(port);
+				uint16_t ui = atoi(port);
 				CIp Ip(AF_INET, ui, ip);
-				CCallsign cs(clientcs);
+				CCallsign cs;
+				cs.SetCallsign(clientcs, false);
 				auto newclient = std::make_shared<CUSRPClient>(cs, Ip);
 				newclient->SetReflectorModule(m_Module);
 				g_Refl.GetClients()->AddClient(newclient);
@@ -274,14 +286,12 @@ bool CUSRPProtocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::u
 		if ( !stream )
 		{
 			m_uiStreamId = static_cast<uint32_t>(::rand());
-			CCallsign csMY, rpt1, rpt2, csUR;
-			csMY.SetCallsign(m_CStr, false);
-			rpt1.SetCallsign(m_CStr, false);
-			rpt2 = m_ReflectorCallsign;
-			csUR.SetCallsign("CQCQCQ", false);
+			CCallsign csMY;
+			CCallsign rpt1 = m_Callsign;
+			CCallsign rpt2 = m_ReflectorCallsign;
 			rpt1.SetCSModule(m_Module);
 			rpt2.SetCSModule(' ');
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, csUR, rpt1, rpt2, m_uiStreamId, true));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, true));
 			OnDvHeaderPacketIn(header, Ip);
 		}
 
@@ -307,11 +317,9 @@ bool CUSRPProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffer, 
 			CCallsign csMY = CCallsign("", uiSrcId);
 			CCallsign rpt1 = CCallsign("", uiSrcId);
 			CCallsign rpt2 = m_ReflectorCallsign;
-			CCallsign csUR;
-			csUR.SetCallsign("CQCQCQ", false);
 			rpt1.SetCSModule(m_Module);
 			rpt2.SetCSModule(' ');
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, csUR, rpt1, rpt2, m_uiStreamId, true));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, true));
 		}
 		return true;
 	}

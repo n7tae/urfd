@@ -51,7 +51,7 @@
 #define JG3                      "G3"
 #define JG3TERMINALPATH          "G3TerminalPath"
 #define JINTERLINKPATH           "InterlinkPath"
-#define JIPADDRESSES             "IpAddresses"
+#define JIPADDRESSES             "IP Addresses"
 #define JIPV4BINDING             "IPv4Binding"
 #define JIPV4EXTERNAL            "IPv4External"
 #define JIPV6BINDING             "IPv6Binding"
@@ -73,10 +73,12 @@
 #define JREGISTRATIONDESCRIPTION "RegistrationDescription"
 #define JREGISTRATIONID          "RegistrationID"
 #define JREGISTRATIONNAME        "RegistrationName"
+#define JRXPORT                  "RxPort"
 #define JSPONSOR                 "Sponsor"
 #define JSYSOPEMAIL              "SysopEmail"
 #define JTRANSCODED              "Transcoded"
 #define JTRANSCODER              "Transcoder"
+#define JTXPORT                  "TxPort"
 #define JURF                     "URF"
 #define JURL                     "URL"
 #define JUSRP                    "USRP"
@@ -396,8 +398,10 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::usrp:
 				if (0 == key.compare(JENABLE))
 					data[g_Keys.usrp.enable] = IS_TRUE(value[0]);
-				else if (0 == key.compare(JPORT))
-					data[g_Keys.usrp.port] = getUnsigned(value, "USRP Port", 1024, 65535, 32000);
+				else if (0 == key.compare(JTXPORT))
+					data[g_Keys.usrp.txport] = getUnsigned(value, "USRP TxPort", 1024, 65535, 32000);
+				else if (0 == key.compare(JRXPORT))
+					data[g_Keys.usrp.rxport] = getUnsigned(value, "USRP RxPort", 1024, 65535, 34000);
 				else if (0 == key.compare(JMODULE))
 					data[g_Keys.usrp.module] = value.substr(0, 1);
 				else if (0 == key.compare(JCALLSIGN))
@@ -684,7 +688,8 @@ bool CConfigure::ReadData(const std::string &path)
 						rval = true;
 					}
 				}
-				isDefined(ErrorLevel::fatal, JUSRP, JPORT, g_Keys.usrp.port, rval);
+				isDefined(ErrorLevel::fatal, JUSRP, JTXPORT, g_Keys.usrp.txport, rval);
+				isDefined(ErrorLevel::fatal, JUSRP, JRXPORT, g_Keys.usrp.rxport, rval);
 				isDefined(ErrorLevel::fatal, JUSRP, JCALLSIGN, g_Keys.usrp.callsign, rval);
 				//if (isDefined(ErrorLevel::fatal, JUSRP, JFILEPATH, g_Keys.usrp.filepath, rval))
 				if (data.contains(g_Keys.usrp.filepath))
