@@ -31,8 +31,8 @@
 CCallsign::CCallsign()
 {
 	// blank all
-	memset(m_Callsign.c, ' ', CALLSIGN_LEN);
-	memset(m_Suffix.c, ' ', CALLSUFFIX_LEN);
+	m_Callsign.l = 0x2020202020202020ul;
+	m_Suffix.u = 0x20202020u;
 	m_Module = ' ';
 	m_uiDmrid = 0;
 	m_coded = 0;
@@ -150,7 +150,7 @@ bool CCallsign::IsValid(void) const
 			iNum++;
 		}
 	}
-	valid &= (iNum < 3);
+	valid = valid && (iNum < 3);
 	// all remaining char are letter, number or space
 	for ( ; i < CALLSIGN_LEN; i++)
 	{
@@ -337,7 +337,7 @@ void CCallsign::PatchCallsign(int off, const char *patch, int len)
 UCallsign CCallsign::GetKey() const
 {
 	UCallsign rval;
-	rval.l = 0;
+	rval.l = 0x2020202020202020ul;
 	for (unsigned i=0; i<CALLSIGN_LEN; i++)
 	{
 		auto c = m_Callsign.c[i];
