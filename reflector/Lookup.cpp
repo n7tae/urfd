@@ -69,8 +69,7 @@ void CLookup::Thread()
 		// load the file if http was loaded or if we haven't loaded since the last mod time
 		if (ERefreshType::http != m_Type)
 		{
-			GetLastModTime();
-			if (http_loaded || m_LastLoadTime < m_LastModTime)
+			if (http_loaded || m_LastLoadTime < GetLastModTime())
 			{
 				file_loaded = LoadContentFile(ss);
 				time(&m_LastLoadTime);

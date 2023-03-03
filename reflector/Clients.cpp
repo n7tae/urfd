@@ -64,7 +64,7 @@ void CClients::AddClient(std::shared_ptr<CClient> client)
 	}
 	std::cout << std::endl;
 	// notify
-	g_Refl.OnClientsChanged();
+	g_Reflector.OnClientsChanged();
 }
 
 void CClients::RemoveClient(std::shared_ptr<CClient> client)
@@ -88,7 +88,7 @@ void CClients::RemoveClient(std::shared_ptr<CClient> client)
 				std::cout << std::endl;
 				m_Clients.erase(it);
 				// notify
-				g_Refl.OnClientsChanged();
+				g_Reflector.OnClientsChanged();
 				break;
 			}
 		}

@@ -31,12 +31,12 @@ void CLookupYsf::ClearContents()
 
 void CLookupYsf::LoadParameters()
 {
-	m_Type = g_Conf.GetRefreshType(g_Keys.ysftxrxdb.mode);
-	m_Refresh = g_Conf.GetUnsigned(g_Keys.ysftxrxdb.refreshmin);
-	m_Path.assign(g_Conf.GetString(g_Keys.ysftxrxdb.filepath));
-	m_Url.assign(g_Conf.GetString(g_Keys.ysftxrxdb.url));
-	m_DefaultTx = g_Conf.GetUnsigned(g_Keys.ysf.defaulttxfreq);
-	m_DefaultRx = g_Conf.GetUnsigned(g_Keys.ysf.defaultrxfreq);
+	m_Type = g_Configure.GetRefreshType(g_Keys.ysftxrxdb.mode);
+	m_Refresh = g_Configure.GetUnsigned(g_Keys.ysftxrxdb.refreshmin);
+	m_Path.assign(g_Configure.GetString(g_Keys.ysftxrxdb.filepath));
+	m_Url.assign(g_Configure.GetString(g_Keys.ysftxrxdb.url));
+	m_DefaultTx = g_Configure.GetUnsigned(g_Keys.ysf.defaulttxfreq);
+	m_DefaultRx = g_Configure.GetUnsigned(g_Keys.ysf.defaultrxfreq);
 }
 
 void CLookupYsf::UpdateContent(std::stringstream &ss, Eaction action)

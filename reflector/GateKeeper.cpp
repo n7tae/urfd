@@ -44,9 +44,9 @@ bool CGateKeeper::Init(void)
 {
 
 	// load lists from files
-	m_NodeWhiteList.LoadFromFile(g_Conf.GetString(g_Keys.files.white));
-	m_NodeBlackList.LoadFromFile(g_Conf.GetString(g_Keys.files.black));
-	m_PeerList.LoadFromFile(g_Conf.GetString(g_Keys.files.interlink));
+	m_NodeWhiteList.LoadFromFile(g_Configure.GetString(g_Keys.files.white));
+	m_NodeBlackList.LoadFromFile(g_Configure.GetString(g_Keys.files.black));
+	m_PeerList.LoadFromFile(g_Configure.GetString(g_Keys.files.interlink));
 
 	// reset run flag
 	keep_running = true;

@@ -31,10 +31,10 @@ void CLookupDmr::ClearContents()
 
 void CLookupDmr::LoadParameters()
 {
-	m_Type = g_Conf.GetRefreshType(g_Keys.dmriddb.mode);
-	m_Refresh = g_Conf.GetUnsigned(g_Keys.dmriddb.refreshmin);
-	m_Path.assign(g_Conf.GetString(g_Keys.dmriddb.filepath));
-	m_Url.assign(g_Conf.GetString(g_Keys.dmriddb.url));
+	m_Type = g_Configure.GetRefreshType(g_Keys.dmriddb.mode);
+	m_Refresh = g_Configure.GetUnsigned(g_Keys.dmriddb.refreshmin);
+	m_Path.assign(g_Configure.GetString(g_Keys.dmriddb.filepath));
+	m_Url.assign(g_Configure.GetString(g_Keys.dmriddb.url));
 }
 
 uint32_t CLookupDmr::FindDmrid(const UCallsign &ucs) const

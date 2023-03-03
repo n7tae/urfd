@@ -23,10 +23,10 @@
 #include "LookupYsf.h"
 #include "JsonKeys.h"
 
-extern CReflector  g_Refl;
-extern CGateKeeper g_Gate;
-extern CConfigure  g_Conf;
-extern CVersion    g_Vers;
+extern CReflector  g_Reflector;
+extern CGateKeeper g_GateKeeper;
+extern CConfigure  g_Configure;
+extern CVersion    g_Version;
 extern CLookupDmr  g_LDid;
 extern CLookupNxdn g_LNid;
 extern CLookupYsf  g_LYtr;

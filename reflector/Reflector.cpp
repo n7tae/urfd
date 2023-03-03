@@ -47,15 +47,15 @@ CReflector::~CReflector()
 bool CReflector::Start(void)
 {
 	// get config stuff
-	m_Callsign = CCallsign(g_Conf.GetString(g_Keys.names.callsign).c_str(), false);
-	m_Modules.assign(g_Conf.GetString(g_Keys.modules.modules));
-	std::string tcmods(g_Conf.GetString(g_Keys.modules.tcmodules));
+	m_Callsign = CCallsign(g_Configure.GetString(g_Keys.names.callsign).c_str(), false);
+	m_Modules.assign(g_Configure.GetString(g_Keys.modules.modules));
+	std::string tcmods(g_Configure.GetString(g_Keys.modules.tcmodules));
 
 	// let's go!
 	keep_running = true;
 
 	// init gate keeper. It can only return true!
-	g_Gate.Init();
+	g_GateKeeper.Init();
 
 	// init dmrid directory. No need to check the return value.
 	g_LDid.LookupInit();
@@ -139,7 +139,7 @@ void CReflector::Stop(void)
 	m_Protocols.Close();
 
 	// close gatekeeper
-	g_Gate.Close();
+	g_GateKeeper.Close();
 
 	// close databases
 	g_LDid.LookupClose();
@@ -298,7 +298,7 @@ void CReflector::RouterThread(const char ThisModule)
 
 void CReflector::XmlReportThread()
 {
-	const std::string path(g_Conf.GetString(g_Keys.files.xml));
+	const std::string path(g_Configure.GetString(g_Keys.files.xml));
 	while (keep_running)
 	{
 		// report to xml file
@@ -412,7 +412,7 @@ void CReflector::WriteXmlFile(std::ofstream &xmlFile)
 	xmlFile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
 
 	// software version
-	xmlFile << "<Version>" << g_Vers << "</Version>" << std::endl;
+	xmlFile << "<Version>" << g_Version << "</Version>" << std::endl;
 
 	CCallsign cs = m_Callsign;
 	cs.PatchCallsign(0, "XLX", 3);

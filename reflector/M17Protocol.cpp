@@ -68,7 +68,7 @@ void CM17Protocol::Task(void)
 		if ( IsValidDvPacket(Buffer, Header, Frame) )
 		{
 			// callsign muted?
-			if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::m17, Header->GetRpt2Module()) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::m17, Header->GetRpt2Module()) )
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 
@@ -92,17 +92,17 @@ void CM17Protocol::Task(void)
 			std::cout << "M17 connect packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::m17) && g_Refl.IsValidModule(ToLinkModule) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::m17) && g_Reflector.IsValidModule(ToLinkModule) )
 			{
 				// valid module ?
-				if ( g_Refl.IsValidModule(ToLinkModule) )
+				if ( g_Reflector.IsValidModule(ToLinkModule) )
 				{
 					// acknowledge the request
 					Send("ACKN", Ip);
 
 					// create the client and append
-					g_Refl.GetClients()->AddClient(std::make_shared<CM17Client>(Callsign, Ip, ToLinkModule));
-					g_Refl.ReleaseClients();
+					g_Reflector.GetClients()->AddClient(std::make_shared<CM17Client>(Callsign, Ip, ToLinkModule));
+					g_Reflector.ReleaseClients();
 				}
 				else
 				{
@@ -124,7 +124,7 @@ void CM17Protocol::Task(void)
 			std::cout << "M17 disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find client
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::m17);
 			if ( client != nullptr )
 			{
@@ -133,19 +133,19 @@ void CM17Protocol::Task(void)
 				// and acknowledge the disconnect
 				Send("DISC", Ip);
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, Callsign) )
 		{
 			// find all clients with that callsign & ip and keep them alive
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::m17, it)) != nullptr )
 			{
 				client->Alive();
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 		else
 		{
@@ -195,24 +195,24 @@ void CM17Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::m17);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::m17);
 		if ( client )
 		{
 			// get client callsign
 			rpt1 = client->GetCallsign();
 			// and try to open the stream
-			if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Refl.ReleaseClients();
+		g_Reflector.ReleaseClients();
 
 		// update last heard
-		g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
-		g_Refl.ReleaseUsers();
+		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Reflector.ReleaseUsers();
 	}
 }
 
@@ -247,7 +247,7 @@ void CM17Protocol::HandleQueue(void)
 				EncodeM17Packet(frame, m_StreamsCache[module].m_dvHeader, (CDvFramePacket *)packet.get(), m_StreamsCache[module].m_iSeqCounter);
 
 				// push it to all our clients linked to the module and who are not streaming in
-				CClients *clients = g_Refl.GetClients();
+				CClients *clients = g_Reflector.GetClients();
 				auto it = clients->begin();
 				std::shared_ptr<CClient>client = nullptr;
 				while ( (client = clients->FindNextClient(EProtocol::m17, it)) != nullptr )
@@ -264,7 +264,7 @@ void CM17Protocol::HandleQueue(void)
 
 					}
 				}
-				g_Refl.ReleaseClients();
+				g_Reflector.ReleaseClients();
 			}
 			m_StreamsCache[module].m_iSeqCounter++;
 		}
@@ -283,7 +283,7 @@ void CM17Protocol::HandleKeepalives(void)
 	EncodeKeepAlivePacket(keepalive);
 
 	// iterate on clients
-	CClients *clients = g_Refl.GetClients();
+	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::m17, it)) != nullptr )
@@ -309,7 +309,7 @@ void CM17Protocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Refl.ReleaseClients();
+	g_Reflector.ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@ void CM17Protocol::EncodeKeepAlivePacket(CBuffer &Buffer)
 {
 	Buffer.resize(10);
 	memcpy(Buffer.data(), "PING", 4);
-	g_Refl.GetCallsign().CodeOut(Buffer.data() + 4);
+	g_Reflector.GetCallsign().CodeOut(Buffer.data() + 4);
 }
 
 void CM17Protocol::EncodeM17Packet(SM17Frame &frame, const CDvHeaderPacket &Header, const CDvFramePacket *DvFrame, uint32_t iSeq) const

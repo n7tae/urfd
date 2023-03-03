@@ -31,10 +31,10 @@ void CLookupNxdn::ClearContents()
 
 void CLookupNxdn::LoadParameters()
 {
-	m_Type = g_Conf.GetRefreshType(g_Keys.nxdniddb.mode);
-	m_Refresh = g_Conf.GetUnsigned(g_Keys.nxdniddb.refreshmin);
-	m_Path.assign(g_Conf.GetString(g_Keys.nxdniddb.filepath));
-	m_Url.assign(g_Conf.GetString(g_Keys.nxdniddb.url));
+	m_Type = g_Configure.GetRefreshType(g_Keys.nxdniddb.mode);
+	m_Refresh = g_Configure.GetUnsigned(g_Keys.nxdniddb.refreshmin);
+	m_Path.assign(g_Configure.GetString(g_Keys.nxdniddb.filepath));
+	m_Url.assign(g_Configure.GetString(g_Keys.nxdniddb.url));
 }
 
 const UCallsign *CLookupNxdn::FindCallsign(uint16_t nxdnid) const

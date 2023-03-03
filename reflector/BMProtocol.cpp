@@ -27,7 +27,7 @@
 
 bool CBMProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
-	m_HasTranscoder = g_Conf.IsString(g_Keys.modules.tcmodules);
+	m_HasTranscoder = g_Configure.IsString(g_Keys.modules.tcmodules);
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
@@ -71,7 +71,7 @@ void CBMProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Buffer, Header) )
 		{
 			// callsign allowed?
-			if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip) )
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 			}
@@ -81,7 +81,7 @@ void CBMProtocol::Task(void)
 			std::cout << "XLX (" << Version.GetMajor() << "." << Version.GetMinor() << "." << Version.GetRevision() << ") connect packet for modules " << Modules << " from " << Callsign <<  " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::bm, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::bm, Modules) )
 			{
 				// acknowledge the request
 				EncodeConnectAckPacket(&Buffer, Modules);
@@ -99,10 +99,10 @@ void CBMProtocol::Task(void)
 			std::cout << "XLX ack packet for modules " << Modules << " from " << Callsign << " at " << Ip << std::endl;
 
 			// callsign authorized?
-			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::bm, Modules) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::bm, Modules) )
 			{
 				// already connected ?
-				CPeers *peers = g_Refl.GetPeers();
+				CPeers *peers = g_Reflector.GetPeers();
 				if ( peers->FindPeer(Callsign, Ip, EProtocol::bm) == nullptr )
 				{
 					// create the new peer
@@ -113,7 +113,7 @@ void CBMProtocol::Task(void)
 					// this also add all new clients to reflector client list
 					peers->AddPeer(peer);
 				}
-				g_Refl.ReleasePeers();
+				g_Reflector.ReleasePeers();
 			}
 		}
 		else if ( IsValidDisconnectPacket(Buffer, &Callsign) )
@@ -121,7 +121,7 @@ void CBMProtocol::Task(void)
 			std::cout << "XLX disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find peer
-			CPeers *peers = g_Refl.GetPeers();
+			CPeers *peers = g_Reflector.GetPeers();
 			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::bm);
 			if ( peer != nullptr )
 			{
@@ -130,7 +130,7 @@ void CBMProtocol::Task(void)
 				// and delete them
 				peers->RemovePeer(peer);
 			}
-			g_Refl.ReleasePeers();
+			g_Reflector.ReleasePeers();
 		}
 		else if ( IsValidNackPacket(Buffer, &Callsign) )
 		{
@@ -141,14 +141,14 @@ void CBMProtocol::Task(void)
 			//std::cout << "XLX keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find peer
-			CPeers *peers = g_Refl.GetPeers();
+			CPeers *peers = g_Reflector.GetPeers();
 			std::shared_ptr<CPeer>peer = peers->FindPeer(Ip, EProtocol::bm);
 			if ( peer != nullptr )
 			{
 				// keep it alive
 				peer->Alive();
 			}
-			g_Refl.ReleasePeers();
+			g_Reflector.ReleasePeers();
 		}
 		else
 		{
@@ -207,7 +207,7 @@ void CBMProtocol::HandleQueue(void)
 			}
 
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::bm, it)) != nullptr )
@@ -233,7 +233,7 @@ void CBMProtocol::HandleQueue(void)
 					}
 				}
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 	}
 }
@@ -250,7 +250,7 @@ void CBMProtocol::HandleKeepalives(void)
 	EncodeKeepAlivePacket(&keepalive);
 
 	// iterate on peers
-	CPeers *peers = g_Refl.GetPeers();
+	CPeers *peers = g_Reflector.GetPeers();
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
 	while ( (peer = peers->FindNextPeer(EProtocol::bm, pit)) != nullptr )
@@ -277,7 +277,7 @@ void CBMProtocol::HandleKeepalives(void)
 			peers->RemovePeer(peer);
 		}
 	}
-	g_Refl.ReleasePeers();
+	g_Reflector.ReleasePeers();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -288,8 +288,8 @@ void CBMProtocol::HandlePeerLinks(void)
 	CBuffer buffer;
 
 	// get the list of peers
-	CPeerCallsignList *list = g_Gate.GetPeerList();
-	CPeers *peers = g_Refl.GetPeers();
+	CPeerCallsignList *list = g_GateKeeper.GetPeerList();
+	CPeers *peers = g_Reflector.GetPeers();
 
 	// check if all our connected peers are still listed by gatekeeper
 	// if not, disconnect
@@ -325,8 +325,8 @@ void CBMProtocol::HandlePeerLinks(void)
 	}
 
 	// done
-	g_Refl.ReleasePeers();
-	g_Gate.ReleasePeerList();
+	g_Reflector.ReleasePeers();
+	g_GateKeeper.ReleasePeerList();
 }
 
 
@@ -355,11 +355,11 @@ void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 		CCallsign rpt2(Header->GetRpt2Callsign());
 		// no stream open yet, open a new one
 		// find this client
-		std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::bm, Header->GetRpt2Module());
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::bm, Header->GetRpt2Module());
 		if ( client )
 		{
 			// and try to open the stream
-			if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
@@ -368,10 +368,10 @@ void CBMProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, c
 			peer = client->GetCallsign();
 		}
 		// release
-		g_Refl.ReleaseClients();
+		g_Reflector.ReleaseClients();
 		// update last heard
-		g_Refl.GetUsers()->Hearing(my, rpt1, rpt2, peer);
-		g_Refl.ReleaseUsers();
+		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2, peer);
+		g_Reflector.ReleaseUsers();
 	}
 }
 

@@ -53,7 +53,7 @@ class CLookup
 {
 public:
 	// constructor
-	CLookup() : keep_running(true), m_LastModTime(0), m_LastLoadTime(0) {}
+	CLookup() : keep_running(true), m_LastLoadTime(0) {}
 
 	void LookupInit();
 	void LookupClose();
@@ -78,7 +78,7 @@ protected:
 	ERefreshType      m_Type;
 	unsigned          m_Refresh;
 	std::string       m_Path, m_Url;
-	std::time_t       m_LastModTime, m_LastLoadTime;
+	std::time_t       m_LastLoadTime;
 
 	std::atomic<bool> keep_running;
 	std::future<void> m_Future;

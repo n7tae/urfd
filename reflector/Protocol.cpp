@@ -50,7 +50,7 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 {
 	m_Port = port;
 	// init reflector apparent callsign
-	m_ReflectorCallsign = g_Refl.GetCallsign();
+	m_ReflectorCallsign = g_Reflector.GetCallsign();
 
 	// reset stop flag
 	keep_running = true;
@@ -62,7 +62,7 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 	// create our sockets
 	if (has_ipv4)
 	{
-		const std::string ipv4binding(g_Conf.GetString(g_Keys.ip.ipv4bind));
+		const std::string ipv4binding(g_Configure.GetString(g_Keys.ip.ipv4bind));
 		CIp ip4(AF_INET, port, ipv4binding.c_str());
 		if ( ip4.IsSet() )
 		{
@@ -72,7 +72,7 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 		std::cout << "Listening on " << ip4 << std::endl;
 	}
 
-	if (g_Conf.IsString(g_Keys.ip.ipv6bind))
+	if (g_Configure.IsString(g_Keys.ip.ipv6bind))
 	{
 		if (has_ipv6)
 		{
@@ -175,7 +175,7 @@ void CProtocol::CheckStreamsTimeout(void)
 		if ( it->second->IsExpired() )
 		{
 			// yes, close it
-			g_Refl.CloseStream(it->second);
+			g_Reflector.CloseStream(it->second);
 			// and remove it from the m_Streams map
 			it = m_Streams.erase(it);
 		}

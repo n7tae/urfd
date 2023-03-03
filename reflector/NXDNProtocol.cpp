@@ -53,8 +53,8 @@ CNXDNProtocol::CNXDNProtocol()
 bool CNXDNProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
 	// config value
-	m_ReflectorId = g_Conf.GetUnsigned(g_Keys.nxdn.reflectorid);
-	m_AutolinkModule = g_Conf.GetAutolinkModule(g_Keys.nxdn.autolinkmod);
+	m_ReflectorId = g_Configure.GetUnsigned(g_Keys.nxdn.reflectorid);
+	m_AutolinkModule = g_Configure.GetAutolinkModule(g_Keys.nxdn.autolinkmod);
 
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -106,7 +106,7 @@ void CNXDNProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Ip, Buffer, Header) )
 		{
 			// node linked and callsign muted?
-			if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::nxdn, Header->GetRpt2Module())  )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::nxdn, Header->GetRpt2Module())  )
 			{
 				// handle it
 				OnDvHeaderPacketIn(Header, Ip);
@@ -119,10 +119,10 @@ void CNXDNProtocol::Task(void)
 		else if ( IsValidConnectPacket(Buffer, &Callsign) )
 		{
 			// callsign authorized?
-			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::nxdn) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::nxdn) )
 			{
 				// add client if needed
-				CClients *clients = g_Refl.GetClients();
+				CClients *clients = g_Reflector.GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Callsign, Ip, EProtocol::nxdn);
 				// client already connected ?
 				if ( client == nullptr )
@@ -147,7 +147,7 @@ void CNXDNProtocol::Task(void)
 				// acknowledge the request -- NXDNReflector simply echoes the packet
 				Send(Buffer, Ip);
 				// and done
-				g_Refl.ReleaseClients();
+				g_Reflector.ReleaseClients();
 			}
 		}
 		else if ( IsValidDisconnectPacket(Buffer) )
@@ -155,14 +155,14 @@ void CNXDNProtocol::Task(void)
 			std::cout << "NXDN disconnect packet from " << Ip << std::endl;
 
 			// find client
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::nxdn);
 			if ( client != nullptr )
 			{
 				// remove it
 				clients->RemoveClient(client);
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 		else
 		{
@@ -212,7 +212,7 @@ void CNXDNProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header,
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::nxdn);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::nxdn);
 		if ( client )
 		{
 			// get client callsign
@@ -223,20 +223,20 @@ void CNXDNProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header,
 			rpt2.SetCSModule(m);
 
 			// and try to open the stream
-			if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Refl.ReleaseClients();
+		g_Reflector.ReleaseClients();
 
 		// update last heard
-		if ( g_Refl.IsValidModule(rpt2.GetCSModule()) )
+		if ( g_Reflector.IsValidModule(rpt2.GetCSModule()) )
 		{
-			g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
-			g_Refl.ReleaseUsers();
+			g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
+			g_Reflector.ReleaseUsers();
 		}
 	}
 }
@@ -293,7 +293,7 @@ void CNXDNProtocol::HandleQueue(void)
 		if ( buffer.size() > 0 )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::nxdn, it)) != nullptr )
@@ -306,7 +306,7 @@ void CNXDNProtocol::HandleQueue(void)
 
 				}
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 	}
 }
@@ -321,7 +321,7 @@ void CNXDNProtocol::HandleKeepalives(void)
 	// and disconnect them if not
 
 	// iterate on clients
-	CClients *clients = g_Refl.GetClients();
+	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::nxdn, it)) != nullptr )
@@ -341,7 +341,7 @@ void CNXDNProtocol::HandleKeepalives(void)
 		}
 
 	}
-	g_Refl.ReleaseClients();
+	g_Reflector.ReleaseClients();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -409,7 +409,7 @@ bool CNXDNProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer, s
 			rpt2.SetCSModule(' ');
 			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, false));
 
-			if ( g_Gate.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::nxdn, header->GetRpt2Module())  )
+			if ( g_GateKeeper.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::nxdn, header->GetRpt2Module())  )
 			{
 				OnDvHeaderPacketIn(header, Ip);
 			}

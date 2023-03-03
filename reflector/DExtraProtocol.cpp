@@ -72,7 +72,7 @@ void CDextraProtocol::Task(void)
 		else if ( IsValidDvHeaderPacket(Buffer, Header) )
 		{
 			// callsign muted?
-			if ( g_Gate.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dextra, Header->GetRpt2Module()) )
+			if ( g_GateKeeper.MayTransmit(Header->GetMyCallsign(), Ip, EProtocol::dextra, Header->GetRpt2Module()) )
 			{
 				OnDvHeaderPacketIn(Header, Ip);
 			}
@@ -96,18 +96,18 @@ void CDextraProtocol::Task(void)
 			}
 
 			// callsign authorized?
-			if ( g_Gate.MayLink(Callsign, Ip, EProtocol::dextra) )
+			if ( g_GateKeeper.MayLink(Callsign, Ip, EProtocol::dextra) )
 			{
 				// valid module ?
-				if ( g_Refl.IsValidModule(ToLinkModule) )
+				if ( g_Reflector.IsValidModule(ToLinkModule) )
 				{
 					// acknowledge the request
 					EncodeConnectAckPacket(&Buffer, ProtRev);
 					Send(Buffer, Ip);
 
 					// create the client and append
-					g_Refl.GetClients()->AddClient(std::make_shared<CDextraClient>(Callsign, Ip, ToLinkModule, ProtRev));
-					g_Refl.ReleaseClients();
+					g_Reflector.GetClients()->AddClient(std::make_shared<CDextraClient>(Callsign, Ip, ToLinkModule, ProtRev));
+					g_Reflector.ReleaseClients();
 				}
 				else
 				{
@@ -130,7 +130,7 @@ void CDextraProtocol::Task(void)
 			std::cout << "DExtra disconnect packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find client & remove it
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			std::shared_ptr<CClient>client = clients->FindClient(Ip, EProtocol::dextra);
 			if ( client != nullptr )
 			{
@@ -147,21 +147,21 @@ void CDextraProtocol::Task(void)
 				// and remove it
 				clients->RemoveClient(client);
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 		else if ( IsValidKeepAlivePacket(Buffer, &Callsign) )
 		{
 			//std::cout << "DExtra keepalive packet from " << Callsign << " at " << Ip << std::endl;
 
 			// find all clients with that callsign & ip and keep them alive
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(Callsign, Ip, EProtocol::dextra, it)) != nullptr )
 			{
 				client->Alive();
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 		else
 		{
@@ -203,7 +203,7 @@ void CDextraProtocol::HandleQueue(void)
 		if ( EncodeDvPacket(*packet, buffer) )
 		{
 			// and push it to all our clients linked to the module and who are not streaming in
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			auto it = clients->begin();
 			std::shared_ptr<CClient>client = nullptr;
 			while ( (client = clients->FindNextClient(EProtocol::dextra, it)) != nullptr )
@@ -219,7 +219,7 @@ void CDextraProtocol::HandleQueue(void)
 					}
 				}
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 		}
 	}
 }
@@ -236,7 +236,7 @@ void CDextraProtocol::HandleKeepalives(void)
 	EncodeKeepAlivePacket(&keepalive);
 
 	// iterate on clients
-	CClients *clients = g_Refl.GetClients();
+	CClients *clients = g_Reflector.GetClients();
 	auto it = clients->begin();
 	std::shared_ptr<CClient>client = nullptr;
 	while ( (client = clients->FindNextClient(EProtocol::dextra, it)) != nullptr )
@@ -253,7 +253,7 @@ void CDextraProtocol::HandleKeepalives(void)
 		// otherwise check if still with us
 		else if ( !client->IsAlive() )
 		{
-			CPeers *peers = g_Refl.GetPeers();
+			CPeers *peers = g_Reflector.GetPeers();
 			std::shared_ptr<CPeer>peer = peers->FindPeer(client->GetCallsign(), client->GetIp(), EProtocol::dextra);
 			if ( peer != nullptr && peer->GetReflectorModules()[0] == client->GetReflectorModule() )
 			{
@@ -270,14 +270,14 @@ void CDextraProtocol::HandleKeepalives(void)
 				std::cout << "DExtra client " << client->GetCallsign() << " keepalive timeout" << std::endl;
 				clients->RemoveClient(client);
 			}
-			g_Refl.ReleasePeers();
+			g_Reflector.ReleasePeers();
 		}
 
 	}
-	g_Refl.ReleaseClients();
+	g_Reflector.ReleaseClients();
 
 	// iterate on peers
-	CPeers *peers = g_Refl.GetPeers();
+	CPeers *peers = g_Reflector.GetPeers();
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
 	while ( (peer = peers->FindNextPeer(EProtocol::dextra, pit)) != nullptr )
@@ -290,19 +290,19 @@ void CDextraProtocol::HandleKeepalives(void)
 			// no, disconnect all clients
 			CBuffer disconnect;
 			EncodeDisconnectPacket(&disconnect, peer->GetReflectorModules()[0]);
-			CClients *clients = g_Refl.GetClients();
+			CClients *clients = g_Reflector.GetClients();
 			for ( auto cit=peer->cbegin(); cit!=peer->cend(); cit++ )
 			{
 				Send(disconnect, (*cit)->GetIp());
 			}
-			g_Refl.ReleaseClients();
+			g_Reflector.ReleaseClients();
 
 			// remove it
 			std::cout << "DExtra peer " << peer->GetCallsign() << " keepalive timeout" << std::endl;
 			peers->RemovePeer(peer);
 		}
 	}
-	g_Refl.ReleasePeers();
+	g_Reflector.ReleasePeers();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -326,7 +326,7 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 		CCallsign rpt2(Header->GetRpt2Callsign());
 
 		// find this client
-		std::shared_ptr<CClient>client = g_Refl.GetClients()->FindClient(Ip, EProtocol::dextra);
+		std::shared_ptr<CClient>client = g_Reflector.GetClients()->FindClient(Ip, EProtocol::dextra);
 		if ( client )
 		{
 			// get client callsign
@@ -341,18 +341,18 @@ void CDextraProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Heade
 				rpt2.SetCSModule(m);
 			}
 			// and try to open the stream
-			if ( (stream = g_Refl.OpenStream(Header, client)) != nullptr )
+			if ( (stream = g_Reflector.OpenStream(Header, client)) != nullptr )
 			{
 				// keep the handle
 				m_Streams[stream->GetStreamId()] = stream;
 			}
 		}
 		// release
-		g_Refl.ReleaseClients();
+		g_Reflector.ReleaseClients();
 
 		// update last heard
-		g_Refl.GetUsers()->Hearing(my, rpt1, rpt2);
-		g_Refl.ReleaseUsers();
+		g_Reflector.GetUsers()->Hearing(my, rpt1, rpt2);
+		g_Reflector.ReleaseUsers();
 	}
 }
 

@@ -59,8 +59,8 @@ CWiresxCmdHandler::~CWiresxCmdHandler()
 bool CWiresxCmdHandler::Init(void)
 {
 	// fill our wiresx info
-	m_ReflectorWiresxInfo.SetCallsign(g_Refl.GetCallsign());
-	m_ReflectorWiresxInfo.SetNode(g_Refl.GetCallsign());
+	m_ReflectorWiresxInfo.SetCallsign(g_Reflector.GetCallsign());
+	m_ReflectorWiresxInfo.SetNode(g_Reflector.GetCallsign());
 	m_ReflectorWiresxInfo.SetName("Reflector");
 
 	// reset stop flag
@@ -146,13 +146,13 @@ void CWiresxCmdHandler::Task(void)
 
 		// find our client and the module it's currentlink linked to
 		cModule = ' ';
-		CClients *clients = g_Refl.GetClients();
+		CClients *clients = g_Reflector.GetClients();
 		std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 		if ( client )
 		{
 			cModule = client->GetReflectorModule();
 		}
-		g_Refl.ReleaseClients();
+		g_Reflector.ReleaseClients();
 
 		// and crack the cmd
 		switch ( Cmd.GetCmd() )
@@ -170,19 +170,19 @@ void CWiresxCmdHandler::Task(void)
 			break;
 		case WIRESX_CMD_CONN_REQ:
 			cModule = 'A' + (char)(Cmd.GetArg() - 1);
-			if (g_Refl.IsValidModule(cModule))
+			if (g_Reflector.IsValidModule(cModule))
 			{
 				std::cout << "Wires-X CONN_REQ command to link on module " << cModule << " from " << Cmd.GetCallsign() << " at " << Cmd.GetIp() << std::endl;
 				// acknowledge
 				ReplyToWiresxConnReqPacket(Cmd.GetIp(), Info, cModule);
 				// change client's module
-				CClients *clients = g_Refl.GetClients();
+				CClients *clients = g_Reflector.GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 				if ( client )
 				{
 					client->SetReflectorModule(cModule);
 				}
-				g_Refl.ReleaseClients();
+				g_Reflector.ReleaseClients();
 			}
 			else
 			{
@@ -195,13 +195,13 @@ void CWiresxCmdHandler::Task(void)
 			ReplyToWiresxDiscReqPacket(Cmd.GetIp(), Info);
 			// change client's module
 			{
-				CClients *clients = g_Refl.GetClients();
+				CClients *clients = g_Reflector.GetClients();
 				std::shared_ptr<CClient>client = clients->FindClient(Cmd.GetCallsign(), Cmd.GetIp(), EProtocol::ysf);
 				if ( client != nullptr )
 				{
 					client->SetReflectorModule(' ');
 				}
-				g_Refl.ReleaseClients();
+				g_Reflector.ReleaseClients();
 			}
 			break;
 		case WIRESX_CMD_UNKNOWN:
@@ -334,7 +334,7 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
 
 	// number of entries
-	const std::string modules(g_Conf.GetString(g_Keys.modules.modules));
+	const std::string modules(g_Configure.GetString(g_Keys.modules.modules));
 	uint NB_OF_MODULES = modules.size();
 	uint total = NB_OF_MODULES;
 	uint n = NB_OF_MODULES - Start;
@@ -738,8 +738,8 @@ bool CWiresxCmdHandler::DebugTestDecodePacket(const CBuffer &Buffer)
 				std::cout << "Trailer" << std::endl;
 				std::cout << "length of payload : " << len << std::endl;
 				dump.Set(command, len);
-				dump.DebugDump(g_Refl.m_DebugFile);
-				dump.DebugDumpAscii(g_Refl.m_DebugFile);
+				dump.DebugDump(g_Reflector.m_DebugFile);
+				dump.DebugDumpAscii(g_Reflector.m_DebugFile);
 				break;
 			case YSF_FI_COMMUNICATIONS:
 				if ( Fich.getDT() == YSF_DT_DATA_FR_MODE )

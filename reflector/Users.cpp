@@ -41,7 +41,7 @@ void CUsers::AddUser(const CUser &user)
 	}
 
 	// notify
-	g_Refl.OnUsersChanged();
+	g_Reflector.OnUsersChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ void CUsers::AddUser(const CUser &user)
 
 void CUsers::Hearing(const CCallsign &my, const CCallsign &rpt1, const CCallsign &rpt2)
 {
-	Hearing(my, rpt1, rpt2, g_Refl.GetCallsign());
+	Hearing(my, rpt1, rpt2, g_Reflector.GetCallsign());
 }
 
 void CUsers::Hearing(const CCallsign &my, const CCallsign &rpt1, const CCallsign &rpt2, const CCallsign &xlx)

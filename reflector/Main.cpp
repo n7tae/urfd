@@ -25,10 +25,10 @@
 // global objects
 
 SJsonKeys   g_Keys;
-CReflector  g_Refl;
-CGateKeeper g_Gate;
-CConfigure  g_Conf;
-CVersion    g_Vers(3,0,0); // The major byte should only change if the interlink packet changes!
+CReflector  g_Reflector;
+CGateKeeper g_GateKeeper;
+CConfigure  g_Configure;
+CVersion    g_Version(3,0,0); // The major byte should only change if the interlink packet changes!
 CLookupDmr  g_LDid;
 CLookupNxdn g_LNid;
 CLookupYsf  g_LYtr;
@@ -43,20 +43,20 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (g_Conf.ReadData(argv[1]))
+	if (g_Configure.ReadData(argv[1]))
 		return EXIT_FAILURE;
 
-	std::cout << "IPv4 binding address is '" << g_Conf.GetString(g_Keys.ip.ipv4bind) << "'" << std::endl;
+	std::cout << "IPv4 binding address is '" << g_Configure.GetString(g_Keys.ip.ipv4bind) << "'" << std::endl;
 	// remove pidfile
-	const std::string pidpath(g_Conf.GetString(g_Keys.files.pid));
-	const std::string callsign(g_Conf.GetString(g_Keys.names.callsign));
+	const std::string pidpath(g_Configure.GetString(g_Keys.files.pid));
+	const std::string callsign(g_Configure.GetString(g_Keys.names.callsign));
 	remove(pidpath.c_str());
 
 	// splash
-	std::cout << "Starting " << callsign << " " << g_Vers << std::endl;
+	std::cout << "Starting " << callsign << " " << g_Version << std::endl;
 
 	// and let it run
-	if (g_Refl.Start())
+	if (g_Reflector.Start())
 	{
 		std::cout << "Error starting reflector" << std::endl;
 		return EXIT_FAILURE;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
 	pause(); // wait for any signal
 
-	g_Refl.Stop();
+	g_Reflector.Stop();
 	std::cout << "Reflector stopped" << std::endl;
 
 	// done
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 // global objects
 
 SJsonKeys   g_Keys;
-CConfigure  g_Conf;
+CConfigure  g_Configure;
 CLookupDmr  g_LDid;
 CLookupNxdn g_LNid;
 CLookupYsf  g_LYtr;
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (g_Conf.ReadData(argv[4]))
+	if (g_Configure.ReadData(argv[4]))
 		return EXIT_FAILURE;
 
 	switch (db)
