@@ -41,6 +41,7 @@ public:
 	ERefreshType GetRefreshType(const std::string &key) const;
 	bool IsString(const std::string &key) const;
 	char GetAutolinkModule(const std::string &key) const;
+	const nlohmann::json &GetData() { return data; }
 
 private:
 	// CFGDATA data;

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "Callsign.h"
 #include "Buffer.h"
 
@@ -41,6 +43,7 @@ public:
 
 	// reporting
 	void WriteXml(std::ofstream &);
+	void JsonReport(nlohmann::json &report);
 
 protected:
 	// data

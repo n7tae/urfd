@@ -95,3 +95,15 @@ void CClient::WriteXml(std::ofstream &xmlFile)
 	}
 	xmlFile << "</NODE>" << std::endl;
 }
+
+void CClient::JsonReport(nlohmann::json &report)
+{
+	nlohmann::json jclient;
+	jclient["Callsign"] = m_Callsign.GetCS();
+	jclient["OnModule"] = std::string(1, m_ReflectorModule);
+	jclient["Protocol"] = GetProtocolName();
+	char s[100];
+	if (std::strftime(s, sizeof(s), "%FT%TZ", std::gmtime(&m_ConnectTime)))
+		jclient["ConnectTime"] = s;
+	report["Clients"].push_back(jclient);
+}

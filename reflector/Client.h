@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "Defines.h"
 #include "Timer.h"
 #include "IP.h"
@@ -72,6 +74,7 @@ public:
 
 	// reporting
 	virtual void WriteXml(std::ofstream &);
+	void JsonReport(nlohmann::json &report);
 
 protected:
 	// data

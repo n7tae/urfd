@@ -298,23 +298,41 @@ void CReflector::RouterThread(const char ThisModule)
 
 void CReflector::XmlReportThread()
 {
-	const std::string path(g_Configure.GetString(g_Keys.files.xml));
+	const std::string xmlpath(g_Configure.GetString(g_Keys.files.xml));
+	const std::string jsnpath(g_Configure.GetString(g_Keys.files.json));
 	while (keep_running)
 	{
 		// report to xml file
-		std::ofstream xmlFile;
-		xmlFile.open(path, std::ios::out | std::ios::trunc);
-		if ( xmlFile.is_open() )
+		if (! xmlpath.empty())
 		{
-			// write xml file
-			WriteXmlFile(xmlFile);
+			std::ofstream xmlFile;
+			xmlFile.open(xmlpath, std::ios::out | std::ios::trunc);
+			if ( xmlFile.is_open() )
+			{
+				// write xml file
+				WriteXmlFile(xmlFile);
 
-			// and close file
-			xmlFile.close();
+				// and close file
+				xmlFile.close();
+			}
+			else
+			{
+				std::cout << "Failed to open " << xmlpath  << std::endl;
+			}
 		}
-		else
+
+		// json report
+		if (!  jsnpath.empty())
 		{
-			std::cout << "Failed to open " << path  << std::endl;
+			nlohmann::json jreport;
+			JsonReport(jreport);
+			std::ofstream jsonFile;
+			jsonFile.open(jsnpath, std::ios::out | std::ios::trunc);
+			if (jsonFile.is_open())
+			{
+				jsonFile << jreport.dump(4);
+				jsonFile.close();
+			}
 		}
 
 		// and wait a bit
@@ -404,7 +422,31 @@ char CReflector::GetStreamModule(std::shared_ptr<CPacketStream> stream)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// xml helpers
+// report helpers
+
+void CReflector::JsonReport(nlohmann::json &report)
+{
+	for (auto &item : g_Configure.GetData().items())
+	{
+		if (isupper(item.key().at(0)))
+			report["Configure"][item.key()] = item.value();
+	}
+
+	auto peers = GetPeers();
+	for (auto pit=peers->cbegin(); pit!=peers->cend(); pit++)
+		(*pit)->JsonReport(report);
+	ReleasePeers();
+
+	auto clients = GetClients();
+	for (auto cit=clients->cbegin(); cit!=clients->cend(); cit++)
+		(*cit)->JsonReport(report);
+	ReleaseClients();
+
+	auto users = GetUsers();
+	for (auto uid=users->begin(); uid!=users->end(); uid++)
+		(*uid).JsonReport(report);
+	ReleaseUsers();
+}
 
 void CReflector::WriteXmlFile(std::ofstream &xmlFile)
 {

@@ -90,6 +90,7 @@ protected:
 
 	// xml helpers
 	void WriteXmlFile(std::ofstream &);
+	void JsonReport(nlohmann::json &report);
 
 protected:
 	// identity

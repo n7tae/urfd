@@ -76,3 +76,18 @@ void CUser::WriteXml(std::ofstream &xmlFile)
 	}
 	xmlFile << "</STATION>" << std::endl;
 }
+
+void CUser::JsonReport(nlohmann::json &report)
+{
+	nlohmann::json juser;
+	juser["Callsign"] = m_My.GetCS();
+	juser["Repeater"] = m_Rpt1.GetCS();
+	juser["OnModule"] = std::string(1, m_Rpt2.GetCSModule());
+	juser["ViaPeer"] = m_Xlx.GetCS();
+	char s[100];
+	if (std::strftime(s, sizeof(s), "%FT%TZ", std::gmtime(&m_LastHeardTime)))
+	{
+		juser["LastHeard"] = s;
+	}
+	report["Users"].push_back(juser);
+}
