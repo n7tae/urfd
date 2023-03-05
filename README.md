@@ -79,10 +79,10 @@ cp ../config/* .
 
 This will create seven files:
 1. The `urfd.blacklist` file defines callsigns that are blocked from linking or transmitting.
-2. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one.
+2. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one. Both files support a limited wildcard feature.
 3. The `urfd.interlink` file defines possible Brandmeister and URF linking.
 4. The `urfd.terminal` file defines operations for Icom's Terminal and Access Point mode, sometimes called *G3*. This protocol requires significantly higher connection resources than any other mode, so it is possible to build a URF reflector without G3 support.
-5. The `urfd.service` file is a systemd file that will start and stop *urfd*. Importantly, it contains the only reference to where the *urfd* initialization file is located.
+5. The `urfd.service` file is a systemd file that will start and stop *urfd*. Importantly, it contains the only reference to where the *urfd* initialization file is located. Be sure to set a fully qualified path to your urfd.ini file on the `ExecStart` line.
 6. The `urfd.mk` file contains compile-time options for *urfd*. If you change the `BINDIR`, you'll need to update how `urfd.service` starts *urfd*.
 7. The `urfd.ini` file contains the run-time options for *urfd* and will be discussed below.
 

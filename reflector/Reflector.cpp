@@ -330,7 +330,7 @@ void CReflector::XmlReportThread()
 			jsonFile.open(jsnpath, std::ios::out | std::ios::trunc);
 			if (jsonFile.is_open())
 			{
-				jsonFile << jreport.dump(4);
+				jsonFile << jreport.dump();
 				jsonFile.close();
 			}
 		}
@@ -432,16 +432,19 @@ void CReflector::JsonReport(nlohmann::json &report)
 			report["Configure"][item.key()] = item.value();
 	}
 
+	report["Peers"] = nlohmann::json::array();
 	auto peers = GetPeers();
 	for (auto pit=peers->cbegin(); pit!=peers->cend(); pit++)
 		(*pit)->JsonReport(report);
 	ReleasePeers();
 
+	report["Clients"] = nlohmann::json::array();
 	auto clients = GetClients();
 	for (auto cit=clients->cbegin(); cit!=clients->cend(); cit++)
 		(*cit)->JsonReport(report);
 	ReleaseClients();
 
+	report["Users"] = nlohmann::json::array();
 	auto users = GetUsers();
 	for (auto uid=users->begin(); uid!=users->end(); uid++)
 		(*uid).JsonReport(report);
