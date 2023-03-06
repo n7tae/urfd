@@ -104,7 +104,7 @@ bool CReflector::Start(void)
 		}
 	}
 
-	// start the reporting threads
+	// start the reporting thread
 	try
 	{
 		m_XmlReportFuture = std::async(std::launch::async, &CReflector::XmlReportThread, this);
@@ -298,8 +298,16 @@ void CReflector::RouterThread(const char ThisModule)
 
 void CReflector::XmlReportThread()
 {
-	const std::string xmlpath(g_Configure.GetString(g_Keys.files.xml));
-	const std::string jsnpath(g_Configure.GetString(g_Keys.files.json));
+	std::string xmlpath, jsonpath;
+
+	if (g_Configure.Contains(g_Keys.files.xml))
+		xmlpath.assign(g_Configure.GetString(g_Keys.files.xml));
+	if (g_Configure.Contains(g_Keys.files.json))
+		jsonpath.assign(g_Configure.GetString(g_Keys.files.json));
+
+	if (xmlpath.empty() && jsonpath.empty())
+		return;	// nothing to do
+
 	while (keep_running)
 	{
 		// report to xml file
@@ -322,12 +330,12 @@ void CReflector::XmlReportThread()
 		}
 
 		// json report
-		if (!  jsnpath.empty())
+		if (!  jsonpath.empty())
 		{
 			nlohmann::json jreport;
 			JsonReport(jreport);
 			std::ofstream jsonFile;
-			jsonFile.open(jsnpath, std::ios::out | std::ios::trunc);
+			jsonFile.open(jsonpath, std::ios::out | std::ios::trunc);
 			if (jsonFile.is_open())
 			{
 				jsonFile << jreport.dump();

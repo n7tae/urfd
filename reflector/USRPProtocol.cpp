@@ -49,15 +49,20 @@ bool CUSRPProtocol::Initialize(const char *type, const EProtocol ptype, const ui
 	m_Module = g_Configure.GetAutolinkModule(g_Keys.usrp.module);
 
 	// create the one special USRP Tx/Rx client
-	m_Callsign.SetCallsign(g_Configure.GetString(g_Keys.usrp.callsign), false);
-	CIp ip(AF_INET, uint16_t(g_Configure.GetUnsigned(g_Keys.usrp.txport)), g_Configure.GetString(g_Keys.ip.ipv4bind).c_str());
-	auto newclient = std::make_shared<CUSRPClient>(m_Callsign, ip);
-	newclient->SetReflectorModule(m_Module);
-	g_Reflector.GetClients()->AddClient(newclient);
-	g_Reflector.ReleaseClients();
+	auto scs = g_Configure.GetString(g_Keys.usrp.callsign);
+	if (scs.compare("NONE"))
+	{
+		m_Callsign.SetCallsign(scs, false);
+		CIp ip(AF_INET, uint16_t(g_Configure.GetUnsigned(g_Keys.usrp.txport)), g_Configure.GetString(g_Keys.usrp.ip).c_str());
+		auto newclient = std::make_shared<CUSRPClient>(m_Callsign, ip);
+		newclient->SetReflectorModule(m_Module);
+		g_Reflector.GetClients()->AddClient(newclient);
+		g_Reflector.ReleaseClients();
+	}
 
 	// now create "listen-only" clients, as many as specified
-	file.open(g_Configure.GetString(g_Keys.usrp.filepath), std::ios::in | std::ios::binary | std::ios::ate);
+	if (g_Configure.Contains(g_Keys.usrp.filepath))
+		file.open(g_Configure.GetString(g_Keys.usrp.filepath), std::ios::in | std::ios::binary | std::ios::ate);
 	if ( file.is_open() )
 	{
 		// read file

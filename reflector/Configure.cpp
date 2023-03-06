@@ -51,6 +51,7 @@
 #define JG3                      "G3"
 #define JG3TERMINALPATH          "G3TerminalPath"
 #define JINTERLINKPATH           "InterlinkPath"
+#define JIPADDRESS               "IPAddress"
 #define JIPADDRESSES             "IP Addresses"
 #define JIPV4BINDING             "IPv4Binding"
 #define JIPV4EXTERNAL            "IPv4External"
@@ -398,6 +399,8 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::usrp:
 				if (0 == key.compare(JENABLE))
 					data[g_Keys.usrp.enable] = IS_TRUE(value[0]);
+				else if (0 == key.compare(JIPADDRESS))
+					data[g_Keys.usrp.ip] = value;
 				else if (0 == key.compare(JTXPORT))
 					data[g_Keys.usrp.txport] = getUnsigned(value, "USRP TxPort", 1024, 65535, 32000);
 				else if (0 == key.compare(JRXPORT))
@@ -688,6 +691,15 @@ bool CConfigure::ReadData(const std::string &path)
 						rval = true;
 					}
 				}
+				if (isDefined(ErrorLevel::fatal, JUSRP, JIPADDRESS, g_Keys.usrp.ip, rval))
+				{
+					// check for syntax
+					if (! std::regex_match(data[g_Keys.usrp.ip].get<std::string>(), IPv4RegEx))
+					{
+						std::cerr << "ERROR: [" << JUSRP << ']' << JIPADDRESS " '" << data[g_Keys.usrp.ip] << "' is malformed" << std::endl;
+						rval = true;
+					}
+				}
 				isDefined(ErrorLevel::fatal, JUSRP, JTXPORT, g_Keys.usrp.txport, rval);
 				isDefined(ErrorLevel::fatal, JUSRP, JRXPORT, g_Keys.usrp.rxport, rval);
 				isDefined(ErrorLevel::fatal, JUSRP, JCALLSIGN, g_Keys.usrp.callsign, rval);
@@ -749,7 +761,6 @@ bool CConfigure::ReadData(const std::string &path)
 		if (isDefined(ErrorLevel::fatal, JFILES, JG3TERMINALPATH, g_Keys.files.terminal, rval))
 			checkFile(JFILES, JG3TERMINALPATH, data[g_Keys.files.terminal]);
 	}
-
 
 	return rval;
 }
@@ -883,6 +894,11 @@ ERefreshType CConfigure::GetRefreshType(const std::string &key) const
 	return type;
 }
 
+bool CConfigure::Contains(const std::string &key) const
+{
+	return data.contains(key);
+}
+
 std::string CConfigure::GetString(const std::string &key) const
 {
 	std::string str;
@@ -917,11 +933,11 @@ unsigned CConfigure::GetUnsigned(const std::string &key) const
 			u = data[key].get<unsigned>();
 		}
 		else
-			std::cerr << "ERROR: GetString(): '" << key << "' is not an unsigned value" << std::endl;
+			std::cerr << "ERROR: GetUnsigned(): '" << key << "' is not an unsigned value" << std::endl;
 	}
 	else
 	{
-		std::cerr << "ERROR: GetString(): item at '" << key << "' is not defined" << std::endl;
+		std::cerr << "ERROR: GetUnsigned(): item at '" << key << "' is not defined" << std::endl;
 	}
 	return u;
 }

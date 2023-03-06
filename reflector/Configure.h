@@ -34,6 +34,7 @@ class CConfigure
 public:
 	CConfigure();
 	bool ReadData(const std::string &path);
+	bool Contains(const std::string &key) const;
 	void Dump(bool justpublic) const;
 	std::string GetString(const std::string &key) const;
 	unsigned GetUnsigned(const std::string &key) const;

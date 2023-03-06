@@ -86,6 +86,8 @@ This will create seven files:
 6. The `urfd.mk` file contains compile-time options for *urfd*. If you change the `BINDIR`, you'll need to update how `urfd.service` starts *urfd*.
 7. The `urfd.ini` file contains the run-time options for *urfd* and will be discussed below.
 
+You can acutally put the blacklist, whitelist, interlink, terminal and ini file anyplace and even rename them. Just make sure your ini file and service file have the proper, fully-qualified paths. The service file and the mk file need to be in your `urfd/Reflector` directory.
+
 
 When you are done with the configuration files and ready to start the installation process, you can return to the main repository directory:
 
@@ -113,6 +115,19 @@ There are three databases needed by *urfd*:
 3. The *YSF Tx/Rx* database maps a callsign to a transmit/receive RF frequencies.
 These databases can come from a URL or a file, or both. If you specify "both", then the file will be read after the URL.
 
+#### Special *USRP* configuration
+
+If configured, a *USRP* client is very unique. A *USRP* client (an AllStar node) doesn't support any connect or disconnect protocol. The USRP client simply sends and receives *USRP* voice packets. That means, if *USRP* is enabled, the client is created during initialization using the configured callsign, IP address and Tx/Rx ports.
+
+If `FilePath` is defined, this should point to a text file listing special, listen-only client(s), one per line. Each line defining a read-only client contains an IP address, a port number, and a callsign. Here is an example:
+
+```bash
+1.2.3.1;34001;ALLSTR1;
+1.2.3.4;34004;ALLSTR4;
+```
+
+If you want to create listen-only clients, but you don't need a configured read/write client, then set its `Callsign` to `NONE`.
+
 ### Helper apps
 
 There are two, very useful helper applications, *inicheck* and *dbutil*. Both apps will show you a usage message if you execuate them without any arguments.
@@ -126,7 +141,7 @@ The *dbutil* app can be used for serveral tasks relating to the three databases 
 - INIFLILE is the path to the infile that defines the location of the http and file sources for these three databases.
 One at a time, *dbutil* can work with any of the three DATABASEs. It can read either the http or the file SOURCE. It can either show you the data entries that are syntactically correct or incorrect (ACTION).
 
-### installing your system
+### Installing your system
 
 After you have written your configutation files, you can install your system:
 
