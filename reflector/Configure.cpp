@@ -603,10 +603,10 @@ bool CConfigure::ReadData(const std::string &path)
 			// how many transcoded modules
 			auto size = tcmods.size();
 			if (3 != size && 1 != size)
-				std::cout << "WARNING: [" << JMODULES << ']' << JTRANSCODED << " doesn't define three (or one) modules" << std::endl;
+				std::cout << "WARNING: [" << JMODULES << ']' << JTRANSCODED << " doesn't define one (or three) modules" << std::endl;
 
 			// make sure each transcoded module is configured
-			for (auto c : data[g_Keys.modules.tcmodules])
+			for (auto c : tcmods)
 			{
 				if (std::string::npos == mods.find(c))
 				{
