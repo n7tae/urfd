@@ -48,7 +48,7 @@ sudo apt upgrade
 sudo apt install git
 sudo apt install apache2 php5
 sudo apt install build-essential
-sudo apt install nlohman-json3-dev
+sudo apt install nlohmann-json3-dev
 ```
 
 ### Download and build the repository and
@@ -58,35 +58,24 @@ git clone https://github.com/n7tae/urfd.git
 cd urfd/reflector
 ```
 
-You'll need to set two compile-time options:
-
-```bash
-cp example.mk configure.mk
-```
-
-This will disable debugging and define where the Makefile will install *urfd*.
-If you want to change this, edit the configure.mk file with your favorite text editor. Then do a `make` to build *urfd*.
-
 ### Create and edit your configuration files
 
 First, move to the reflector build directory and create your configuration file:
 
 ```bash
-cd urfd/reflector
-
 cp ../config/* .
 ```
 
 This will create seven files:
-1. The `urfd.blacklist` file defines callsigns that are blocked from linking or transmitting.
-2. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one. Both files support a limited wildcard feature.
-3. The `urfd.interlink` file defines possible Brandmeister and URF linking.
-4. The `urfd.terminal` file defines operations for Icom's Terminal and Access Point mode, sometimes called *G3*. This protocol requires significantly higher connection resources than any other mode, so it is possible to build a URF reflector without G3 support.
-5. The `urfd.service` file is a systemd file that will start and stop *urfd*. Importantly, it contains the only reference to where the *urfd* initialization file is located. Be sure to set a fully qualified path to your urfd.ini file on the `ExecStart` line.
-6. The `urfd.mk` file contains compile-time options for *urfd*. If you change the `BINDIR`, you'll need to update how `urfd.service` starts *urfd*.
-7. The `urfd.ini` file contains the run-time options for *urfd* and will be discussed below.
+1. The `urfd.mk` file contains compile-time options for *urfd*. If you change the `BINDIR`, you'll need to update how `urfd.service` starts *urfd*.
+2. The `urfd.ini` file contains the run-time options for *urfd* and will be discussed below.
+3. The `urfd.blacklist` file defines callsigns that are blocked from linking or transmitting.
+4. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one. Both files support a limited wildcard feature.
+5. The `urfd.interlink` file defines possible Brandmeister and URF linking.
+6. The `urfd.terminal` file defines operations for Icom's Terminal and Access Point mode, sometimes called *G3*. This protocol requires significantly higher connection resources than any other mode, so it is possible to build a URF reflector without G3 support.
+7. The `urfd.service` file is a systemd file that will start and stop *urfd*. Importantly, it contains the only reference to where the *urfd* ini file is located. Be sure to set a fully qualified path to your urfd.ini file on the `ExecStart` line.
 
-You can acutally put the blacklist, whitelist, interlink, terminal and ini file anyplace and even rename them. Just make sure your ini file and service file have the proper, fully-qualified paths. The service file and the mk file need to be in your `urfd/Reflector` directory.
+You can acutally put the blacklist, whitelist, interlink, terminal and ini file anyplace and even rename them. Just make sure your ini file and service file have the proper, fully-qualified paths. The service file and the mk file need to remain in your `urfd/reflector` directory.
 
 
 When you are done with the configuration files and ready to start the installation process, you can return to the main repository directory:
@@ -203,9 +192,9 @@ It has nothing to do with the regular YSFReflector network, hence you don’t ne
 
 ## To-dos
 
-I will eventually support a remote transcoder option, so that you can, for example, run urfd in a data center, and then run the transcoder somewhere you have physical access to it so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
+I will eventually support a remote transcoder option, so that you can, for example, run *urfd* in a data center, and then run the transcoder somewhere you have physical access so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
 
-The M17 team will be working on big changes for the dashboard!
+A new dashboard is on the to-do list!
 
 ## Copyright
 
