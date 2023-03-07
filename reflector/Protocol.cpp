@@ -76,7 +76,7 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 	{
 		if (has_ipv6)
 		{
-			const std::string ipv6binding(g_Keys.ip.ipv6bind);
+			const std::string ipv6binding(g_Configure.GetString(g_Keys.ip.ipv6bind));
 			CIp ip6(AF_INET6, port, ipv6binding.c_str());
 			if ( ip6.IsSet() )
 			{
