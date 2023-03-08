@@ -33,9 +33,9 @@ CPacketStream::CPacketStream(char module) : m_PSModule(module)
 
 bool CPacketStream::InitCodecStream()
 {
-	m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this));
+	m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_PSModule));
 	if (m_CodecStream)
-		return m_CodecStream->InitCodecStream(m_PSModule);
+		return m_CodecStream->InitCodecStream();
 	else
 	{
 		std::cerr << "Could not create a CCodecStream for module '" << m_PSModule << "'" << std::endl;

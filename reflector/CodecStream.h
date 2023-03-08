@@ -34,8 +34,8 @@ class CCodecStream
 {
 public:
 	// constructor
-	CCodecStream(CPacketStream *packetstream);
-	bool InitCodecStream(char module);
+	CCodecStream(CPacketStream *packetstream, char module);
+	bool InitCodecStream();
 
 	void ResetStats(uint16_t streamid, ECodecType codectype);
 	void ReportStats();
@@ -54,7 +54,10 @@ public:
 	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
 
 protected:
-	// initialization
+	// identity
+	const char      m_CSModule;
+	// state
+	std::atomic<bool> m_IsOpen;
 	// data
 	uint16_t        m_uiStreamId;
 	uint16_t        m_uiPort;
@@ -67,6 +70,8 @@ protected:
 
 	// associated packet stream
 	CPacketStream  *m_PacketStream;
+
+	// queues
 	CSafePacketQueue<std::unique_ptr<CPacket>> m_LocalQueue, m_Queue;
 
 	// thread
