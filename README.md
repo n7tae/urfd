@@ -135,10 +135,10 @@ One at a time, *dbutil* can work with any of the three DATABASEs. It can read ei
 After you have written your configutation files, you can install your system:
 
 ```bash
-./radmin <PATH TO INI FILE>
+./radmin
 ```
 
-Use can use this interactive shell script to install and uninstall your system. This can also perform other tasks like restarting the reflector or transcoder process, or be used to view the reflector or transcoder log in real time.
+You can use this interactive shell script to install and uninstall your system. This can also perform other tasks like restarting the reflector or transcoder process, or be used to view the reflector or transcoder log in real time.
 
 ### Stoping and starting the services manually
 

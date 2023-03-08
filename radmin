@@ -76,8 +76,14 @@ if [[ $# -eq 1 ]]; then
 		exit 1
 	fi
 else
-	echo "Usage: ./radmin inifilename"
-	exit 1
+	if [[ -e reflector/urfd.ini ]]; then
+		callsign=$(awk '$1 == "Callsign"{print $3}' reflector/urfd.ini)
+		tcaddress=$(awk '$1 == "Transcoder"{print $3}' reflector/urfd.ini)
+	else
+		echo "ERROR: could not find reflector/urfd.ini! You'll have to specify it."
+		echo "Usage: ./radmin PATH-TO-INI-FILE"
+		exit 1
+	fi
 fi
 key='x'
 # main loop
@@ -91,11 +97,10 @@ do
 		ps -aux | grep -e urfd -e tcd | grep -v grep | grep -v radmin
 	fi
 	echo
-	echo "        Reflector Administration, Version #230221"
+	echo "        Reflector Administration, Version #230308"
 	echo
 	git status | head -1
 	echo
-	echo "ls : List the configuration file"
 	if [ -e $urfserv ]; then
 		if [ -e $urfserv ]; then
 			echo "us : Uninstall the URF reflector"
@@ -126,11 +131,7 @@ do
 	echo
 	read -p "Please input <key> <value> - omit value to toggle a true/false : " key value garbage
 
-	if   [[ "$key" == ls* ]]; then
-		cat reflector.cfg;
-		echo
-		read -p "<Enter> to return to main menu: " ans
-	elif [[ "$key" == us* ]]; then
+	if   [[ "$key" == us* ]]; then
 		if   [ -e $urfserv ]; then
 			UninstallReflector
 		fi
@@ -138,10 +139,7 @@ do
 		if [ -e reflector/urfd ] && [ ! -e $urfserv ]; then
 			InstallReflector
 		fi
-	elif [[ "$key" == rr* ]]; then
-		if   [ -e $urfserv ]; then
-			sudo systemctl restart urfd
-		fi
+	elif [[ "$key" == rr* ]] && [ -e $urfserv ]; then sudo systemctl restart urfd
 	elif [[ "$key" == tr* ]] && [ -e $tcdserv ]; then sudo systemctl restart tcd
 	elif [[ "$key" == tl* ]] && [ -e $tcdserv ]; then sudo journalctl -u tcd -f
 	elif [[ "$key" == rl* ]] && [ -e $urfserv ]; then sudo journalctl -u urfd -f
