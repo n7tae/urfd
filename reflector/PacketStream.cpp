@@ -86,8 +86,10 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	{
 		Packet->UpdatePids(m_uiPacketCntr++);
 	}
-	// transcoder avaliable and is this a DvFramePacket?
-	if ( m_CodecStream && Packet->IsDvFrame())
+	// ... Is there a CodecStream (is this module transcoded)?
+	// AND Is this voice data?
+	// AND Is this from a local client and not from an interlinked URF
+	if ( m_CodecStream && Packet->IsDvFrame() && Packet->IsLocalOrigin())
 	{
 		// yes, push packet to trancoder queue
 		// trancoder will push it after transcoding
