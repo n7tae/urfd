@@ -19,7 +19,6 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
-#include <mysql/mysql.h>
 #include <netdb.h>
 
 #include "Global.h"
