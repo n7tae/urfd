@@ -201,34 +201,3 @@ bool CDvHeaderPacket::IsValid(void) const
 
 	return valid;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// operators
-
-bool CDvHeaderPacket::operator ==(const CDvHeaderPacket &Header) const
-{
-	return ( (m_uiFlag1 == Header.m_uiFlag1) &&
-			 (m_uiFlag2 == Header.m_uiFlag2) &&
-			 (m_uiFlag3 == Header.m_uiFlag3) &&
-			 (m_csUR == Header.m_csUR) &&
-			 (m_csRPT1 == Header.m_csRPT1) &&
-			 (m_csRPT2 == Header.m_csRPT2) &&
-			 (m_csMY == Header.m_csMY) );
-}
-
-#ifdef IMPLEMENT_CDVHEADERPACKET_CONST_CHAR_OPERATOR
-CDvHeaderPacket::operator const char *() const
-{
-	char *sz = (char *)(const char *)m_sz;
-
-	std::sprintf(sz, "%02X %02X %02X\n%s\n%s\n%s\n%s",
-				 m_uiFlag1, m_uiFlag2, m_uiFlag3,
-				 (const char *)m_csUR,
-				 (const char *)m_csRPT1,
-				 (const char *)m_csRPT2,
-				 (const char *)m_csMY);
-
-	return m_sz;
-}
-#endif

@@ -80,9 +80,6 @@ public:
 	void SetCodecData(const STCPacket *pack);
 	void SetTCParams(uint32_t seq);
 
-	// operators
-	bool operator ==(const CDvFramePacket &) const;
-
 protected:
 	// data (dstar)
 	uint8_t m_uiDvData[3];
