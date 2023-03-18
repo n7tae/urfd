@@ -157,7 +157,7 @@ void CUSRPProtocol::Task(void)
 		else if ( IsValidDvLastPacket(Buffer) )
 		{
 			// do nothing
-			std::cout << "USRP last frame" << std::endl;
+			std::cout << "USRP_KEYUP_FALSE received" << std::endl; // DEBUG
 		}
 		else
 		{
@@ -335,7 +335,6 @@ bool CUSRPProtocol::IsValidDvLastPacket(const CBuffer &Buffer)
 {
 	if(!memcmp(Buffer.data(), "USRP", 4) && (Buffer.size() == 32) && (Buffer.data()[15] == USRP_KEYUP_FALSE) )
 	{
-		m_uiStreamId = 0;
 		return true;
 	}
 	return false;
