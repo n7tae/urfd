@@ -16,17 +16,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
+
+#include "Global.h"
 #include "DMRMMDVMClient.h"
 #include "DMRMMDVMProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
 #include "BPTC19696.h"
 #include "RS129.h"
 #include "Golay2087.h"
 #include "QR1676.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define
@@ -49,6 +48,7 @@ static uint8_t g_DmrSyncMSData[]     = { 0x0D,0x5D,0x7F,0x77,0xFD,0x75,0x70 };
 
 bool CDmrmmdvmProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	m_DefaultId = g_Configure.GetUnsigned(g_Keys.mmdvm.defaultid);
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
@@ -346,12 +346,10 @@ void CDmrmmdvmProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Hea
 
 void CDmrmmdvmProtocol::HandleQueue(void)
 {
-
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto mod = packet->GetPacketModule();
@@ -419,7 +417,6 @@ void CDmrmmdvmProtocol::HandleQueue(void)
 			g_Reflector.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -860,14 +857,14 @@ void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const C
 	uint8_t tag[] = { 'D','M','R','D' };
 	Buffer->Set(tag, sizeof(tag));
 	uint8_t cs[12];
-	
+
 	// DMR header
 	// uiSeqId
 	Buffer->Append((uint8_t)seqid);
 	// uiSrcId
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
 	DvFrame0.GetMyCallsign().GetCallsign(cs);
-	
+
     if(uiSrcId == 0){
 		uiSrcId = DvFrame0.GetMyCallsign().GetDmrid();
 	}
@@ -878,9 +875,9 @@ void CDmrmmdvmProtocol::EncodeMMDVMPacket(const CDvHeaderPacket &Header, const C
 		uiSrcId = DvFrame2.GetMyCallsign().GetDmrid();
 	}
 	if(uiSrcId == 0){
-		uiSrcId = DMRMMDVM_DEFAULTID;
+		uiSrcId = m_DefaultId;
 	}
-	
+
 	AppendDmrIdToBuffer(Buffer, uiSrcId);
 	// uiDstId = TG9
 	uint32_t uiDstId = 9; // ModuleToDmrDestId(Header.GetRpt2Module());
@@ -982,7 +979,7 @@ char CDmrmmdvmProtocol::DmrDstIdToModule(uint32_t tg) const
 	if (tg > 4000 && tg < 4027)
 	{
 		const char mod = 'A' + (tg - 4001U);
-		if (strchr(ACTIVE_MODULES, mod))
+		if (g_Reflector.IsValidModule(mod))
 		{
 			return mod;
 		}

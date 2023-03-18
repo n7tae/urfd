@@ -18,8 +18,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
-
+#include "Defines.h"
 #include "Client.h"
+
 class CP25Client : public CClient
 {
 public:

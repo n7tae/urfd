@@ -62,10 +62,8 @@ public:
 	static unsigned int GetNetworkSize();
 	void EncodeInterlinkPacket(CBuffer &buf) const;
 
-	// virtual duplication
-	std::unique_ptr<CPacket> Duplicate(void) const;
-
 	// identity
+	std::unique_ptr<CPacket> Copy(void);
 	bool IsDvHeader(void) const           { return false; }
 	bool IsDvFrame(void) const           { return true; }
 
@@ -81,9 +79,6 @@ public:
 	void SetDvData(const uint8_t *);
 	void SetCodecData(const STCPacket *pack);
 	void SetTCParams(uint32_t seq);
-
-	// operators
-	bool operator ==(const CDvFramePacket &) const;
 
 protected:
 	// data (dstar)

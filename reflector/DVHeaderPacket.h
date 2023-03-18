@@ -20,7 +20,7 @@
 
 #include "Callsign.h"
 #include "Packet.h"
- 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // implementation details
 
@@ -65,10 +65,8 @@ public:
 	static unsigned int GetNetworkSize();
 	void EncodeInterlinkPacket(CBuffer &buf) const;
 
-	// virtual duplication
-	std::unique_ptr<CPacket> Duplicate(void) const;
-
 	// identity
+	std::unique_ptr<CPacket> Copy(void);
 	bool IsDvHeader(void) const                     { return true; }
 	bool IsDvFrame(void) const                     { return false; }
 
@@ -93,9 +91,6 @@ public:
 	// set callsigns
 	void SetRpt2Callsign(const CCallsign &cs)       { m_csRPT2 = cs; }
 	void SetRpt2Module(char c)                      { m_csRPT2.SetCSModule(c); }
-
-	// operators
-	bool operator ==(const CDvHeaderPacket &) const;
 
 protected:
 	// data

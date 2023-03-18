@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Timer.h"
 #include "Protocol.h"
 #include "DVHeaderPacket.h"
@@ -80,10 +81,10 @@ protected:
 
 	// uiStreamId helpers
 	uint32_t IpToStreamId(const CIp &) const;
-	
+
 	void encode(const unsigned char*, unsigned char*) const;
 	void decode(const unsigned char*, unsigned char*) const;
-	
+
 	uint8_t get_lich_fct(uint8_t);
 	void set_lich_rfct(uint8_t);
 	void set_lich_fct(uint8_t);
@@ -121,4 +122,7 @@ protected:
 	uint8_t m_lich;
 	uint8_t m_sacch[5];
 	uint8_t m_layer3[22];
+
+	uint16_t m_ReflectorId;
+	char m_AutolinkModule;
 };

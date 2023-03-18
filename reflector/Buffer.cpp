@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <iostream>
 #include <string.h>
 #include "Buffer.h"
 
@@ -175,7 +176,7 @@ CBuffer::operator const char *() const
 
 void CBuffer::DebugDump(std::ofstream &debugout) const
 {
-	// dump an hex line
+	// dump a hex line
 	for ( unsigned int i = 0; i < m_data.size(); i++ )
 	{
 		char sz[16];

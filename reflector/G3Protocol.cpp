@@ -16,16 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
-#include <string.h>
-#include <sys/stat.h>
-#include "G3Client.h"
-#include "G3Protocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <string.h>
+#include <sys/stat.h>
+
+#include "Global.h"
+#include "G3Client.h"
+#include "G3Protocol.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +32,10 @@
 bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, const uint16_t /*port*/, const bool /*has_ipv4*/, const bool /*has_ipv6*/)
 // everything is hard coded until ICOM gets their act together and start supporting IPv6
 {
+	//config data
+	m_TerminalPath.assign(g_Configure.GetString(g_Keys.files.terminal));
+	const std::string ipv4address(g_Configure.GetString(g_Keys.ip.ipv4bind));
+
 	ReadOptions();
 
 	// init reflector apparent callsign
@@ -46,7 +48,7 @@ bool CG3Protocol::Initialize(const char */*type*/, const EProtocol /*type*/, con
 	//m_ReflectorCallsign.PatchCallsign(0, "XLX", 3);
 
 	// create our sockets
-	CIp ip(AF_INET, G3_DV_PORT, LISTEN_IPV4);
+	CIp ip(AF_INET, G3_DV_PORT, ipv4address.c_str());
 	if ( ip.IsSet() )
 	{
 		if (! m_Socket4.Open(ip))
@@ -440,14 +442,13 @@ void CG3Protocol::Task(void)
 
 void CG3Protocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// supress host checks
 		m_LastKeepaliveTime.start();
 
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// encode it
 		CBuffer buffer;
@@ -473,7 +474,6 @@ void CG3Protocol::HandleQueue(void)
 			g_Reflector.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -672,7 +672,7 @@ void CG3Protocol::NeedReload(void)
 {
 	struct stat fileStat;
 
-	if (::stat(TERMINALOPTIONS_PATH, &fileStat) != -1)
+	if (::stat(m_TerminalPath.c_str(), &fileStat) != -1)
 	{
 		if (m_LastModTime != fileStat.st_mtime)
 		{
@@ -701,7 +701,7 @@ void CG3Protocol::ReadOptions(void)
 	int opts = 0;
 
 
-	std::ifstream file(TERMINALOPTIONS_PATH);
+	std::ifstream file(m_TerminalPath.c_str());
 	if (file.is_open())
 	{
 		m_GwAddress = 0u;
@@ -742,12 +742,12 @@ void CG3Protocol::ReadOptions(void)
 				}
 			}
 		}
-		std::cout << "G3 handler loaded " << opts << " options from file " << TERMINALOPTIONS_PATH << std::endl;
+		std::cout << "G3 handler loaded " << opts << " options from file " << m_TerminalPath << std::endl;
 		file.close();
 
 		struct stat fileStat;
 
-		if (::stat(TERMINALOPTIONS_PATH, &fileStat) != -1)
+		if (::stat(m_TerminalPath.c_str(), &fileStat) != -1)
 		{
 			m_LastModTime = fileStat.st_mtime;
 		}

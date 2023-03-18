@@ -71,16 +71,16 @@ public:
 	virtual bool Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6);
 	virtual void Close(void);
 
-	// queue
-	CPacketQueue *GetQueue(void)        { m_Queue.Lock(); return &m_Queue; }
-	void ReleaseQueue(void)             { m_Queue.Unlock(); }
-
 	// get
 	const CCallsign &GetReflectorCallsign(void)const { return m_ReflectorCallsign; }
+	uint16_t GetPort(void) const { return m_Port; }
 
 	// task
 	void Thread(void);
 	virtual void Task(void) = 0;
+
+	// pass-through
+	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
 
 protected:
 	// stream helpers
@@ -114,6 +114,9 @@ protected:
 	void Send(const CBuffer &buf, const CIp &Ip, uint16_t port) const;
 	void Send(const char    *buf, const CIp &Ip, uint16_t port) const;
 	void Send(const SM17Frame &frame, const CIp &Ip) const;
+#ifdef DEBUG
+	void Dump(const char *title, const uint8_t *data, int length);
+#endif
 
 	// socket
 	CUdpSocket m_Socket4;
@@ -123,7 +126,7 @@ protected:
 	std::unordered_map<uint16_t, std::shared_ptr<CPacketStream>> m_Streams;
 
 	// queue
-	CPacketQueue    m_Queue;
+	CSafePacketQueue<std::unique_ptr<CPacket>> m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;
@@ -132,10 +135,8 @@ protected:
 	// identity
 	CCallsign       m_ReflectorCallsign;
 
+	// data
+	uint16_t m_Port;
 	// debug
 	CTimer      m_DebugTimer;
-
-#ifdef DEBUG
-	void Dump(const char *title, const uint8_t *pointer, int length);
-#endif
 };

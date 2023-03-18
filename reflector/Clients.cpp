@@ -16,14 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
-#include "Reflector.h"
-#include "Clients.h"
 
+#include "Global.h"
+#include "Clients.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
-
 
 CClients::CClients()
 {

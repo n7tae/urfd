@@ -5,7 +5,7 @@ After=systemd-user-session.service network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/urfd
+ExecStart=/usr/local/bin/urfd /PATH_TO_INI_FILE
 Restart=always
 
 [Install]

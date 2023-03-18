@@ -50,33 +50,11 @@ InstallReflector () {
 	if [ ! -e urfd.interlink ]; then
 		cp ../config/urfd.interlink .
 	fi
-	if [[ "$g3support" == true ]] && [ ! -e urfd.terminal ]; then
+	if [ ! -e urfd.terminal ]; then
 		cp ../config/urfd.terminal .
 	fi
 	sudo make install || read -p "<Enter> to continue: " ans
 	popd
-}
-
-Clean () {
-	pushd reflector
-	make clean
-	popd
-	pushd ../tcd
-	make clean
-	popd
-}
-
-Compile () {
-	local np
-	np=`getconf _NPROCESSORS_ONLN`
-	pushd reflector
-	make -j$np || read -p "<Enter to continue: " ans
-	popd
-	if [[ "$tcaddress" != none ]]; then
-		pushd ../tcd
-		make -j$np || read -p "<Enter to continue: " ans
-		popd
-	fi
 }
 
 # Execution starts here!
@@ -87,13 +65,25 @@ tcdserv='/etc/systemd/system/tcd.service'
 
 # default values, we only need a few
 tcaddress='none'
-g3support=false
 
-if [ -e reflector.cfg ]; then
-	source reflector.cfg
+if [[ $# -eq 1 ]]; then
+	if [ -e $1 ]; then
+		echo $1 found
+		callsign=$(awk '$1 == "Callsign"{print $3}' $1)
+		tcaddress=$(awk '$1 == "Transcoder"{print $3}' $1)
+	else
+		echo "$1 not found"
+		exit 1
+	fi
 else
-	echo 'No configuration file found...'
-	exit 1
+	if [[ -e reflector/urfd.ini ]]; then
+		callsign=$(awk '$1 == "Callsign"{print $3}' reflector/urfd.ini)
+		tcaddress=$(awk '$1 == "Transcoder"{print $3}' reflector/urfd.ini)
+	else
+		echo "ERROR: could not find reflector/urfd.ini! You'll have to specify it."
+		echo "Usage: ./radmin PATH-TO-INI-FILE"
+		exit 1
+	fi
 fi
 key='x'
 # main loop
@@ -104,18 +94,13 @@ do
 	if [ "$pcount" -gt 1 ]; then
 		echo
 		ps -aux | head -1
-		ps -aux | grep -e urfd -e tcd | grep -v grep
+		ps -aux | grep -e urfd -e tcd | grep -v grep | grep -v radmin
 	fi
 	echo
-	echo "        Reflector Administration, Version #211204"
+	echo "        Reflector Administration, Version #230308"
 	echo
 	git status | head -1
 	echo
-	echo "ls : List the configuration file"
-	echo "cl : Clean (remove) compiled objects and executables"
-	echo "gp : Pull the latest software from the repo"
-	echo "br : Change git branch to <value>"
-	echo "co : Compile the system executable(s)"
 	if [ -e $urfserv ]; then
 		if [ -e $urfserv ]; then
 			echo "us : Uninstall the URF reflector"
@@ -146,11 +131,7 @@ do
 	echo
 	read -p "Please input <key> <value> - omit value to toggle a true/false : " key value garbage
 
-	if   [[ "$key" == ls* ]]; then
-		cat reflector.cfg;
-		echo
-		read -p "<Enter> to return to main menu: " ans
-	elif [[ "$key" == us* ]]; then
+	if   [[ "$key" == us* ]]; then
 		if   [ -e $urfserv ]; then
 			UninstallReflector
 		fi
@@ -158,33 +139,8 @@ do
 		if [ -e reflector/urfd ] && [ ! -e $urfserv ]; then
 			InstallReflector
 		fi
-	elif [[ "$key" == gp* ]]; then
-		echo
-		git pull
-		echo
-		read -p "<Enter> to continue: " ans
-		pushd ../tcd
-		git pull
-		echo
-		read -p "<Enter> to continue: " ans
-		popd
-	elif [[ "$key" == br* ]]; then
-		echo
-		git checkout "$value"
-		echo
-		read -p "<Enter> to continue: " ans
-		pushd ../tcd
-		git checkout "$value"
-		echo
-		read -p "<Enter> to continue: " ans
-		popd
-	elif [[ "$key" == rr* ]]; then
-		if   [ -e $urfserv ]; then
-			sudo systemctl restart urfd
-		fi
+	elif [[ "$key" == rr* ]] && [ -e $urfserv ]; then sudo systemctl restart urfd
 	elif [[ "$key" == tr* ]] && [ -e $tcdserv ]; then sudo systemctl restart tcd
-	elif [[ "$key" == cl* ]]; then Clean
-	elif [[ "$key" == co* ]]; then Compile
 	elif [[ "$key" == tl* ]] && [ -e $tcdserv ]; then sudo journalctl -u tcd -f
 	elif [[ "$key" == rl* ]] && [ -e $urfserv ]; then sudo journalctl -u urfd -f
 	fi

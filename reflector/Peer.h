@@ -68,7 +68,7 @@ public:
 
 	// reporting
 	virtual void WriteXml(std::ofstream &);
-	virtual void GetJsonObject(char *);
+	void JsonReport(nlohmann::json &report);
 
 protected:
 	// data

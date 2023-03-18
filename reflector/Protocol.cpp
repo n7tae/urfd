@@ -16,11 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+#include "Defines.h"
+#include "Global.h"
 #include "Protocol.h"
 #include "Clients.h"
-#include "Reflector.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -38,12 +37,10 @@ CProtocol::~CProtocol()
 	Close();
 
 	// empty queue
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while ( !m_Queue.IsEmpty() )
 	{
-		m_Queue.pop();
+		m_Queue.Pop();
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +48,7 @@ CProtocol::~CProtocol()
 
 bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	m_Port = port;
 	// init reflector apparent callsign
 	m_ReflectorCallsign = g_Reflector.GetCallsign();
 
@@ -62,10 +60,10 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 		m_ReflectorCallsign.PatchCallsign(0, type, 3);
 
 	// create our sockets
-#ifdef LISTEN_IPV4
 	if (has_ipv4)
 	{
-		CIp ip4(AF_INET, port, LISTEN_IPV4);
+		const std::string ipv4binding(g_Configure.GetString(g_Keys.ip.ipv4bind));
+		CIp ip4(AF_INET, port, ipv4binding.c_str());
 		if ( ip4.IsSet() )
 		{
 			if (! m_Socket4.Open(ip4))
@@ -73,25 +71,27 @@ bool CProtocol::Initialize(const char *type, const EProtocol ptype, const uint16
 		}
 		std::cout << "Listening on " << ip4 << std::endl;
 	}
-#endif
 
-#ifdef LISTEN_IPV6
-	if (has_ipv6)
+	if (g_Configure.IsString(g_Keys.ip.ipv6bind))
 	{
-		CIp ip6(AF_INET6, port, LISTEN_IPV6);
-		if ( ip6.IsSet() )
+		if (has_ipv6)
 		{
-			if (! m_Socket6.Open(ip6))
+			const std::string ipv6binding(g_Configure.GetString(g_Keys.ip.ipv6bind));
+			CIp ip6(AF_INET6, port, ipv6binding.c_str());
+			if ( ip6.IsSet() )
 			{
-				m_Socket4.Close();
-				return false;
+				if (! m_Socket6.Open(ip6))
+				{
+					m_Socket4.Close();
+					return false;
+				}
+				std::cout << "Listening on " << ip6 << std::endl;
 			}
-			std::cout << "Listening on " << ip6 << std::endl;
 		}
 	}
-#endif
 
-	try {
+	try
+	{
 		m_Future = std::async(std::launch::async, &CProtocol::Thread, this);
 	}
 	catch (const std::exception &e)
@@ -136,9 +136,7 @@ void CProtocol::OnDvFramePacketIn(std::unique_ptr<CDvFramePacket> &Frame, const 
 		// set the packet module, the transcoder needs this
 		Frame->SetPacketModule(stream->GetOwnerClient()->GetReflectorModule());
 		// and push
-		stream->Lock();
 		stream->Push(std::move(Frame));
-		stream->Unlock();
 	}
 #ifdef DEBUG
 	else
@@ -174,18 +172,15 @@ void CProtocol::CheckStreamsTimeout(void)
 	for ( auto it=m_Streams.begin(); it!=m_Streams.end(); )
 	{
 		// time out ?
-		it->second->Lock();
 		if ( it->second->IsExpired() )
 		{
 			// yes, close it
-			it->second->Unlock();
 			g_Reflector.CloseStream(it->second);
 			// and remove it from the m_Streams map
 			it = m_Streams.erase(it);
 		}
 		else
 		{
-			it->second->Unlock();
 			it++;
 		}
 	}

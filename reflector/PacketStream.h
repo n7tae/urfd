@@ -18,14 +18,10 @@
 
 #pragma once
 
-#include "PacketQueue.h"
 #include "Timer.h"
 #include "DVHeaderPacket.h"
 #include "Client.h"
-#ifdef TRANSCODED_MODULES
-#include "UnixDgramSocket.h"
 #include "CodecStream.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,21 +31,18 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
-class CPacketStream : public CPacketQueue
+class CPacketStream
 {
 public:
-	// constructor
-#ifdef TRANSCODED_MODULES
-	CPacketStream(std::shared_ptr<CUnixDgramReader>);
-#else
-	CPacketStream();
-#endif
+	CPacketStream(char module);
+	bool InitCodecStream();
 
 	// open / close
 	bool OpenPacketStream(const CDvHeaderPacket &, std::shared_ptr<CClient>);
 	void ClosePacketStream(void);
 
 	// push & pop
+	void ReturnPacket(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
 	void Push(std::unique_ptr<CPacket> packet);
 	void Tickle(void)                               { m_LastPacketTime.start(); }
 
@@ -62,16 +55,20 @@ public:
 	const CCallsign &GetUserCallsign(void) const    { return m_DvHeader.GetMyCallsign(); }
 	char             GetRpt2Module(void) const      { return m_DvHeader.GetRpt2Module(); }
 
+	// pass-through
+	std::unique_ptr<CPacket> Pop()        { return m_Queue.Pop(); }
+	std::unique_ptr<CPacket> PopWait()    { return m_Queue.PopWait(); }
+	bool IsEmpty()                        { return m_Queue.IsEmpty(); }
+
 protected:
 	// data
+	CSafePacketQueue<std::unique_ptr<CPacket>> m_Queue;
+	const char          m_PSModule;
 	bool                m_bOpen;
 	uint16_t            m_uiStreamId;
 	uint32_t            m_uiPacketCntr;
 	CTimer              m_LastPacketTime;
 	CDvHeaderPacket     m_DvHeader;
 	std::shared_ptr<CClient> m_OwnerClient;
-#ifdef TRANSCODED_MODULES
-	std::shared_ptr<CUnixDgramReader> m_TCReader;
 	std::unique_ptr<CCodecStream> m_CodecStream;
-#endif
 };

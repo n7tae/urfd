@@ -16,12 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
 #include <string.h>
+
+#include "Global.h"
 #include "DCSClient.h"
 #include "DCSProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
@@ -219,11 +218,10 @@ void CDcsProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 
 void CDcsProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto module = packet->GetPacketModule();
@@ -270,7 +268,6 @@ void CDcsProtocol::HandleQueue(void)
 			}
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -16,14 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "Timer.h"
-#include "GateKeeper.h"
-
-////////////////////////////////////////////////////////////////////////////////////////
-
-CGateKeeper g_GateKeeper;
-
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -49,9 +44,9 @@ bool CGateKeeper::Init(void)
 {
 
 	// load lists from files
-	m_NodeWhiteList.LoadFromFile(WHITELIST_PATH);
-	m_NodeBlackList.LoadFromFile(BLACKLIST_PATH);
-	m_PeerList.LoadFromFile(INTERLINKLIST_PATH);
+	m_NodeWhiteList.LoadFromFile(g_Configure.GetString(g_Keys.files.white));
+	m_NodeBlackList.LoadFromFile(g_Configure.GetString(g_Keys.files.black));
+	m_PeerList.LoadFromFile(g_Configure.GetString(g_Keys.files.interlink));
 
 	// reset run flag
 	keep_running = true;
@@ -92,9 +87,7 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 	case EProtocol::p25:
 	case EProtocol::usrp:
 	case EProtocol::nxdn:
-#ifndef NO_G3
 	case EProtocol::g3:
-#endif
 		// first check is IP & callsigned listed OK
 		ok &= IsNodeListedOk(callsign, ip);
 		// todo: then apply any protocol specific authorisation for the operation
@@ -141,9 +134,7 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EP
 	case EProtocol::p25:
 	case EProtocol::nxdn:
 	case EProtocol::usrp:
-#ifndef NO_G3
 	case EProtocol::g3:
-#endif
 		// first check is IP & callsigned listed OK
 		ok = ok && IsNodeListedOk(callsign, ip, module);
 		// todo: then apply any protocol specific authorisation for the operation
@@ -213,17 +204,20 @@ bool CGateKeeper::IsNodeListedOk(const CCallsign &callsign, const CIp &ip, char 
 	{
 		// first check if callsign is in white list
 		// note if white list is empty, everybody is authorized
-		const_cast<CCallsignList &>(m_NodeWhiteList).Lock();
+		m_NodeWhiteList.Lock();
 		if ( !m_NodeWhiteList.empty() )
 		{
 			ok = m_NodeWhiteList.IsCallsignListedWithWildcard(callsign, module);
 		}
-		const_cast<CCallsignList &>(m_NodeWhiteList).Unlock();
+		m_NodeWhiteList.Unlock();
 
 		// then check if not blacklisted
-		const_cast<CCallsignList &>(m_NodeBlackList).Lock();
-		ok &= !m_NodeBlackList.IsCallsignListedWithWildcard(callsign);
-		const_cast<CCallsignList &>(m_NodeBlackList).Unlock();
+		if (ok)
+		{
+			m_NodeBlackList.Lock();
+			ok = !m_NodeBlackList.IsCallsignListedWithWildcard(callsign);
+			m_NodeBlackList.Unlock();
+		}
 	}
 
 	// done
@@ -241,12 +235,12 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 	if ( ok )
 	{
 		// look for an exact match in the list
-		const_cast<CPeerCallsignList &>(m_PeerList).Lock();
+		m_PeerList.Lock();
 		if ( !m_PeerList.empty() )
 		{
 			ok = m_PeerList.IsCallsignListed(callsign, module);
 		}
-		const_cast<CPeerCallsignList &>(m_PeerList).Unlock();
+		m_PeerList.Unlock();
 	}
 
 	// done
@@ -263,12 +257,12 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 	if ( ok )
 	{
 		// look for an exact match in the list
-		const_cast<CPeerCallsignList &>(m_PeerList).Lock();
+		m_PeerList.Lock();
 		if ( !m_PeerList.empty() )
 		{
 			ok = m_PeerList.IsCallsignListed(callsign, modules);
 		}
-		const_cast<CPeerCallsignList &>(m_PeerList).Unlock();
+		m_PeerList.Unlock();
 	}
 
 	// done
@@ -300,10 +294,8 @@ const std::string CGateKeeper::ProtocolName(const EProtocol p) const
 			return "USRP";
 		case EProtocol::bm:
 			return "Brandmeister";
-#ifndef NO_G3
 		case EProtocol::g3:
 			return "Icom G3";
-#endif
 		default:
 			return "NONE";
 	}

@@ -1,44 +1,56 @@
-//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
-// urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+//  Copyright © 2023 Thomas A. Early N7TAE.
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// ----------------------------------------------------------------------------
+//    This file is part of m17ref.
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+//    m17ref is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//    m17ref is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    with this software.  If not, see <http://www.gnu.org/licenses/>.
+// ----------------------------------------------------------------------------
 
 #pragma once
+
+#include <cstdint>
+#include <iostream>
 
 class CVersion
 {
 public:
-	// constructor
+	// constructors
 	CVersion();
-	CVersion(int, int, int);
+	CVersion(uint8_t maj, uint8_t min, uint8_t rev);
 
 	// get
-	int GetMajor(void) const        { return m_iMajor; }
-	int GetMinor(void) const        { return m_iMinor; }
-	int GetRevision(void) const     { return m_iRevision; }
+	int GetMajor(void) const;
+	int GetMinor(void) const;
+	int GetRevision(void) const;
+	int GetVersion(void) const;
 
-	// comparaison
-	bool IsEqualOrHigherTo(const CVersion &) const;
+	// set
+	void Set(uint8_t, uint8_t, uint8_t);
 
-	// operator
-	bool operator ==(const CVersion &) const;
+	// comparaison operators
+	bool operator ==(const CVersion &v) const;
+	bool operator !=(const CVersion &v) const;
+	bool operator >=(const CVersion &v) const;
+	bool operator <=(const CVersion &v) const;
+	bool operator  >(const CVersion &v) const;
+	bool operator  <(const CVersion &v) const;
+
+	// output
+	friend std::ostream &operator <<(std::ostream &os, const CVersion &v);
+
 
 protected:
 	// data
-	int     m_iMajor;
-	int     m_iMinor;
-	int     m_iRevision;
+	int version;
 };

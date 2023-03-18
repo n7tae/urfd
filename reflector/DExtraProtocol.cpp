@@ -16,14 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
-#include "DExtraPeer.h"
+
+#include "Global.h"
 #include "DExtraClient.h"
 #include "DExtraProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-
+#
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
@@ -36,7 +35,6 @@ bool CDextraProtocol::Initialize(const char *type, const EProtocol ptype, const 
 
 	// update time
 	m_LastKeepaliveTime.start();
-	m_LastPeersLinkTime.start();
 
 	// done
 	return true;
@@ -103,36 +101,13 @@ void CDextraProtocol::Task(void)
 				// valid module ?
 				if ( g_Reflector.IsValidModule(ToLinkModule) )
 				{
-					// is this an ack for a link request?
-					CPeerCallsignList *list = g_GateKeeper.GetPeerList();
-					CCallsignListItem *item = list->FindListItem(Callsign);
-					if ( item != nullptr && Callsign.GetCSModule() == item->GetModules()[1] && ToLinkModule == item->GetModules()[0] )
-					{
-						std::cout << "DExtra ack packet for module " << ToLinkModule << " from " << Callsign << " at " << Ip << std::endl;
+					// acknowledge the request
+					EncodeConnectAckPacket(&Buffer, ProtRev);
+					Send(Buffer, Ip);
 
-						// already connected ?
-						CPeers *peers = g_Reflector.GetPeers();
-						if ( peers->FindPeer(Callsign, Ip, EProtocol::dextra) == nullptr )
-						{
-							// create the new peer
-							// this also create one client per module
-							// append the peer to reflector peer list
-							// this also add all new clients to reflector client list
-							peers->AddPeer(std::make_shared<CDextraPeer>(Callsign, Ip, std::string(1, ToLinkModule).c_str(), CVersion(2, 0, 0)));
-						}
-						g_Reflector.ReleasePeers();
-					}
-					else
-					{
-						// acknowledge the request
-						EncodeConnectAckPacket(&Buffer, ProtRev);
-						Send(Buffer, Ip);
-
-						// create the client and append
-						g_Reflector.GetClients()->AddClient(std::make_shared<CDextraClient>(Callsign, Ip, ToLinkModule, ProtRev));
-						g_Reflector.ReleaseClients();
-					}
-					g_GateKeeper.ReleasePeerList();
+					// create the client and append
+					g_Reflector.GetClients()->AddClient(std::make_shared<CDextraClient>(Callsign, Ip, ToLinkModule, ProtRev));
+					g_Reflector.ReleaseClients();
 				}
 				else
 				{
@@ -211,16 +186,6 @@ void CDextraProtocol::Task(void)
 		// update time
 		m_LastKeepaliveTime.start();
 	}
-
-	// peer connections
-	if ( m_LastPeersLinkTime.time() > DEXTRA_RECONNECT_PERIOD )
-	{
-		// handle remote peers connections
-		HandlePeerLinks();
-
-		// update time
-		m_LastPeersLinkTime.start();
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -228,11 +193,10 @@ void CDextraProtocol::Task(void)
 
 void CDextraProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty() )
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// encode it
 		CBuffer buffer;
@@ -258,7 +222,6 @@ void CDextraProtocol::HandleQueue(void)
 			g_Reflector.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -340,58 +303,6 @@ void CDextraProtocol::HandleKeepalives(void)
 		}
 	}
 	g_Reflector.ReleasePeers();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// Peers helpers
-
-void CDextraProtocol::HandlePeerLinks(void)
-{
-	CBuffer buffer;
-
-	// get the list of peers
-	CPeerCallsignList *list = g_GateKeeper.GetPeerList();
-	CPeers *peers = g_Reflector.GetPeers();
-
-	// check if all our connected peers are still listed by gatekeeper
-	// if not, disconnect
-	auto pit = peers->begin();
-	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::dextra, pit)) != nullptr )
-	{
-		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
-		{
-			// send disconnect packet
-			EncodeDisconnectPacket(&buffer, peer->GetReflectorModules()[0]);
-			Send(buffer, peer->GetIp());
-			std::cout << "Sending disconnect packet to XRF peer " << peer->GetCallsign() << " at " << peer->GetIp() << std::endl;
-			// remove client
-			peers->RemovePeer(peer);
-		}
-	}
-
-	// check if all ours peers listed by gatekeeper are connected
-	// if not, connect or reconnect
-	for ( auto it=list->begin(); it!=list->end(); it++ )
-	{
-		if ( !it->GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
-			continue;
-		if ( strlen(it->GetModules()) != 2 )
-			continue;
-		if ( peers->FindPeer(it->GetCallsign(), EProtocol::dextra) == nullptr )
-		{
-			// resolve again peer's IP in case it's a dynamic IP
-			it->ResolveIp();
-			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, it->GetModules());
-			Send(buffer, it->GetIp(), DEXTRA_PORT);
-			std::cout << "Sending connect packet to XRF peer " << it->GetCallsign() << " @ " << it->GetIp() << " for module " << it->GetModules()[1] << " (module " << it->GetModules()[0] << ")" << std::endl;
-		}
-	}
-
-	// done
-	g_Reflector.ReleasePeers();
-	g_GateKeeper.ReleasePeerList();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

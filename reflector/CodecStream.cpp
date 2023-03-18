@@ -16,29 +16,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
-#include "CodecStream.h"
 #include "DVFramePacket.h"
-#include "Reflector.h"
+#include "PacketStream.h"
+#include "CodecStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-CCodecStream::CCodecStream(CPacketStream *PacketStream, uint16_t streamid, ECodecType type, std::shared_ptr<CUnixDgramReader> reader)
+CCodecStream::CCodecStream(CPacketStream *PacketStream, char module) : m_CSModule(module), m_IsOpen(false)
 {
-	keep_running = true;
-	m_uiStreamId = streamid;
-	m_uiPid = 0;
-	m_eCodecIn = type;
-	m_RTMin = -1;
-	m_RTMax = -1;
-	m_RTSum = 0;
-	m_RTCount = 0;
-	m_uiTotalPackets = 0;
 	m_PacketStream = PacketStream;
-	m_TCReader = reader;
-	InitCodecStream();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +41,27 @@ CCodecStream::~CCodecStream()
 	{
 		m_Future.get();
 	}
+	// and close the socket
+	m_TCReader.Close();
+}
 
+void CCodecStream::ResetStats(uint16_t streamid, ECodecType type)
+{
+	m_IsOpen = true;
+	keep_running = true;
+	m_uiStreamId = streamid;
+	m_uiPid = 0;
+	m_eCodecIn = type;
+	m_RTMin = -1;
+	m_RTMax = -1;
+	m_RTSum = 0;
+	m_RTCount = 0;
+	m_uiTotalPackets = 0;
+}
+
+void CCodecStream::ReportStats()
+{
+	m_IsOpen = false;
 	// display stats
 	if (m_RTCount > 0)
 	{
@@ -61,7 +70,7 @@ CCodecStream::~CCodecStream()
 		double ave = 1000.0 * m_RTSum / double(m_RTCount);
 		auto prec = std::cout.precision();
 		std::cout.precision(1);
-		std::cout << std::fixed << "TC round-trip time(ms): " << min << "/" << ave << "/" << max << ", " << m_RTCount << " total packets" << std::endl;
+		std::cout << std::fixed << "TC round-trip time(ms): " << min << '/' << ave << '/' << max << ", " << m_RTCount << " total packets" << std::endl;
 		std::cout.precision(prec);
 	}
 }
@@ -69,11 +78,26 @@ CCodecStream::~CCodecStream()
 ////////////////////////////////////////////////////////////////////////////////////////
 // initialization
 
-void CCodecStream::InitCodecStream(void)
+bool CCodecStream::InitCodecStream()
 {
 	m_TCWriter.SetUp(REF2TC);
+	std::string name(TC2REF);
+	name.append(1, m_CSModule);
+	if (m_TCReader.Open(name.c_str()))
+		return true;
+	std::cout << "Initialized CodecStream receive socket " << name << std::endl;
 	keep_running = true;
-	m_Future = std::async(std::launch::async, &CCodecStream::Thread, this);
+	try
+	{
+		m_Future = std::async(std::launch::async, &CCodecStream::Thread, this);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << "Could not start Codec processing on module '" << m_CSModule << "': " << e.what() << std::endl;
+		m_TCReader.Close();
+		return true;
+	}
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -92,36 +116,38 @@ void CCodecStream::Task(void)
 	STCPacket pack;
 
 	// any packet from transcoder
-	if (m_TCReader->Receive(&pack, 5))
+	if (m_TCReader.Receive(&pack, 5))
 	{
 		// update statistics
 		double rt = pack.rt_timer.time();	// the round-trip time
-		if ( m_RTMin == -1 )
+		if (0 == m_RTCount)
 		{
 			m_RTMin = rt;
 			m_RTMax = rt;
-
 		}
 		else
 		{
-			m_RTMin = MIN(m_RTMin, rt);
-			m_RTMax = MAX(m_RTMax, rt);
-
+			if (rt < m_RTMin)
+				m_RTMin = rt;
+			else if (rt > m_RTMax)
+				m_RTMax = rt;
 		}
 		m_RTSum += rt;
 		m_RTCount++;
 
-		if ( m_LocalQueue.empty() )
+		if ( m_LocalQueue.IsEmpty() )
 		{
-			std::cout << "Unexpected transcoded packet received from transcoder" << std::endl;
+			std::cout << "Unexpected transcoded packet received from transcoder: Module='" << pack.module << "' StreamID=" << std::hex << std::showbase << ntohs(pack.streamid) << std::endl;
 		}
-		else
+		else if (m_IsOpen)
 		{
 			// pop the original packet
-			auto Packet = m_LocalQueue.pop();
+			auto Packet = m_LocalQueue.Pop();
 			auto Frame = (CDvFramePacket *)Packet.get();
 
 			// do things look okay?
+			if (pack.module != m_CSModule)
+				std::cerr << "CodecStream '" << m_CSModule << "' received a transcoded packet from module '" << pack.module << "'" << std::dec << std::noshowbase << std::endl;
 			if (pack.sequence != Frame->GetCodecPacket()->sequence)
 				std::cerr << "Sequence mismatch: this voice frame=" << Frame->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
 			if (pack.streamid != Frame->GetCodecPacket()->streamid)
@@ -137,31 +163,35 @@ void CCodecStream::Task(void)
 			}
 
 			// and push it back to client
-			m_PacketStream->Lock();
-			m_PacketStream->push(Packet);
-			m_PacketStream->Unlock();
+			m_PacketStream->ReturnPacket(std::move(Packet));
+		}
+		else
+		{
+			std::cout << "Transcoder packet received but CodecStream[" << m_CSModule << "] is closed: Module='" << pack.module << "' StreamID=" << std::hex << std::showbase << ntohs(pack.streamid) << std::endl;
 		}
 	}
 
 	// anything in our queue
-	while ( !empty() )
+	auto Packet = m_Queue.Pop();
+	while (Packet)
 	{
-		// yes, pop it from queue
-		auto Packet = pop();
-
 		// we need a CDvFramePacket pointer to access Frame stuff
 		auto Frame = (CDvFramePacket *)Packet.get();
 
-		// push to our local queue so it can wait for the transcoder
-		m_LocalQueue.push(Packet);
+		if (m_IsOpen)
+		{
+			// update important stuff in Frame->m_TCPack for the transcoder
+			// sets the packet counter, stream id, last_packet, module and start the trip timer
+			Frame->SetTCParams(m_uiTotalPackets++);
 
-		// update important stuff in Frame->m_TCPack for the transcoder
-		Frame->SetTCParams(m_uiTotalPackets++);
+			// now send to transcoder
+			m_TCWriter.Send(Frame->GetCodecPacket());
 
-		// now send to transcoder
-		// this assume that thread pushing the Packet
-		// have verified that the CodecStream is connected
-		// and that the packet needs transcoding
-		m_TCWriter.Send(Frame->GetCodecPacket());
+			// push to our local queue where it can wait for the transcoder
+			m_LocalQueue.Push(std::move(Packet));
+		}
+
+		// get the next packet, if there is one
+		Packet = m_Queue.Pop();
 	}
 }

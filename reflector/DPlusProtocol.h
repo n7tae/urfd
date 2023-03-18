@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Timer.h"
 #include "SEProtocol.h"
 #include "DVHeaderPacket.h"

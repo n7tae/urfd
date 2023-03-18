@@ -17,14 +17,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "NXDNClient.h"
 #include "NXDNProtocol.h"
 #include "YSFDefines.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
 #include "Golay24128.h"
+#include "Global.h"
 
 const uint8_t NXDN_LICH_RFCT_RDCH			= 2U;
 const uint8_t NXDN_LICH_USC_SACCH_NS		= 0U;
@@ -53,6 +52,10 @@ CNXDNProtocol::CNXDNProtocol()
 
 bool CNXDNProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	// config value
+	m_ReflectorId = g_Configure.GetUnsigned(g_Keys.nxdn.reflectorid);
+	m_AutolinkModule = g_Configure.GetAutolinkModule(g_Keys.nxdn.autolinkmod);
+
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
@@ -130,9 +133,8 @@ void CNXDNProtocol::Task(void)
 					auto newclient = std::make_shared<CNXDNClient>(Callsign, Ip);
 
 					// aautolink, if enabled
-#if NXDN_AUTOLINK_ENABLE
-					newclient->SetReflectorModule(NXDN_AUTOLINK_MODULE);
-#endif
+					if (m_AutolinkModule)
+						newclient->SetReflectorModule(m_AutolinkModule);
 
 					// and append
 					clients->AddClient(newclient);
@@ -141,7 +143,7 @@ void CNXDNProtocol::Task(void)
 				{
 					client->Alive();
 				}
-				
+
 				// acknowledge the request -- NXDNReflector simply echoes the packet
 				Send(Buffer, Ip);
 				// and done
@@ -244,11 +246,10 @@ void CNXDNProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header,
 
 void CNXDNProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto mod = packet->GetPacketModule();
@@ -308,7 +309,6 @@ void CNXDNProtocol::HandleQueue(void)
 			g_Reflector.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -408,24 +408,24 @@ bool CNXDNProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer, s
 			rpt1.SetCSModule(NXDN_MODULE_ID);
 			rpt2.SetCSModule(' ');
 			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, false));
-			
+
 			if ( g_GateKeeper.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::nxdn, header->GetRpt2Module())  )
 			{
-				OnDvHeaderPacketIn(header, Ip);	
+				OnDvHeaderPacketIn(header, Ip);
 			}
 		}
 
 		// get DV frames
 		uint8_t   ambe49[7];
-		
+
 		uint8_t   ambe0[9];
 		uint8_t   ambe1[9];
 		uint8_t   ambe2[9];
 		uint8_t   ambe3[9];
-		
+
 		memcpy(ambe49, Buffer.data() + 15, 7);
 		encode(ambe49, ambe0);
-		
+
 		uint8_t t[7];
 		const uint8_t *d = &(Buffer.data()[21]);
 		for(int i = 0; i < 6; ++i){
@@ -436,10 +436,10 @@ bool CNXDNProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer, s
 
 		memcpy(ambe49, t, 7);
 		encode(ambe49, ambe1);
-		
+
 		memcpy(ambe49, Buffer.data() + 29, 7);
 		encode(ambe49, ambe2);
-		
+
 		d = &(Buffer.data()[35]);
 		for(int i = 0; i < 6; ++i){
 			t[i] = d[i] << 1;
@@ -479,15 +479,15 @@ bool CNXDNProtocol::EncodeNXDNHeaderPacket(const CDvHeaderPacket &Header, CBuffe
 {
 	Buffer.resize(43);
 	uint16_t NXDNId = Header.GetMyCallsign().GetNXDNid();
-	uint16_t RptrId = NXDN_REFID;
-	
+	uint16_t RptrId = m_ReflectorId;
+
 	memcpy(Buffer.data(), "NXDND", 5);
 	Buffer.data()[5U] = (NXDNId >> 8) & 0xFFU;
 	Buffer.data()[6U] = (NXDNId >> 0) & 0xFFU;
 	Buffer.data()[7U] = (RptrId >> 8) & 0xFFU;
 	Buffer.data()[8U] = (RptrId >> 0) & 0xFFU;
 	Buffer.data()[9U] = 0x01U;
-	
+
 	const uint8_t idle[3U] = {0x10, 0x00, 0x00};
 	m_lich = 0;
 	memset(m_sacch, 0, 5U);
@@ -514,7 +514,7 @@ bool CNXDNProtocol::EncodeNXDNHeaderPacket(const CDvHeaderPacket &Header, CBuffe
 	set_layer3_blks(0U);
 	memcpy(&Buffer.data()[15U], m_layer3, 14U);
 	memcpy(&Buffer.data()[29U], m_layer3, 14U);
-	
+
 	if (Buffer.data()[10U] == 0x81U || Buffer.data()[10U] == 0x83U) {
 		Buffer.data()[9U] |= Buffer.data()[15U] == 0x01U ? 0x04U : 0x00U;
 		Buffer.data()[9U] |= Buffer.data()[15U] == 0x08U ? 0x08U : 0x00U;
@@ -526,7 +526,7 @@ bool CNXDNProtocol::EncodeNXDNHeaderPacket(const CDvHeaderPacket &Header, CBuffe
 			Buffer.data()[9U] |= Buffer.data()[12U] == 0x08U ? 0x08U : 0x00U;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -535,15 +535,15 @@ bool CNXDNProtocol::EncodeNXDNPacket(const CDvHeaderPacket &Header, uint32_t seq
 	uint8_t ambe[28];
 	Buffer.resize(43);
 	uint16_t NXDNId = Header.GetMyCallsign().GetNXDNid();
-	uint16_t RptrId = NXDN_REFID;
-	
+	uint16_t RptrId = m_ReflectorId;
+
 	memcpy(Buffer.data(), "NXDND", 5);
 	Buffer.data()[5U] = (NXDNId >> 8) & 0xFFU;
 	Buffer.data()[6U] = (NXDNId >> 0) & 0xFFU;
 	Buffer.data()[7U] = (RptrId >> 8) & 0xFFU;
 	Buffer.data()[8U] = (RptrId >> 0) & 0xFFU;
 	Buffer.data()[9U] = 0x01U;
-	
+
 	uint8_t msg[3U];
 	m_lich = 0;
 	memset(m_sacch, 0, 5U);
@@ -590,7 +590,7 @@ bool CNXDNProtocol::EncodeNXDNPacket(const CDvHeaderPacket &Header, uint32_t seq
 	for(int i = 0; i < 4; ++i){
 		decode(DvFrames[i].GetCodecData(ECodecType::dmr), ambe+(i*7));
 	}
-	
+
 	memcpy(&Buffer.data()[15], ambe, 7);
 	for(int i = 0; i < 7; ++i){
 		Buffer.data()[21+i] |= (ambe[7+i] >> 1);
@@ -604,7 +604,7 @@ bool CNXDNProtocol::EncodeNXDNPacket(const CDvHeaderPacket &Header, uint32_t seq
 		Buffer.data()[36+i] = (ambe[21+i] & 1) << 7;
 	}
 	Buffer.data()[41] |= (ambe[27] >> 2);
-	
+
 	return true;
 }
 
@@ -657,11 +657,11 @@ void CNXDNProtocol::decode(const unsigned char* in, unsigned char* out) const
 
 void CNXDNProtocol::encode(const unsigned char* in, unsigned char* out) const
 {
-	
+
 	unsigned int aOrig = 0U;
 	unsigned int bOrig = 0U;
 	unsigned int cOrig = 0U;
-	
+
 	unsigned int MASK = 0x000800U;
 	for (unsigned int i = 0U; i < 12U; i++, MASK >>= 1) {
 		unsigned int n1 = i + 0U;
@@ -838,4 +838,3 @@ void CNXDNProtocol::encode_crc6(uint8_t *d, uint8_t len)
 		WRITE_BIT(d, n, b);
 	}
 }
-

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+#include <nlohmann/json.hpp>
 #include <string.h>
 #include "Reflector.h"
 #include "Peer.h"
@@ -125,20 +125,16 @@ void CPeer::WriteXml(std::ofstream &xmlFile)
 	xmlFile << "</PEER>" << std::endl;
 }
 
-void CPeer::GetJsonObject(char *Buffer)
+void CPeer::JsonReport(nlohmann::json &report)
 {
-	char sz[512];
-	char mbstr[100];
-	char cs[16];
-
-	if (std::strftime(mbstr, sizeof(mbstr), "%A %c", std::localtime(&m_LastHeardTime)))
+	nlohmann::json jpeer;
+	jpeer["Callsign"] = m_Callsign.GetCS();
+	jpeer["Modules"] = m_ReflectorModules;
+	jpeer["Protocol"] = GetProtocolName();
+	char s[100];
+	if (std::strftime(s, sizeof(s), "%FT%TZ", std::gmtime(&m_ConnectTime)))
 	{
-		m_Callsign.GetCallsignString(cs);
-
-		::sprintf(sz, "{\"callsign\":\"%s\",\"linkedto\":\"%s\",\"time\":\"%s\"}",
-				  cs,
-				  m_ReflectorModules,
-				  mbstr);
-		::strcat(Buffer, sz);
+		jpeer["ConnectTime"] = s;
 	}
+	report["Peers"].push_back(jpeer);
 }

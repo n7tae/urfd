@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+#include <ctime>
 #include <string.h>
 #include "User.h"
 
@@ -77,23 +77,17 @@ void CUser::WriteXml(std::ofstream &xmlFile)
 	xmlFile << "</STATION>" << std::endl;
 }
 
-void CUser::GetJsonObject(char *Buffer)
+void CUser::JsonReport(nlohmann::json &report)
 {
-	char sz[512];
-	char mbstr[100];
-	char my[16];
-	char rpt1[16];
-
-	if (std::strftime(mbstr, sizeof(mbstr), "%A %c", std::localtime(&m_LastHeardTime)))
+	nlohmann::json juser;
+	juser["Callsign"] = m_My.GetCS();
+	juser["Repeater"] = m_Rpt1.GetCS();
+	juser["OnModule"] = std::string(1, m_Rpt2.GetCSModule());
+	juser["ViaPeer"] = m_Xlx.GetCS();
+	char s[100];
+	if (std::strftime(s, sizeof(s), "%FT%TZ", std::gmtime(&m_LastHeardTime)))
 	{
-		m_My.GetCallsignString(my);
-		m_Rpt1.GetCallsignString(rpt1);
-
-		::sprintf(sz, "{\"callsign\":\"%s\",\"node\":\"%s\",\"module\":\"%c\",\"time\":\"%s\"}",
-				  my,
-				  rpt1,
-				  m_Rpt1.GetCSModule(),
-				  mbstr);
-		::strcat(Buffer, sz);
+		juser["LastHeard"] = s;
 	}
+	report["Users"].push_back(juser);
 }

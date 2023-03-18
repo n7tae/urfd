@@ -18,18 +18,16 @@
 
 #include <string.h>
 
-#include "Main.h"
 #include "BMPeer.h"
 #include "BMProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
 
 bool CBMProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	m_HasTranscoder = g_Configure.IsString(g_Keys.modules.tcmodules);
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 
@@ -167,7 +165,7 @@ void CBMProtocol::Task(void)
 	HandleQueue();
 
 	// keep alive
-	if ( m_LastKeepaliveTime.time() > XLX_KEEPALIVE_PERIOD )
+	if ( m_LastKeepaliveTime.time() > BM_KEEPALIVE_PERIOD )
 	{
 		// handle keep alives
 		HandleKeepalives();
@@ -177,7 +175,7 @@ void CBMProtocol::Task(void)
 	}
 
 	// peer connections
-	if ( m_LastPeersLinkTime.time() > XLX_RECONNECT_PERIOD )
+	if ( m_LastPeersLinkTime.time() > BM_RECONNECT_PERIOD )
 	{
 		// handle remote peers connections
 		HandlePeerLinks();
@@ -192,11 +190,10 @@ void CBMProtocol::Task(void)
 
 void CBMProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// encode it
 		CBuffer buffer;
@@ -228,11 +225,10 @@ void CBMProtocol::HandleQueue(void)
 						break;
 					case EProtoRev::ambe:
 					default:
-#ifdef TRANSCODED_MODULES
-						Send(buffer, client->GetIp());
-#else
-						Send(bufferLegacy, client->GetIp());
-#endif
+						if (m_HasTranscoder)
+							Send(buffer, client->GetIp());
+						else
+							Send(bufferLegacy, client->GetIp());
 						break;
 					}
 				}
@@ -240,7 +236,6 @@ void CBMProtocol::HandleQueue(void)
 			g_Reflector.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +319,7 @@ void CBMProtocol::HandlePeerLinks(void)
 			it->ResolveIp();
 			// send connect packet to re-initiate peer link
 			EncodeConnectPacket(&buffer, it->GetModules());
-			Send(buffer, it->GetIp(), XLX_PORT);
+			Send(buffer, it->GetIp(), m_Port);
 			std::cout << "Sending connect packet to BM peer " << cs << " @ " << it->GetIp() << " for modules " << it->GetModules() << std::endl;
 		}
 	}

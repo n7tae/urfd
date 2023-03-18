@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Timer.h"
 #include "SEProtocol.h"
 #include "DVHeaderPacket.h"
@@ -61,7 +62,6 @@ protected:
 	void HandleQueue(void);
 
 	// keepalive helpers
-	void HandlePeerLinks(void);
 	void HandleKeepalives(void);
 
 	// stream helpers
@@ -84,8 +84,6 @@ protected:
 	bool EncodeDvHeaderPacket(const CDvHeaderPacket &, CBuffer &) const;
 	bool EncodeDvFramePacket(const CDvFramePacket &, CBuffer &) const;
 
-protected:
 	// time
 	CTimer m_LastKeepaliveTime;
-	CTimer m_LastPeersLinkTime;
 };

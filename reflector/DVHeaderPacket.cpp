@@ -16,12 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
-#include <string.h>
-#include <cstdio>
-#include "DMRIdDir.h"
-#include "DVHeaderPacket.h"
 
+#include <string.h>
+#include <iostream>
+
+#include "Defines.h"
+#include "DVHeaderPacket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -90,7 +90,7 @@ CDvHeaderPacket::CDvHeaderPacket(const struct dstar_header *buffer, uint16_t sid
 	m_uiFlag2 = buffer->Flag2;
 	m_uiFlag3 = buffer->Flag3;
 	m_csUR.SetCallsign(buffer->UR, CALLSIGN_LEN);
-	
+
 	if((buffer->RPT1)[7] == 0x20){
 		char rptr1[8];
 		memcpy(rptr1, buffer->RPT1, 8);
@@ -100,7 +100,7 @@ CDvHeaderPacket::CDvHeaderPacket(const struct dstar_header *buffer, uint16_t sid
 	else{
 		m_csRPT1.SetCallsign(buffer->RPT1, CALLSIGN_LEN);
 	}
-	
+
 	m_csRPT1.SetCallsign(buffer->RPT1, CALLSIGN_LEN);
 	m_csRPT2.SetCallsign(buffer->RPT2, CALLSIGN_LEN);
 	m_csMY.SetCallsign(buffer->MY, CALLSIGN_LEN);
@@ -165,10 +165,7 @@ CDvHeaderPacket::CDvHeaderPacket(const CM17Packet &m17) : CPacket(m17)
 	m_csRPT1.SetCSModule('G');
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// virtual duplication
-
-std::unique_ptr<CPacket> CDvHeaderPacket::Duplicate(void) const
+std::unique_ptr<CPacket> CDvHeaderPacket::Copy(void)
 {
 	return std::unique_ptr<CPacket>(new CDvHeaderPacket(*this));
 }
@@ -204,34 +201,3 @@ bool CDvHeaderPacket::IsValid(void) const
 
 	return valid;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-// operators
-
-bool CDvHeaderPacket::operator ==(const CDvHeaderPacket &Header) const
-{
-	return ( (m_uiFlag1 == Header.m_uiFlag1) &&
-			 (m_uiFlag2 == Header.m_uiFlag2) &&
-			 (m_uiFlag3 == Header.m_uiFlag3) &&
-			 (m_csUR == Header.m_csUR) &&
-			 (m_csRPT1 == Header.m_csRPT1) &&
-			 (m_csRPT2 == Header.m_csRPT2) &&
-			 (m_csMY == Header.m_csMY) );
-}
-
-#ifdef IMPLEMENT_CDVHEADERPACKET_CONST_CHAR_OPERATOR
-CDvHeaderPacket::operator const char *() const
-{
-	char *sz = (char *)(const char *)m_sz;
-
-	std::sprintf(sz, "%02X %02X %02X\n%s\n%s\n%s\n%s",
-				 m_uiFlag1, m_uiFlag2, m_uiFlag3,
-				 (const char *)m_csUR,
-				 (const char *)m_csRPT1,
-				 (const char *)m_csRPT2,
-				 (const char *)m_csMY);
-
-	return m_sz;
-}
-#endif

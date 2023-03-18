@@ -18,19 +18,27 @@
 
 #pragma once
 
+#include <atomic>
+#include <future>
+
+#include "DVFramePacket.h"
 #include "UnixDgramSocket.h"
-#include "PacketQueue.h"
+#include "SafePacketQueue.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
 
 class CPacketStream;
 
-class CCodecStream : public CPacketQueue
+class CCodecStream
 {
 public:
 	// constructor
-	CCodecStream(CPacketStream *packetstream, uint16_t streamid, ECodecType codectype, std::shared_ptr<CUnixDgramReader> reader);
+	CCodecStream(CPacketStream *packetstream, char module);
+	bool InitCodecStream();
+
+	void ResetStats(uint16_t streamid, ECodecType codectype);
+	void ReportStats();
 
 	// destructor
 	virtual ~CCodecStream();
@@ -42,9 +50,14 @@ public:
 	void Thread(void);
 	void Task(void);
 
+	// pass-thru
+	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
+
 protected:
-	// initialization
-	void InitCodecStream(void);
+	// identity
+	const char      m_CSModule;
+	// state
+	std::atomic<bool> m_IsOpen;
 	// data
 	uint16_t        m_uiStreamId;
 	uint16_t        m_uiPort;
@@ -52,12 +65,14 @@ protected:
 	ECodecType      m_eCodecIn;
 
 	// sockets
-	std::shared_ptr<CUnixDgramReader> m_TCReader;
+	CUnixDgramReader m_TCReader;
 	CUnixDgramWriter m_TCWriter;
 
 	// associated packet stream
 	CPacketStream  *m_PacketStream;
-	CPacketQueue    m_LocalQueue;
+
+	// queues
+	CSafePacketQueue<std::unique_ptr<CPacket>> m_LocalQueue, m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;

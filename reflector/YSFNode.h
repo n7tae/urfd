@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Main.h"
+#include <cstdint>
 
 class CYsfNode
 {

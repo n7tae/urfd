@@ -18,6 +18,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include "Defines.h"
 #include "Version.h"
 #include "Timer.h"
 #include "SEProtocol.h"
@@ -72,4 +73,6 @@ protected:
 	// time
 	CTimer m_LastKeepaliveTime;
 	CTimer m_LastPeersLinkTime;
+	// config data;
+	bool m_HasTranscoder;
 };

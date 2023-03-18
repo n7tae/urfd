@@ -16,26 +16,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include "PacketStream.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
-#ifdef TRANSCODED_MODULES
-CPacketStream::CPacketStream(std::shared_ptr<CUnixDgramReader> reader)
-#else
-CPacketStream::CPacketStream()
-#endif
+CPacketStream::CPacketStream(char module) : m_PSModule(module)
 {
 	m_bOpen = false;
 	m_uiStreamId = 0;
 	m_uiPacketCntr = 0;
 	m_OwnerClient = nullptr;
-#ifdef TRANSCODED_MODULES
 	m_CodecStream = nullptr;
-	m_TCReader = reader;
-#endif
+}
+
+bool CPacketStream::InitCodecStream()
+{
+	m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_PSModule));
+	if (m_CodecStream)
+		return m_CodecStream->InitCodecStream();
+	else
+	{
+		std::cerr << "Could not create a CCodecStream for module '" << m_PSModule << "'" << std::endl;
+		return true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -53,19 +58,10 @@ bool CPacketStream::OpenPacketStream(const CDvHeaderPacket &DvHeader, std::share
 		m_DvHeader = DvHeader;
 		m_OwnerClient = client;
 		m_LastPacketTime.start();
-#ifdef TRANSCODED_MODULES
-		if (DvHeader.IsLocalOrigin()) // we only need transcoding if the source is local
-		{
-			auto mod = DvHeader.GetRpt2Module();
-			if (std::string::npos != std::string(TRANSCODED_MODULES).find(mod))
-			{
-				m_CodecStream = std::unique_ptr<CCodecStream>(new CCodecStream(this, m_uiStreamId, DvHeader.GetCodecIn(), m_TCReader));
-			}
-		}
-#endif
+		if (m_CodecStream)
+			m_CodecStream->ResetStats(m_uiStreamId, m_DvHeader.GetCodecIn());
 		return true;
 	}
-
 	return false;
 }
 
@@ -75,9 +71,8 @@ void CPacketStream::ClosePacketStream(void)
 	m_bOpen = false;
 	m_uiStreamId = 0;
 	m_OwnerClient.reset();
-#ifdef TRANSCODED_MODULES
-	m_CodecStream.reset();
-#endif
+	if (m_CodecStream)
+		m_CodecStream->ReportStats();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -91,34 +86,20 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	{
 		Packet->UpdatePids(m_uiPacketCntr++);
 	}
-	// transcoder avaliable ?
-#ifdef TRANSCODED_MODULES
-	if ( m_CodecStream )
+	// ... Is there a CodecStream (is this module transcoded)?
+	// AND Is this voice data?
+	// AND Is this from a local client and not from an interlinked URF
+	if ( m_CodecStream && Packet->IsDvFrame() && Packet->IsLocalOrigin())
 	{
-		// todo: verify no possibilty of double lock here
-		m_CodecStream->Lock();
-		{
-			// transcoder ready & frame need transcoding ?
-			if (Packet->IsDvFrame())
-			{
-				// yes, push packet to trancoder queue
-				// trancoder will push it after transcoding
-				// is completed
-				m_CodecStream->push(Packet);
-			}
-			else
-			{
-				// no, just bypass transcoder
-				push(Packet);
-			}
-		}
-		m_CodecStream->Unlock();
+		// yes, push packet to trancoder queue
+		// trancoder will push it after transcoding
+		// is completed
+		m_CodecStream->Push(std::move(Packet));
 	}
 	else
-#endif
 	{
-		// otherwise, push direct push
-		push(Packet);
+		// no, just bypass transcoder
+		m_Queue.Push(std::move(Packet));
 	}
 }
 

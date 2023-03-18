@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
+
+#include "Global.h"
 #include "DPlusClient.h"
 #include "DPlusProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
@@ -229,11 +228,10 @@ void CDplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header
 
 void CDplusProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto mod = packet->GetPacketModule();
@@ -293,7 +291,6 @@ void CDplusProtocol::HandleQueue(void)
 			g_Reflector.ReleaseClients();
 		}
 	}
-	m_Queue.Unlock();
 }
 
 void CDplusProtocol::SendDvHeader(CDvHeaderPacket *packet, CDplusClient *client)

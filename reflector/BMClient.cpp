@@ -17,7 +17,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
-#include "Main.h"
+
 #include "BMClient.h"
 
 
@@ -43,5 +43,5 @@ CBmClient::CBmClient(const CBmClient &client)
 
 bool CBmClient::IsAlive(void) const
 {
-	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
+	return (m_LastKeepaliveTime.time() < BM_KEEPALIVE_TIMEOUT);
 }

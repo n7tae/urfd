@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "M17Client.h"
 #include "M17Protocol.h"
 #include "M17Packet.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
@@ -222,11 +221,10 @@ void CM17Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 
 void CM17Protocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto module = packet->GetPacketModule();
@@ -271,7 +269,6 @@ void CM17Protocol::HandleQueue(void)
 			m_StreamsCache[module].m_iSeqCounter++;
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

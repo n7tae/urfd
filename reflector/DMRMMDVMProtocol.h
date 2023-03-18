@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "Defines.h"
 #include "Timer.h"
 #include "Protocol.h"
 #include "DVHeaderPacket.h"
@@ -117,4 +118,7 @@ protected:
 
 	// for authentication
 	uint32_t              m_uiAuthSeed;
+
+	// config data
+	unsigned m_DefaultId;
 };

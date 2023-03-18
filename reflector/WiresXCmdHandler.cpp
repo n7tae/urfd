@@ -17,16 +17,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
-#include "Main.h"
+
 #include "CRC.h"
 #include "YSFFich.h"
 #include "YSFPayload.h"
 #include "YSFClient.h"
-#include "YSFNodeDirFile.h"
-#include "YSFNodeDirHttp.h"
 #include "YSFUtils.h"
-#include "Reflector.h"
 #include "WiresXCmdHandler.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -141,10 +139,9 @@ void CWiresxCmdHandler::Task(void)
 	// handle it
 	if ( bCmd )
 	{
-		const char *modules = ACTIVE_MODULES;
 		// fill our info object
 		Info = m_ReflectorWiresxInfo;
-		g_YsfNodeDir.FindFrequencies(Cmd.GetCallsign(), &uiNodeTxFreq, &uiNodeRxFreq);
+		g_LYtr.FindFrequencies(Cmd.GetCallsign(), uiNodeTxFreq, uiNodeRxFreq);
 		Info.SetFrequencies(uiNodeTxFreq, uiNodeRxFreq);
 
 		// find our client and the module it's currentlink linked to
@@ -173,7 +170,7 @@ void CWiresxCmdHandler::Task(void)
 			break;
 		case WIRESX_CMD_CONN_REQ:
 			cModule = 'A' + (char)(Cmd.GetArg() - 1);
-			if (::strchr(modules, cModule))
+			if (g_Reflector.IsValidModule(cModule))
 			{
 				std::cout << "Wires-X CONN_REQ command to link on module " << cModule << " from " << Cmd.GetCallsign() << " at " << Cmd.GetIp() << std::endl;
 				// acknowledge
@@ -337,8 +334,8 @@ bool CWiresxCmdHandler::ReplyToWiresxAllReqPacket(const CIp &Ip, const CWiresxIn
 	memcpy(data + 12U, WiresxInfo.GetNode(), 10U);
 
 	// number of entries
-	const char *modules = ACTIVE_MODULES;
-	uint NB_OF_MODULES = ::strlen(modules);
+	const std::string modules(g_Configure.GetString(g_Keys.modules.modules));
+	uint NB_OF_MODULES = modules.size();
 	uint total = NB_OF_MODULES;
 	uint n = NB_OF_MODULES - Start;
 	if (n > 20U)

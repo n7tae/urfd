@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Main.h"
+
 #include "CallsignList.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -34,5 +34,5 @@ public:
 	virtual ~CPeerCallsignList() {}
 
 	// file io
-	bool LoadFromFile(const char *);
+	bool LoadFromFile(const std::string &filename);
 };

@@ -16,10 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <fstream>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "Main.h"
+
 #include "CallsignList.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -27,14 +28,13 @@
 
 CCallsignList::CCallsignList()
 {
-	m_Filename = nullptr;
 	memset(&m_LastModTime, 0, sizeof(time_t));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // file io
 
-bool CCallsignList::LoadFromFile(const char *filename)
+bool CCallsignList::LoadFromFile(const std::string &filename)
 {
 	bool ok = false;
 	char sz[256];
@@ -77,7 +77,7 @@ bool CCallsignList::LoadFromFile(const char *filename)
 		file.close();
 
 		// keep file path
-		m_Filename = filename;
+		m_Filename.assign(filename);
 
 		// update time
 		GetLastModTime(&m_LastModTime);
@@ -99,7 +99,7 @@ bool CCallsignList::ReloadFromFile(void)
 {
 	bool ok = false;
 
-	if ( m_Filename !=  nullptr )
+	if (! m_Filename.empty())
 	{
 		ok = LoadFromFile(m_Filename);
 	}
@@ -210,10 +210,10 @@ bool CCallsignList::GetLastModTime(time_t *time)
 {
 	bool ok = false;
 
-	if ( m_Filename != nullptr )
+	if (! m_Filename.empty())
 	{
 		struct stat fileStat;
-		if( ::stat(m_Filename, &fileStat) != -1 )
+		if( ::stat(m_Filename.c_str(), &fileStat) != -1 )
 		{
 			*time = fileStat.st_mtime;
 			ok = true;

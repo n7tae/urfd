@@ -18,7 +18,7 @@
 
 #include <string.h>
 
-#include "Main.h"
+
 #include "Reflector.h"
 #include "URFPeer.h"
 #include "URFClient.h"

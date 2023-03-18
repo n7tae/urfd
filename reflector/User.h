@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "Callsign.h"
 #include "Buffer.h"
 
@@ -33,7 +35,7 @@ public:
 	~CUser() {}
 
 	// operation
-	void HeardNow(void)     { m_LastHeardTime = std::time(nullptr); }
+	void HeardNow(void)     { m_LastHeardTime = time(nullptr); }
 
 	// operators
 	bool operator ==(const CUser &) const;
@@ -41,7 +43,7 @@ public:
 
 	// reporting
 	void WriteXml(std::ofstream &);
-	void GetJsonObject(char *);
+	void JsonReport(nlohmann::json &report);
 
 protected:
 	// data
@@ -49,5 +51,5 @@ protected:
 	CCallsign   m_Rpt1;
 	CCallsign   m_Rpt2;
 	CCallsign   m_Xlx;
-	std::time_t m_LastHeardTime;
+	time_t      m_LastHeardTime;
 };

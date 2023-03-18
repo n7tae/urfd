@@ -17,10 +17,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <string.h>
-#include "Main.h"
+
+#include "Defines.h"
 #include "Callsign.h"
 #include "WiresXInfo.h"
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor

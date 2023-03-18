@@ -1,7 +1,7 @@
 //  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,51 +18,19 @@
 
 #pragma once
 
-#include "Packet.h"
+#include "Lookup.h"
 
-class CClient;
-
-class CPacketQueue
+class CLookupNxdn : public CLookup
 {
 public:
-	// destructor
-	virtual ~CPacketQueue() {}
-
-	// lock
-	void Lock()
-	{
-		m_Mutex.lock();
-	}
-
-	void Unlock()
-	{
-		m_Mutex.unlock();
-	}
-
-	// pass thru
-	std::unique_ptr<CPacket> pop()
-	{
-		auto pack = std::move(queue.front());
-		queue.pop();
-		return std::move(pack);
-	}
-
-	bool empty() const
-	{
-		return queue.empty();
-	}
-
-	void push(std::unique_ptr<CPacket> &packet)
-	{
-		queue.push(std::move(packet));
-	}
-
+	uint16_t FindNXDNid(const UCallsign &ucs) const;
+	const UCallsign *FindCallsign(const uint16_t id) const;
 protected:
-	// status
-	bool        m_bOpen;
-	uint16_t    m_uiStreamId;
-	std::mutex  m_Mutex;
+	void ClearContents();
+	void LoadParameters();
+	void UpdateContent(std::stringstream &ss, Eaction action);
 
-	// the queue
-	std::queue<std::unique_ptr<CPacket>> queue;
+private:
+	std::unordered_map <uint32_t, UCallsign> m_CallsignMap;
+	std::unordered_map <UCallsign, uint32_t, CCallsignHash, CCallsignEqual> m_NxdnidMap;
 };

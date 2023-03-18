@@ -17,12 +17,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstring>
-#include "Main.h"
+
 #include "URFPeer.h"
 #include "URFProtocol.h"
 #include "Reflector.h"
 #include "GateKeeper.h"
-
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation
@@ -200,11 +200,10 @@ void CURFProtocol::Task(void)
 
 void CURFProtocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// check if origin of packet is local
 		// if not, do not stream it out as it will cause
@@ -236,7 +235,6 @@ void CURFProtocol::HandleQueue(void)
 			}
 		}
 	}
-	m_Queue.Unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +322,7 @@ void CURFProtocol::HandlePeerLinks(void)
 			it->ResolveIp();
 			// send connect packet to re-initiate peer link
 			EncodeConnectPacket(&buffer, it->GetModules());
-			Send(buffer, it->GetIp(), URF_PORT);
+			Send(buffer, it->GetIp(), m_Port);
 			std::cout << "Sending connect packet to URF peer " << cs << " @ " << it->GetIp() << " for modules " << it->GetModules() << std::endl;
 		}
 	}
@@ -420,7 +418,7 @@ bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 		memcpy(modules, Buffer.data()+10, 27);
 		for ( unsigned i = 0; i < strlen(modules); i++ )
 		{
-			valid &= (nullptr != strchr(ACTIVE_MODULES, modules[i]));
+			valid = valid && (g_Reflector.IsValidModule (modules[i]));
 		}
 	}
 	return valid;
@@ -450,7 +448,7 @@ bool CURFProtocol::IsValidAckPacket(const CBuffer &Buffer, CCallsign *callsign, 
 		memcpy(modules, Buffer.data()+10, 27);
 		for ( unsigned i = 0; i < strlen(modules); i++ )
 		{
-			valid &= (nullptr != strchr(ACTIVE_MODULES, modules[i]));
+			valid = valid && (g_Reflector.IsValidModule(modules[i]));
 		}
 	}
 	return valid;
@@ -533,9 +531,9 @@ void CURFProtocol::EncodeConnectPacket(CBuffer *Buffer, const char *Modules)
 	g_Reflector.GetCallsign().CodeOut(Buffer->data()+4);
 	// our version
 	Buffer->ReplaceAt(10, (uint8_t *)Modules, strlen(Modules));
-	Buffer->Append((uint8_t)VERSION_MAJOR);
-	Buffer->Append((uint8_t)VERSION_MINOR);
-	Buffer->Append((uint8_t)VERSION_REVISION);
+	Buffer->Append((uint8_t)g_Version.GetMajor());
+	Buffer->Append((uint8_t)g_Version.GetMinor());
+	Buffer->Append((uint8_t)g_Version.GetRevision());
 }
 
 void CURFProtocol::EncodeDisconnectPacket(CBuffer *Buffer)
@@ -555,9 +553,9 @@ void CURFProtocol::EncodeConnectAckPacket(CBuffer *Buffer, const char *Modules)
 	// the shared modules
 	Buffer->ReplaceAt(10, (uint8_t *)Modules, strlen(Modules));
 	// our version
-	Buffer->Append((uint8_t)VERSION_MAJOR);
-	Buffer->Append((uint8_t)VERSION_MINOR);
-	Buffer->Append((uint8_t)VERSION_REVISION);
+	Buffer->Append((uint8_t)g_Version.GetMajor());
+	Buffer->Append((uint8_t)g_Version.GetMinor());
+	Buffer->Append((uint8_t)g_Version.GetRevision());
 }
 
 void CURFProtocol::EncodeConnectNackPacket(CBuffer *Buffer)

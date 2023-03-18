@@ -1,8 +1,7 @@
-//  Created by Antony Chazapis (SV9OAN) on 25/2/2018.
-//  Copyright © 2016 Jean-Luc Deltombe (LX3JL). All rights reserved.
+//  Copyright © 2015 Jean-Luc Deltombe (LX3JL). All rights reserved.
 
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,24 +18,21 @@
 
 #pragma once
 
-#include "Peer.h"
-#include "DExtraClient.h"
+#include "Lookup.h"
 
-class CDextraPeer : public CPeer
+class CLookupDmr : public CLookup
 {
 public:
-	// constructors
-	CDextraPeer();
-	CDextraPeer(const CCallsign &, const CIp &, const char *, const CVersion &);
-	CDextraPeer(const CDextraPeer &) = delete;
+	~CLookupDmr() {}
+	uint32_t FindDmrid(const UCallsign &ucs) const;
+	const UCallsign *FindCallsign(uint32_t dmrid) const;
 
-	// status
-	bool IsAlive(void) const;
+protected:
+	void ClearContents();
+	void LoadParameters();
+	void UpdateContent(std::stringstream &ss, Eaction action);
 
-	// identity
-	EProtocol GetProtocol(void) const        { return EProtocol::dextra; }
-	const char *GetProtocolName(void) const  { return "DExtra"; }
-
-	// revision helper
-	static int GetProtocolRevision(const CVersion &);
+private:
+	std::unordered_map<uint32_t, UCallsign> m_CallsignMap;
+	std::unordered_map<UCallsign, uint32_t, CCallsignHash, CCallsignEqual> m_DmridMap;
 };

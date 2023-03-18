@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+#include <iostream>
 #include <string.h>
 #include "DVFramePacket.h"
 
@@ -167,10 +167,15 @@ CDvFramePacket::CDvFramePacket(const int16_t *usrp, uint16_t streamid, bool isla
 	m_TCPack.codec_in = ECodecType::usrp;
 }
 
+std::unique_ptr<CPacket> CDvFramePacket::Copy(void)
+{
+	return std::unique_ptr<CPacket>(new CDvFramePacket(*this));
+}
+
 // Network
 unsigned int CDvFramePacket::GetNetworkSize()
 {
-	return CPacket::GetNetworkSize() + 4 + 3 + 7 + 14 + 9 + 9 + 16;
+	return CPacket::GetNetworkSize() + 4 + 3 + 7 + 14 + 9 + 9 + 16 + 11 + 320;
 }
 
 CDvFramePacket::CDvFramePacket(const CBuffer &buf) : CPacket(buf)
@@ -189,6 +194,8 @@ CDvFramePacket::CDvFramePacket(const CBuffer &buf) : CPacket(buf)
 		memcpy(m_TCPack.dstar,	data+off, 9);	off += 9;
 		memcpy(m_TCPack.dmr,	data+off, 9);	off += 9;
 		memcpy(m_TCPack.m17,	data+off, 16);	off += 16;
+		memcpy(m_TCPack.p25,    data+off, 11);	off += 11;
+		memcpy(m_TCPack.usrp,   data+off, 320);
 		SetTCParams(seq);
 	}
 	else
@@ -210,15 +217,9 @@ void CDvFramePacket::EncodeInterlinkPacket(CBuffer &buf) const
 	memcpy(data+off, m_Nonce,        14); off += 14;
 	memcpy(data+off, m_TCPack.dstar,  9); off += 9;
 	memcpy(data+off, m_TCPack.dmr,    9); off += 9;
-	memcpy(data+off, m_TCPack.m17,   16);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// virtual duplication
-
-std::unique_ptr<CPacket> CDvFramePacket::Duplicate(void) const
-{
-	return std::unique_ptr<CPacket>(new CDvFramePacket(*this));
+	memcpy(data+off, m_TCPack.m17,   16); off += 16;
+	memcpy(data+off, m_TCPack.p25,   11); off += 11;
+	memcpy(data+off, m_TCPack.usrp, 320);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -264,16 +265,4 @@ void CDvFramePacket::SetTCParams(uint32_t seq)
 	m_TCPack.is_last = m_bLastPacket;
 	m_TCPack.module = m_cModule;
 	m_TCPack.rt_timer.start();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// operators
-
-bool CDvFramePacket::operator ==(const CDvFramePacket &DvFrame) const
-{
-	return ( (memcmp(m_TCPack.dstar, DvFrame.m_TCPack.dstar, 9) == 0)
-			 && (memcmp(m_uiDvData, DvFrame.m_uiDvData, 3) == 0)
-			 && (memcmp(m_TCPack.dmr, DvFrame.m_TCPack.dmr, 9) == 0)
-			 && (memcmp(m_uiDvSync, DvFrame.m_uiDvSync, 7) == 0)
-		   );
 }

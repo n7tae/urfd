@@ -1,7 +1,5 @@
-//  Copyright © 2019 Jean-Luc Deltombe (LX3JL). All rights reserved.
-
 // urfd -- The universal reflector
-// Copyright © 2021 Thomas A. Early N7TAE
+// Copyright © 2023 Thomas A. Early N7TAE
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,32 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Reflector.h"
+#include "GateKeeper.h"
+#include "Configure.h"
+#include "Version.h"
+#include "LookupDmr.h"
+#include "LookupNxdn.h"
+#include "LookupYsf.h"
+#include "JsonKeys.h"
 
-#include "YSFNodeDir.h"
-
-class CYsfNodeDirFile : public CYsfNodeDir
-{
-public:
-	// constructor
-	CYsfNodeDirFile();
-
-	// destructor
-	~CYsfNodeDirFile() {}
-
-	// init & close
-	bool Init(void);
-
-	// refresh
-	bool LoadContent(CBuffer *);
-	bool RefreshContent(const CBuffer &);
-
-protected:
-	// reload helpers
-	bool NeedReload(void);
-	bool GetLastModTime(time_t *);
-
-protected:
-	// data
-	time_t      m_LastModTime;
-};
+extern CReflector  g_Reflector;
+extern CGateKeeper g_GateKeeper;
+extern CConfigure  g_Configure;
+extern CVersion    g_Version;
+extern CLookupDmr  g_LDid;
+extern CLookupNxdn g_LNid;
+extern CLookupYsf  g_LYtr;
+extern SJsonKeys   g_Keys;

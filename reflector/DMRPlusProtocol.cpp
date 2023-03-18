@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
+
+#include "Global.h"
 #include "DMRPlusClient.h"
 #include "DMRPlusProtocol.h"
-#include "Reflector.h"
-#include "GateKeeper.h"
-#include "DMRIdDir.h"
 #include "BPTC19696.h"
 #include "RS129.h"
 #include "Golay2087.h"
@@ -219,12 +218,10 @@ void CDmrplusProtocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Head
 
 void CDmrplusProtocol::HandleQueue(void)
 {
-
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto mod = packet->GetPacketModule();
@@ -286,7 +283,6 @@ void CDmrplusProtocol::HandleQueue(void)
 			//buffer.DebugDump(g_Reflector.m_DebugFile);
 		}
 	}
-	m_Queue.Unlock();
 }
 
 void CDmrplusProtocol::SendBufferToClients(const CBuffer &buffer, uint8_t module)
@@ -642,7 +638,7 @@ char CDmrplusProtocol::DmrDstIdToModule(uint32_t tg) const
 	// is it a 4xxx ?
 	if (tg > 4000 && tg < 4027) {
 		char mod = 'A' + (tg - 4001U);
-		if (strchr(ACTIVE_MODULES, mod))
+		if (g_Reflector.IsValidModule(mod))
 		{
 			return mod;
 		}

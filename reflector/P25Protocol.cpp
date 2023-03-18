@@ -17,13 +17,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "Main.h"
+
 #include <string.h>
 #include "P25Client.h"
 #include "P25Protocol.h"
 
-#include "Reflector.h"
-#include "GateKeeper.h"
+#include "Global.h"
 
 const uint8_t REC62[] = {0x62U, 0x02U, 0x02U, 0x0CU, 0x0BU, 0x12U, 0x64U, 0x00U, 0x00U, 0x80U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U,0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
 const uint8_t REC63[] = {0x63U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x02U};
@@ -50,6 +49,11 @@ const uint8_t REC80[] = {0x80U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
 
 bool CP25Protocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
+	// config data
+	m_ReflectorId = g_Configure.GetUnsigned(g_Keys.p25.reflectorid);
+	m_DefaultId   = g_Configure.GetUnsigned(g_Keys.mmdvm.defaultid);
+	m_AutolinkModule = g_Configure.GetAutolinkModule(g_Keys.p25.autolinkmod);
+
 	m_uiStreamId = 0;
 	// base class
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
@@ -118,9 +122,8 @@ void CP25Protocol::Task(void)
 					auto newclient = std::make_shared<CP25Client>(Callsign, Ip);
 
 					// aautolink, if enabled
-#if P25_AUTOLINK_ENABLE
-					newclient->SetReflectorModule(P25_AUTOLINK_MODULE);
-#endif
+					if (m_AutolinkModule)
+						newclient->SetReflectorModule(m_AutolinkModule);
 
 					// and append
 					clients->AddClient(newclient);
@@ -129,7 +132,7 @@ void CP25Protocol::Task(void)
 				{
 					client->Alive();
 				}
-				
+
 				// acknowledge the request -- P25Reflector simply echoes the packet
 				Send(Buffer, Ip);
 				// and done
@@ -226,11 +229,10 @@ void CP25Protocol::OnDvHeaderPacketIn(std::unique_ptr<CDvHeaderPacket> &Header, 
 
 void CP25Protocol::HandleQueue(void)
 {
-	m_Queue.Lock();
-	while ( !m_Queue.empty() )
+	while (! m_Queue.IsEmpty())
 	{
 		// get the packet
-		auto packet = m_Queue.pop();
+		auto packet = m_Queue.Pop();
 
 		// get our sender's id
 		const auto module = packet->GetPacketModule();
@@ -273,7 +275,6 @@ void CP25Protocol::HandleQueue(void)
 			}
 		}
 	}
-	m_Queue.Unlock();
 }
 
 
@@ -308,7 +309,7 @@ bool CP25Protocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::un
 	{
 		int offset = 0;
 		bool last = false;
-		
+
 		switch (Buffer.data()[0U]) {
 		case 0x62U:
 			offset = 10U;
@@ -357,7 +358,7 @@ bool CP25Protocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::un
 		default:
 			break;
 		}
-		
+
 		frame = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(&(Buffer.data()[offset]), m_uiStreamId, last));
 		return true;
 	}
@@ -387,19 +388,18 @@ bool CP25Protocol::IsValidDvHeaderPacket(const CIp &Ip, const CBuffer &Buffer, s
 void CP25Protocol::EncodeP25Packet(const CDvHeaderPacket &Header, const CDvFramePacket &DvFrame, uint32_t iSeq, CBuffer &Buffer, bool islast) const
 {
 	uint32_t uiSrcId = Header.GetMyCallsign().GetDmrid();
-	uint32_t uiRptrId = P25_REFID;
-	
+
 	if(uiSrcId == 0){
-		uiSrcId = DMRMMDVM_DEFAULTID;
+		uiSrcId = m_DefaultId;
 	}
-	
+
 	if(islast)
 	{
 		Buffer.resize(17);
 		::memcpy(Buffer.data(), REC80, 17U);
 		return;
 	}
-	
+
 	switch (iSeq % 18) {
 		case 0x00U:
 			Buffer.resize(22);
@@ -420,9 +420,9 @@ void CP25Protocol::EncodeP25Packet(const CDvHeaderPacket &Header, const CDvFrame
 			Buffer.resize(17);
 			::memcpy(Buffer.data(), REC65, 17U);
 			::memcpy(Buffer.data() + 5U, DvFrame.GetCodecData(ECodecType::p25), 11U);
-			Buffer.data()[1U] = (uiRptrId >> 16) & 0xFFU;
-			Buffer.data()[2U] = (uiRptrId >> 8) & 0xFFU;
-			Buffer.data()[3U] = (uiRptrId >> 0) & 0xFFU;
+			Buffer.data()[1U] = (m_ReflectorId >> 16) & 0xFFU;
+			Buffer.data()[2U] = (m_ReflectorId >> 8) & 0xFFU;
+			Buffer.data()[3U] = (m_ReflectorId >> 0) & 0xFFU;
 			break;
 		case 0x04U:
 			Buffer.resize(17);
@@ -528,4 +528,3 @@ void CP25Protocol::HandleKeepalives(void)
 	}
 	g_Reflector.ReleaseClients();
 }
-

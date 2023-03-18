@@ -17,7 +17,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-#include "Main.h"
+
 #include <string.h>
 #include "Reflector.h"
 #include "BMPeer.h"
@@ -50,7 +50,7 @@ CBmPeer::CBmPeer(const CCallsign &callsign, const CIp &ip, const char *modules, 
 
 bool CBmPeer::IsAlive(void) const
 {
-	return (m_LastKeepaliveTime.time() < XLX_KEEPALIVE_TIMEOUT);
+	return (m_LastKeepaliveTime.time() < BM_KEEPALIVE_TIMEOUT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

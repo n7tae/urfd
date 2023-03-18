@@ -27,6 +27,18 @@
 #define CALLSIGN_LEN        8
 #define CALLSUFFIX_LEN      4
 
+union UCallsign
+{
+	char c[CALLSIGN_LEN];
+	uint64_t l;
+};
+
+union USuffix
+{
+	char c[CALLSUFFIX_LEN];
+	uint32_t u;
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
@@ -36,7 +48,9 @@ class CCallsign
 public:
 	// contructors
 	CCallsign();
-	CCallsign(const char *, uint32_t = 0, uint16_t = 0);
+	CCallsign(const UCallsign &cs);    // no id lookup
+	CCallsign(const CCallsign &cs);
+	CCallsign(const std::string &cs, uint32_t dmrid = 0, uint16_t nxdnid = 0);
 
 	// status
 	bool IsValid(void) const;
@@ -44,23 +58,24 @@ public:
 	bool HasModule(void) const { return m_Module != ' '; }
 
 	// set
-	void SetCallsign(const char *, bool = true);
+	void SetCallsign(const std::string &s, bool updateids = true);
 	void SetCallsign(const uint8_t *, int, bool = true);
 	void SetDmrid(uint32_t, bool = true);
 	void SetDmrid(const uint8_t *, bool = true);
 	void SetNXDNid(uint16_t, bool = true);
 	void SetNXDNid(const uint8_t *, bool = true);
 	void SetCSModule(char);
-	void SetSuffix(const char *);
+	void SetSuffix(const std::string &s);
 	void SetSuffix(const uint8_t *, int);
 
 	// modify
 	void PatchCallsign(int, const char *, int);
 
 	// get
+	UCallsign GetKey() const;
 	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
-	const std::string GetCS(unsigned len = 9) const;
+	const std::string GetCS() const;
 	uint32_t GetDmrid(void) const { return m_uiDmrid; }
 	uint16_t GetNXDNid(void) const { return m_uiNXDNid; }
 	void GetSuffix(uint8_t *) const;
@@ -73,6 +88,7 @@ public:
 	bool HasSameModule(const CCallsign &) const;
 
 	// operators
+	CCallsign &operator = (const CCallsign &cs);
 	bool operator ==(const CCallsign &) const;
 	operator const char *() const;
 
@@ -92,11 +108,10 @@ protected:
 
 protected:
 	// data
-	char         m_Callsign[CALLSIGN_LEN];
-	char         m_Suffix[CALLSUFFIX_LEN];
-	char         m_Module;
-	mutable char m_sz[CALLSIGN_LEN+CALLSUFFIX_LEN+5];
-	uint32_t     m_uiDmrid;
-	uint16_t     m_uiNXDNid;
-	uint64_t     m_coded; // M17 encoded callsign
+	UCallsign m_Callsign;
+	USuffix   m_Suffix;
+	char      m_Module;
+	uint32_t  m_uiDmrid;
+	uint16_t  m_uiNXDNid;
+	uint64_t  m_coded; // M17 encoded callsign
 };
