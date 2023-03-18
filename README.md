@@ -2,43 +2,25 @@
 
 The URF Multiprotocol Gateway Reflector Server, ***urfd***, is part of the software system for a Digital Voice Network. The sources are published under GPL Licenses.
 
-# Information about this fork
-This fork of URFD supports *all* modes currently used in ham radio: D-Star, DMR, YSF, P25, NXDN, M17, and USRP (for connections to AllStar nodes, etc).  All transcoding is centralized so there is no double transcoding to/from any mode. This fork of urfd, along with the swambe2 branch of my tcd repo, contains many changes from the original:
-
-Integraded P25 Reflector with software imbe vocoder.
-
-Integrated NXDN Reflector
-
-Inegrated USRP Reflector
-
-Optional software vocoding of AMBE+2(DMR/YSF/NXDN) can be done using md380_vocoder library.  This means that only 1 USB dv dongle is required per module.  This also makes an ARM platform (like Rpi) a reqirement. See the tcd README for details.
-
-Numerous fixes like late entry recognition from modes like YSF that are otherwise ignored by the original reflector when no header has been received.
-
-The USRP Clients are read from a file defined in Main.h.  The format of this file is ipaddr;port;callsign; one host per line, ex:
-
-```bash
-192.168.1.100;32000;CALLSIGN1;
-192.168.1.101;32001;CALLSIGN2;
-```
-
-The rest of this README is unchanged from the original.
-
 ## Introduction
 
-This will build a new kind of digital voice reflector. Based on N7TAE's [new-xlxd](https://github.com/n7tae/new-xlxd), which, in turn, is based on the first multi-protocol reflector, [xlxd](https://github.com/LX3JL/xlxd), **urfd** supports all protocols of it's predecessors, as well as both M17 protocols, **voice-only** and **voice+data**! A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a seperate repository. URFd is not compatible with either new-xlxd or xlxd. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same protocol. Please note that currently, urfd only supports the tcd transcoder when run locally. For best performance, urfd and tcd uses UNIX DGRAM sockets for interprocess communications. These kernal-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
+This will build a new kind of digital voice reflector. A *urfd* supports DStar protocols (DPlus, DCS, DExtra and G3) DMR protocols (MMDVMHost, DMR+ and NXDN), M17, YSF, P25 (using IMBE) and USRP (Allstar). A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a seperate repository. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same codec. Please note that currently, urfd only supports the tcd transcoder when run locally. As a local device, urfd and tcd uses UNIX DGRAM sockets for interprocess communications. These kernel-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
 
-This build support *dual-stack* operation, so the server on which it's running, must have both an IPv4 and IPv6 routable address if you are going to configure a dual-stack reflector. URF can support out-going DExtra links, by adding a new DExtra Peer type *and* it has many changes designed to increase reliability and stability.
+This build support *dual-stack* operation, so the server on which it's running, must have both an IPv4 and IPv6 routable address if you are going to configure a dual-stack reflector.
 
-There are many improvements of urfd over xlxd, some of which were inherited from new-xlxd:
+There are many improvements previous multi-mode reflectors:
+
 
 - Nearly all std::vector containers have been replaced with more appropriate containers.
 - No classes are derived from any standard containers.
 - For concurancy, *i.e.*, thread management, the standard thread (std::thread) library calls have been replaced with std::future.
 - Managed memory, std::unique_ptr and std::shared_ptr, is used replacing the need for calls to *new* and *delete*.
 - Your reflector can be configured with up to 26 modules, *A* through *Z* and as few as one module. For other choices, the configure modules don't have to be contigious. For example, you could configure modules A, B, C and E.
+- An integraded P25 Reflector with software imbe vocoder.
+- An integrated NXDN Reflector
+- An inegrated USRP Reflector
 
-Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Also, by default, tcd and urfd are built without gdb support. You can add debugging support in the configuration script, `./rconfig`. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding URF reflector.
+Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding URF reflector.
 
 ## Usage
 
@@ -66,47 +48,35 @@ sudo apt upgrade
 sudo apt install git
 sudo apt install apache2 php5
 sudo apt install build-essential
-sudo apt install libmariadb-dev-compat
+sudo apt install nlohmann-json3-dev
 ```
 
-### YSF direct connection support
-
-The following is needed if you plan on supporting local YSF frequency registration database for those YSF-clients that want to directly connect to URF. You will also need to install the client frequency registration pages on your web server. This is because the WiresX protocol supplies the operational frequency to connecting clients.
-
-```bash
-sudo apt install php-mysql mariadb-server mariadb-client
-```
-
-### Download the repository(s)
+### Download and build the repository and
 
 ```bash
 git clone https://github.com/n7tae/urfd.git
-```
-
-And, if needed, the hybrid transcoder:
-
-```bash
-git clone https://github.com/n7tae/tcd.git
-```
-
-### Create and edit your blacklist, whitelist and linking files
-
-First, move to the reflector build directory:
-
-```bash
 cd urfd/reflector
 ```
 
-The blacklist file defines callsigns that are blocked from linking or transmitting. The whitelist file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist file is empty and the supplied whitelist file contains a single definition, \*, which will allow any callsign to link and transmit, blocking no one. The interlink file defines possible Brandmeister, XRF and URF linking. The terminal file defines operations for Icom's Terminal and Access Point mode, sometimes called *G3*. This protocol requires significantly higher connection resources than any other mode, so it is possible to build a URF reflector without G3 support.
+### Create and edit your configuration files
+
+First, move to the reflector build directory and create your configuration file:
 
 ```bash
-cp ../config/urfd.blacklist .
-cp ../config/urfd.whitelist .
-cp ../config/urfd.interlink .
-cp ../config/urfd.terminal .
+cp ../config/* .
 ```
 
-If you are not going to support G3 linking, you don't need to copy the .terminal file. Use your favorite editor to modify each of these files. If you want a totally open network, the blacklist and whitelist files are ready to go. The blacklist determine which callsigns can't use the reflector. The whitelist determines which callsigns can use the reflector. The interlink file sets up the URF<--->URF inter-linking and/or out-going XRF peer linking.
+This will create seven files:
+1. The `urfd.mk` file contains compile-time options for *urfd*. If you change the `BINDIR`, you'll need to update how `urfd.service` starts *urfd*.
+2. The `urfd.ini` file contains the run-time options for *urfd* and will be discussed below.
+3. The `urfd.blacklist` file defines callsigns that are blocked from linking or transmitting.
+4. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one. Both files support a limited wildcard feature.
+5. The `urfd.interlink` file defines possible Brandmeister and URF linking.
+6. The `urfd.terminal` file defines operations for Icom's Terminal and Access Point mode, sometimes called *G3*. This protocol requires significantly higher connection resources than any other mode, so it is possible to build a URF reflector without G3 support.
+7. The `urfd.service` file is a systemd file that will start and stop *urfd*. Importantly, it contains the only reference to where the *urfd* ini file is located. Be sure to set a fully qualified path to your urfd.ini file on the `ExecStart` line.
+
+You can acutally put the blacklist, whitelist, interlink, terminal and ini file anyplace and even rename them. Just make sure your ini file and service file have the proper, fully-qualified paths. The service file and the mk file need to remain in your `urfd/reflector` directory.
+
 
 When you are done with the configuration files and ready to start the installation process, you can return to the main repository directory:
 
@@ -114,31 +84,61 @@ When you are done with the configuration files and ready to start the installati
 cd ..
 ```
 
+### Build *urfd*
+
+After possibly editing `urfd.mk`, you can build your reflector: `make` . Besides building *urfd*, this will also build two helper applications that will be discussed below.
+
 ### Configuring your reflector
 
-Configuring, compiling and maintaining your reflector build is easy! Start the configuration script in the base directory of you cloned repo:
+Use your favorite text editor to set your run-time configuration in your copy of `urfd.ini`.
+
+There are only a few things that need to be specified. Most important are, the reflector callsign and the IP addresses for the IPv4 and IPv6 listen ports and a transcoder port, if there is a transcoder. Dual-stack operation is enabled by specifying both an IPv4 and IPv6 address. IPv4-only single stack can be specified by leaving the IPv6 address undefined.
+
+You can configure any modules, from **A** to **Z**. They don't have to be contigious. If your reflector is configured with a transcoder, you can specify which configured modules will be transcoded. Up to three modules can be transcoded if you have the necessary hardware.
+
+Three protocols, BrandMeister, G3 and USRP should be disabled if you aren't going to use them.
+
+There are three databases needed by *urfd*:
+1. The *DMR ID* database maps a DMR ID to a callsign and *vis versa*.
+2. The *NXDN ID* database maps an NXDN ID to a callsign and *vis versa*.
+3. The *YSF Tx/Rx* database maps a callsign to a transmit/receive RF frequencies.
+These databases can come from a URL or a file, or both. If you specify "both", then the file will be read after the URL.
+
+#### Special *USRP* configuration
+
+If configured, a *USRP* client is very unique. A *USRP* client (an AllStar node) doesn't support any connect or disconnect protocol. The USRP client simply sends and receives *USRP* voice packets. That means, if *USRP* is enabled, the client is created during initialization using the configured callsign, IP address and Tx/Rx ports.
+
+If `FilePath` is defined, this should point to a text file listing special, listen-only client(s), one per line. Each line defining a read-only client contains an IP address, a port number, and a callsign. Here is an example:
 
 ```bash
-./rconfig
+1.2.3.1;34001;ALLSTR1;
+1.2.3.4;34004;ALLSTR4;
 ```
 
-There are only a few things that need to be specified. Most important are, the reflector callsign and the IP addresses for the IPv4 and IPv6 listen ports and a transcoder port, if there is a transcoder. Dual-stack operation is enabled by specifying both an IPv4 and IPv6 address. IPv4-only single stack can be specified by leaving the IPv6 address set to `none`. It's even possible to operate in an IPv6-only configuration by leaving the IPv4 address to the default `none`. For most users, you can define the IP addresses as "any", but you can specify specific IPv4 and IPv6 addresses, if this is required for you installation site.
+If you want to create listen-only clients, but you don't need a configured read/write client, then set its `Callsign` to `NONE`.
 
-You can configure any modules, from **A** to **Z**. They don't have to be contigious. If your reflector is configured with a transcoder, you can specify which configured modules will be transcoded. Up to three modules can be transcoded. There are also true/false flags to prevent G3 support and so that you can build executables that will support gdb debugging.
+### Helper apps
 
-You can support your own YSF frequency database. This is very useful for hot-spots that use YSF linking. These linked hot-spots can then use the *WiresX* command on their radios to be able to connect to any configured URF module. Users can register their TX and RX frequency (typically the same for most hot-spot configurations) on http:<*urf url*>/wiresx/login.php. Once their hot-spot is registered, URF will return the correct frequency for their hot-spot when a *WiresX* command is sent to the reflector. You'll need to enable YSF auto-linking, specify a default module and define a database name, user and user password. When you write you URF configuration, a database **configure.sql** script will be built to not only create the database and database user, but also the table for the hot-spot frequency data.
+There are two, very useful helper applications, *inicheck* and *dbutil*. Both apps will show you a usage message if you execuate them without any arguments.
 
-Be sure to write out the configuration files and look over the up to seven different configration files that are created. The first file, reflector.cfg is the memory file for rconfig so that if you start that script again, it will remember how you left things. There are one or two `.h` files for the reflector and tcd and there are one or two `.mk` files for the reflector and tcd makefiles. You should **not** modify these files by hand unless you really know exactly how they work. The rconfig script will not start if it detects that an URF server is already running. You can override this behavior in expert mode: `./rconfig expert`. If you do change the configuration after you have already compiled the code, it is safest if you clean the repo and then recompile.
+The *inicheck* app will use the exact same code that urfd uses to validate your `urfd.ini` file. Do `./inicheck -q mrefd.ini` to check your infile for errors. If you see any messages containing `ERROR`, that means that *urfd* won't start. You'll have to fix the errors described in the message(s). If you only see messages containing `WARNING`, *urfd* will start, but it may not perform as expected. You will have to decide if the warning should be fixed. If you don't see any messages, it means that your ini file is syntactly correct.
 
-### Compling and installing your system
+The *dbutil* app can be used for serveral tasks relating to the three databases that *urfd* uses. The usage is: `./dbutil DATABASE SOURCE ACTION INIFILE`, where:
+- DATABASE is "dmr", "nxdn" or "ysf"
+- SOURCE is "html" or "file"
+- ACTION is "parse" or "errors"
+- INIFLILE is the path to the infile that defines the location of the http and file sources for these three databases.
+One at a time, *dbutil* can work with any of the three DATABASEs. It can read either the http or the file SOURCE. It can either show you the data entries that are syntactically correct or incorrect (ACTION).
 
-After you have written your configutation files, you can build and install your system:
+### Installing your system
+
+After you have written your configutation files, you can install your system:
 
 ```bash
 ./radmin
 ```
 
-Use this command to compile and install your system. It can also be used to uninstall your system. It will use the information in reflector.cfg to perform each task. This radmin menu can also perform other tasks like restarting the reflector or transcoder process. It can also be used to update the software, if the system is uninstalled.
+You can use this interactive shell script to install and uninstall your system. This can also perform other tasks like restarting the reflector or transcoder process, or be used to view the reflector or transcoder log in real time.
 
 ### Stoping and starting the services manually
 
@@ -163,39 +163,26 @@ Please note that your www root directory might be some place else. There is one 
 
 **DO NOT** enable the "calling home" feature unless you are sure that you will not be infringing on an existing XLX or XRF reflector with the same callsign suffix. If you don't understand what this means, don't set `$CallingHome['Active']` to true!
 
-If you have configured support of hot-spot frequency registation, recursively copy the **wiresx** directory where the index.php file is for your dashboard. Also from the build directory, create the database and database user and hot-spot frequency table:
-
-```bash
-sudo mysql < configure.sql
-```
-
-The configure.sql file will be generated automatically by the rconfig script **if** you have enabled the **YSF Local Database**.
-
-## Updating urfd and tcd
-
-Updating can be performed entirely in the radmin script, but just in case there is a new version of the radmin script, you can start first with a simple `git pull`. If any .h or .cpp fiiles have updates, you can then start radmin and do a clean and compile and then uninstall and install: `cl, co, us, is`. Follow that with a `rl` to watch the reflector log, or an `rt` to watch the transcoder while it comes up.
-
-If rconfig was updated with the `git pull`, it might be wise to run it first to see if there have been any new options added to the code base. If so, be sure to write out the new configuration files before exiting rconfig. THen you can rebuild and reinstall your reflector.
-
-If you change any configuration after your reflector has been compiled, be sure to do a clean/compile/uninstall/reinstall to sync your system to the new configuration.
-
 ## Firewall settings
 
-URF Server requires the following ports to be open and forwarded properly for in- and outgoing network traffic:
+URF Server requires the following ports to be open and forwarded properly for in- and outgoing network traffic. Obviously you don't need to open ports for G3, USRP and BrandMeister if they are not enabled:
 
 ```text
 TCP port    80         (http) optional TCP port 443 (https)
+UDP port  8880         (DMR+ DMO mode)
 UDP port 10002         (BM connection)
 UDP port 10017         (URF interlinking)
-UDP port 42000         (YSF protocol)
+UDP port 12345 - 12346 (G3 Icom Terminal presence and request port)
 UDP port 17000         (M17 protocol)
-UDP port 30001         (DExtra protocol)
 UPD port 20001         (DPlus protocol)
+UDP port 30001         (DExtra protocol)
 UDP port 30051         (DCS protocol)
-UDP port  8880         (DMR+ DMO mode)
+UDP port 32000         (USRP protocol)
+UDP port 40000         (G3 Icom Terminal port)
+UDP port 41000         (P25 port)
+UDP port 41400         (NXDN port)
+UDP port 42000         (YSF protocol)
 UDP port 62030         (MMDVM protocol)
-UDP port 12345 - 12346 (Icom Terminal presence and request port)
-UDP port 40000         (Icom Terminal dv port)
 ```
 
 ## YSF Master Server
@@ -205,11 +192,11 @@ It has nothing to do with the regular YSFReflector network, hence you don’t ne
 
 ## To-dos
 
-I will eventually support a remote transcoder option, so that you can, for example, run urfd in a data center, and then run the transcoder somewhere you have physical access to it so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
+I will eventually support a remote transcoder option, so that you can, for example, run *urfd* in a data center, and then run the transcoder somewhere you have physical access so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
 
-The M17 team will be working on big changes for the dashboard. I can't wait to see what they come up with!
+A new dashboard is on the to-do list!
 
 ## Copyright
 
 - Copyright © 2016 Jean-Luc Deltombe LX3JL and Luc Engelmann LX1IQ
-- Copyright © 2021 Thomas A. Early N7TAE
+- Copyright © 2022 Doug McLain AD8DP and Thomas A. Early N7TAE
