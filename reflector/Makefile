@@ -34,6 +34,12 @@ endif
 
 LDFLAGS=-pthread -lcurl
 
+ifeq ($(DHT), true)
+LDFLAGS += -lopendht
+else
+CFLAGS += -DNO_DHT
+endif
+
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
 DEPS = $(SRCS:.cpp=.d)
