@@ -27,6 +27,10 @@
 #include "PacketStream.h"
 #include "NotificationQueue.h"
 
+#ifndef NO_DHT
+#include "urfd-dht-values.h"
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // define
@@ -78,6 +82,15 @@ public:
 	void OnStreamOpen(const CCallsign &);
 	void OnStreamClose(const CCallsign &);
 
+#ifndef NO_DHT
+	// Publish DHT
+	void PutDHTConfig();
+	void PutDHTPeers();
+	void PutDHTClients();
+	void PutDHTUsers();
+	void GetDHTConfig(const std::string &cs);
+#endif
+
 protected:
 	// threads
 	void RouterThread(const char);
@@ -92,7 +105,6 @@ protected:
 	void WriteXmlFile(std::ofstream &);
 	void JsonReport(nlohmann::json &report);
 
-protected:
 	// identity
 	CCallsign   m_Callsign;
 	std::string m_Modules, m_TCmodules;
@@ -113,4 +125,12 @@ protected:
 
 	// notifications
 	CNotificationQueue  m_Notifications;
+
+#ifndef NO_DHT
+	// Distributed Hash Table
+	dht::DhtRunner node;
+	dht::InfoHash refhash;
+	unsigned int peers_put_count, clients_put_count, users_put_count;
+#endif
+
 };
