@@ -46,6 +46,7 @@
 class CReflector
 {
 public:
+	CReflector();
 	// destructor
 	~CReflector();
 

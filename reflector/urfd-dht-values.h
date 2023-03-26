@@ -54,8 +54,8 @@ struct SUrfdClients0
 };
 
 /* USERS */
-using UserTuple = std::tuple<std::string, std::string, std::string, std::time_t>;
-enum class EUrfdUserFields { Source, Destination, Reflector, LastHeardTime };
+using UserTuple = std::tuple<std::string, std::string, char, std::string, std::time_t>;
+enum class EUrfdUserFields { Callsign, ViaNode, OnModule, ViaPeer, LastHeardTime };
 struct SUrfdUsers0
 {
 	std::time_t timestamp;
@@ -66,21 +66,21 @@ struct SUrfdUsers0
 };
 
 /* CONFIGURATION */
-// 'SIZE' has to be last!!
-enum class EUrfdPorts : unsigned { dcs, dextra, dmrplus, dplus, m17, mmdvm, nxdn, p25, urf, usrprx, usrptx, ysf, SIZE };
+// 'SIZE' has to be last for these scoped enums
+enum class EUrfdPorts : unsigned { dcs, dextra, dmrplus, dplus, m17, mmdvm, nxdn, p25, urf, ysf, SIZE };
 enum class EUrfdAlMod : unsigned { nxdn, p25, ysf, SIZE };
 enum class EUrfdTxRx  : unsigned { rx, tx, SIZE };
 enum class EUrfdRefId : unsigned { nxdn, p25, SIZE };
 struct SUrfdConfig0
 {
 	std::time_t timestamp;
-	std::string cs, ipv4, ipv6, mods, url, email, sponsor, country, version;
-	std::array<unsigned, toUType(EUrfdPorts::SIZE)> port;
+	std::string cs, ipv4, ipv6, mods, tcmods, url, email, sponsor, country, version;
+	std::array<uint16_t, toUType(EUrfdPorts::SIZE)> port;
 	std::array<char, toUType(EUrfdAlMod::SIZE)> almod;
 	std::array<unsigned long, toUType(EUrfdTxRx::SIZE)> ysffreq;
 	std::array<unsigned, toUType(EUrfdRefId::SIZE)> refid;
 	std::unordered_map<char, std::string> description;
 	bool g3enabled;
 
-	MSGPACK_DEFINE(timestamp, cs, ipv4, ipv6, mods, url, email, sponsor, country, version, almod, ysffreq, refid, g3enabled, port, description)
+	MSGPACK_DEFINE(timestamp, cs, ipv4, ipv6, mods, tcmods, url, email, sponsor, country, version, almod, ysffreq, refid, g3enabled, port, description)
 };

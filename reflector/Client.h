@@ -50,6 +50,8 @@ public:
 	char GetCSModule(void) const                        { return m_Callsign.GetCSModule(); }
 	bool HasReflectorModule(void) const                 { return m_ReflectorModule != ' '; }
 	char GetReflectorModule(void) const                 { return m_ReflectorModule; }
+	std::time_t GetConnectTime(void) const              { return m_ConnectTime; }
+	std::time_t GetLastHeardTime(void) const            { return m_LastHeardTime; }
 
 	// set
 	void SetCSModule(char c)                             { m_Callsign.SetCSModule(c); }

@@ -42,6 +42,7 @@ public:
 	const CCallsign &GetCallsign(void) const            { return m_Callsign; }
 	const CIp &GetIp(void) const                        { return m_Ip; }
 	char *GetReflectorModules(void)                     { return m_ReflectorModules; }
+	std::time_t GetConnectTime(void) const              { return m_ConnectTime; }
 
 	// set
 

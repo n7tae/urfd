@@ -37,6 +37,7 @@
 #define JBRANDMEISTER            "Brandmeister"
 #define JCALLSIGN                "Callsign"
 #define JCOUNTRY                 "Country"
+#define JDASHBOARDURL            "DashboardUrl"
 #define JDCS                     "DCS"
 #define JDEFAULTID               "DefaultId"
 #define JDEFAULTRXFREQ           "DefaultRxFreq"
@@ -253,6 +254,8 @@ bool CConfigure::ReadData(const std::string &path)
 					data[g_Keys.names.callsign] = value;
 				else if (0 == key.compare(JBOOTSTRAP))
 					data[g_Keys.names.bootstrap] = value;
+				else if (0 == key.compare(JDASHBOARDURL))
+					data[g_Keys.names.url] = value;
 				else if (0 == key.compare(JSYSOPEMAIL))
 					data[g_Keys.names.email] = value;
 				else if (0 == key.compare(JCOUNTRY))
@@ -512,6 +515,7 @@ bool CConfigure::ReadData(const std::string &path)
 #ifndef NO_DHT
 	isDefined(ErrorLevel::fatal, JNAMES, JBOOTSTRAP, g_Keys.names.bootstrap, rval);
 #endif
+	isDefined(ErrorLevel::fatal, JNAMES, JDASHBOARDURL, g_Keys.names.url, rval);
 	isDefined(ErrorLevel::mild, JNAMES, JSYSOPEMAIL, g_Keys.names.email, rval);
 	isDefined(ErrorLevel::mild, JNAMES, JCOUNTRY, g_Keys.names.country, rval);
 	isDefined(ErrorLevel::mild, JNAMES, JSPONSOR, g_Keys.names.sponsor, rval);
