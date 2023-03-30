@@ -44,9 +44,9 @@ bool CGateKeeper::Init(void)
 {
 
 	// load lists from files
-	m_NodeWhiteList.LoadFromFile(g_Configure.GetString(g_Keys.files.white));
-	m_NodeBlackList.LoadFromFile(g_Configure.GetString(g_Keys.files.black));
-	m_PeerList.LoadFromFile(g_Configure.GetString(g_Keys.files.interlink));
+	m_WhiteSet.LoadFromFile(g_Configure.GetString(g_Keys.files.white));
+	m_BlackSet.LoadFromFile(g_Configure.GetString(g_Keys.files.black));
+	m_InterlinkMap.LoadFromFile(g_Configure.GetString(g_Keys.files.interlink));
 
 	// reset run flag
 	keep_running = true;
@@ -72,7 +72,8 @@ void CGateKeeper::Close(void)
 
 bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol protocol, char *modules) const
 {
-	bool ok = true;
+	bool ok;
+	const std::string base(callsign.GetBase());
 
 	switch (protocol)
 	{
@@ -88,26 +89,24 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 	case EProtocol::usrp:
 	case EProtocol::nxdn:
 	case EProtocol::g3:
-		// first check is IP & callsigned listed OK
-		ok &= IsNodeListedOk(callsign, ip);
-		// todo: then apply any protocol specific authorisation for the operation
+		// is callsign listed OK
+		ok = IsNodeListedOk(base);
 		break;
 
 	// URF and BM interlinks
 	case EProtocol::bm:
 	case EProtocol::urf:
-		ok &= IsPeerListedOk(callsign, ip, modules);
+		ok = IsPeerListedOk(base, ip, modules);
 		break;
 
 	// unsupported
-	case EProtocol::none:
 	default:
 		ok = false;
 		break;
 	}
 
 	// report
-	if ( !ok )
+	if ( ! ok )
 	{
 		std::cout << "Gatekeeper blocking linking of " << callsign << " @ " << ip << " using protocol " << ProtocolName(protocol) << std::endl;
 	}
@@ -118,7 +117,9 @@ bool CGateKeeper::MayLink(const CCallsign &callsign, const CIp &ip, EProtocol pr
 
 bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EProtocol protocol, char module) const
 {
-	bool ok = true;
+	bool ok;
+
+	const std::string base(callsign.GetBase());
 
 	switch (protocol)
 	{
@@ -136,14 +137,14 @@ bool CGateKeeper::MayTransmit(const CCallsign &callsign, const CIp &ip, const EP
 	case EProtocol::usrp:
 	case EProtocol::g3:
 		// first check is IP & callsigned listed OK
-		ok = ok && IsNodeListedOk(callsign, ip, module);
+		ok = IsNodeListedOk(base);
 		// todo: then apply any protocol specific authorisation for the operation
 		break;
 
 	// URF interlinks
 	case EProtocol::urf:
 	case EProtocol::bm:
-		ok = ok && IsPeerListedOk(callsign, ip, module);
+		ok = IsPeerListedOk(base, module);
 		break;
 
 	// unsupported
@@ -175,17 +176,17 @@ void CGateKeeper::Thread()
 			std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
 		// have lists files changed ?
-		if ( m_NodeWhiteList.NeedReload() )
+		if ( m_WhiteSet.NeedReload() )
 		{
-			m_NodeWhiteList.ReloadFromFile();
+			m_WhiteSet.ReloadFromFile();
 		}
-		if ( m_NodeBlackList.NeedReload() )
+		if ( m_BlackSet.NeedReload() )
 		{
-			m_NodeBlackList.ReloadFromFile();
+			m_BlackSet.ReloadFromFile();
 		}
-		if ( m_PeerList.NeedReload() )
+		if ( m_InterlinkMap.NeedReload() )
 		{
-			m_PeerList.ReloadFromFile();
+			m_InterlinkMap.ReloadFromFile();
 		}
 	}
 }
@@ -193,30 +194,28 @@ void CGateKeeper::Thread()
 ////////////////////////////////////////////////////////////////////////////////////////
 // operation helpers
 
-bool CGateKeeper::IsNodeListedOk(const CCallsign &callsign, const CIp &ip, char module) const
+bool CGateKeeper::IsNodeListedOk(const std::string &callsign) const
 {
 	bool ok = true;
-
-	// first check IP
 
 	// next, check callsign
 	if ( ok )
 	{
 		// first check if callsign is in white list
 		// note if white list is empty, everybody is authorized
-		m_NodeWhiteList.Lock();
-		if ( !m_NodeWhiteList.empty() )
+		m_WhiteSet.Lock();
+		if ( ! m_WhiteSet.empty() )
 		{
-			ok = m_NodeWhiteList.IsCallsignListedWithWildcard(callsign, module);
+			ok = m_WhiteSet.IsMatched(callsign);
 		}
-		m_NodeWhiteList.Unlock();
+		m_WhiteSet.Unlock();
 
 		// then check if not blacklisted
 		if (ok)
 		{
-			m_NodeBlackList.Lock();
-			ok = !m_NodeBlackList.IsCallsignListedWithWildcard(callsign);
-			m_NodeBlackList.Unlock();
+			m_BlackSet.Lock();
+			ok = ! m_BlackSet.IsMatched(callsign);
+			m_BlackSet.Unlock();
 		}
 	}
 
@@ -225,7 +224,7 @@ bool CGateKeeper::IsNodeListedOk(const CCallsign &callsign, const CIp &ip, char 
 
 }
 
-bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char module) const
+bool CGateKeeper::IsPeerListedOk(const std::string &callsign, char module) const
 {
 	bool ok = true;
 
@@ -235,19 +234,19 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 	if ( ok )
 	{
 		// look for an exact match in the list
-		m_PeerList.Lock();
-		if ( !m_PeerList.empty() )
+		m_InterlinkMap.Lock();
+		if ( !m_InterlinkMap.empty() )
 		{
-			ok = m_PeerList.IsCallsignListed(callsign, module);
+			ok = m_InterlinkMap.IsCallsignListed(callsign, module);
 		}
-		m_PeerList.Unlock();
+		m_InterlinkMap.Unlock();
 	}
 
 	// done
 	return ok;
 }
 
-bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char *modules) const
+bool CGateKeeper::IsPeerListedOk(const std::string &callsign, const CIp &ip, char *modules) const
 {
 	bool ok = true;
 
@@ -257,12 +256,12 @@ bool CGateKeeper::IsPeerListedOk(const CCallsign &callsign, const CIp &ip, char 
 	if ( ok )
 	{
 		// look for an exact match in the list
-		m_PeerList.Lock();
-		if ( !m_PeerList.empty() )
+		m_InterlinkMap.Lock();
+		if ( ! m_InterlinkMap.empty() )
 		{
-			ok = m_PeerList.IsCallsignListed(callsign, modules);
+			ok = m_InterlinkMap.IsCallsignListed(callsign, ip, modules);
 		}
-		m_PeerList.Unlock();
+		m_InterlinkMap.Unlock();
 	}
 
 	// done

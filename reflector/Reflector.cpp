@@ -635,14 +635,13 @@ void CReflector::PutDHTConfig()
 	std::ostringstream ss;
 	ss << g_Version;
 	cfg.version.assign(ss.str());
-	cfg.almod[toUType(EUrfdAlMod::nxdn)] = g_Configure.GetString(g_Keys.nxdn.autolinkmod).at(0);
-	cfg.almod[toUType(EUrfdAlMod::p25)]  = g_Configure.GetString(g_Keys.p25.autolinkmod).at(0);
-	cfg.almod[toUType(EUrfdAlMod::ysf)]  = g_Configure.GetString(g_Keys.ysf.autolinkmod).at(0);
-	cfg.ysffreq[toUType(EUrfdTxRx::rx)]  = g_Configure.GetUnsigned(g_Keys.ysf.defaultrxfreq);
-	cfg.ysffreq[toUType(EUrfdTxRx::tx)]  = g_Configure.GetUnsigned(g_Keys.ysf.defaulttxfreq);
-	cfg.refid[toUType(EUrfdRefId::nxdn)] = g_Configure.GetUnsigned(g_Keys.nxdn.reflectorid);
-	cfg.refid[toUType(EUrfdRefId::p25)]  = g_Configure.GetUnsigned(g_Keys.p25.reflectorid);
-	cfg.g3enabled = g_Configure.GetBoolean(g_Keys.g3.enable);
+	cfg.almod[toUType(EUrfdAlMod::nxdn)]   = g_Configure.GetString(g_Keys.nxdn.autolinkmod).at(0);
+	cfg.almod[toUType(EUrfdAlMod::p25)]    = g_Configure.GetString(g_Keys.p25.autolinkmod).at(0);
+	cfg.almod[toUType(EUrfdAlMod::ysf)]    = g_Configure.GetString(g_Keys.ysf.autolinkmod).at(0);
+	cfg.ysffreq[toUType(EUrfdTxRx::rx)]    = g_Configure.GetUnsigned(g_Keys.ysf.defaultrxfreq);
+	cfg.ysffreq[toUType(EUrfdTxRx::tx)]    = g_Configure.GetUnsigned(g_Keys.ysf.defaulttxfreq);
+	cfg.refid[toUType(EUrfdRefId::nxdn)]   = g_Configure.GetUnsigned(g_Keys.nxdn.reflectorid);
+	cfg.refid[toUType(EUrfdRefId::p25)]    = g_Configure.GetUnsigned(g_Keys.p25.reflectorid);
 	cfg.port[toUType(EUrfdPorts::dcs)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.dcs.port);
 	cfg.port[toUType(EUrfdPorts::dextra)]  = (uint16_t)g_Configure.GetUnsigned(g_Keys.dextra.port);
 	cfg.port[toUType(EUrfdPorts::dmrplus)] = (uint16_t)g_Configure.GetUnsigned(g_Keys.dmrplus.port);
@@ -653,6 +652,7 @@ void CReflector::PutDHTConfig()
 	cfg.port[toUType(EUrfdPorts::p25)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.p25.port);
 	cfg.port[toUType(EUrfdPorts::urf)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.urf.port);
 	cfg.port[toUType(EUrfdPorts::ysf)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.ysf.port);
+	cfg.g3enabled = g_Configure.GetBoolean(g_Keys.g3.enable);
 	for (const auto m : cfg.mods)
 		cfg.description[m] = g_Configure.GetString(g_Keys.modules.descriptor[m-'A']);
 
@@ -672,7 +672,8 @@ void CReflector::GetDHTConfig(const std::string &cs)
 {
 	static SUrfdConfig0 cfg;
 	cfg.timestamp = 0;	// everytime this is called, zero the timestamp
-	auto item = g_IFile.FindMapItem(cs);
+	auto item = g_GateKeeper.GetInterlinkMap()->FindMapItem(cs);
+	g_GateKeeper.ReleaseInterlinkMap();
 	if (nullptr == item)
 	{
 		std::cerr << "Can't Get() for " << cs << " because it doesn't exist" << std::endl;
@@ -708,7 +709,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 				if (cfg.timestamp)
 				{
 					// if the get() call was successful and there is a nonzero timestamp, then do the update
-					g_IFile.Update(cfg.cs, cfg.mods, cfg.ipv4, cfg.ipv6, cfg.port, cfg.emods);
+					g_GateKeeper.GetInterlinkMap()->Update(cfg.cs, cfg.mods, cfg.ipv4, cfg.ipv6, cfg.port[toUType(EUrfdPorts::urf)], cfg.tcmods);
 				}
 			}
 			else

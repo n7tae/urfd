@@ -39,6 +39,23 @@ union USuffix
 	uint32_t u;
 };
 
+// functions for unordered containers
+struct CCallsignHash
+{
+	std::size_t operator() (const UCallsign &ucs) const
+	{
+		std::hash<uint64_t> hash;
+		return hash(ucs.l);
+	}
+};
+
+struct CCallsignEqual
+{
+	bool operator() (const UCallsign &ucs1, const UCallsign &ucs2) const
+	{
+		return ucs1.l == ucs2.l;
+	}
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
@@ -73,6 +90,7 @@ public:
 
 	// get
 	UCallsign GetKey() const;
+	std::string GetBase() const;
 	void GetCallsign(uint8_t *) const;
 	void GetCallsignString(char *) const;
 	const std::string GetCS() const;
@@ -84,8 +102,6 @@ public:
 	// compare
 	bool HasSameCallsign(const CCallsign &) const;
 	bool HasSameCallsignWithWildcard(const CCallsign &) const;
-	bool HasLowerCallsign(const CCallsign &) const;
-	bool HasSameModule(const CCallsign &) const;
 
 	// operators
 	CCallsign &operator = (const CCallsign &cs);

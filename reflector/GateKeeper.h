@@ -22,8 +22,8 @@
 #include "Defines.h"
 #include "Callsign.h"
 #include "IP.h"
-#include "CallsignList.h"
-#include "PeerCallsignList.h"
+#include "BlackWhiteSet.h"
+#include "InterlinkMap.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
@@ -41,29 +41,27 @@ public:
 	bool Init(void);
 	void Close(void);
 
+	CInterlinkMap *GetInterlinkMap(void) { m_InterlinkMap.Lock(); return &m_InterlinkMap; }
+	void ReleaseInterlinkMap(void) { m_InterlinkMap.Unlock(); }
+
 	// authorizations
 	bool MayLink(const CCallsign &, const CIp &, const EProtocol, char * = nullptr) const;
 	bool MayTransmit(const CCallsign &, const CIp &, EProtocol = EProtocol::any, char = ' ') const;
-
-	// peer list handeling
-	CPeerCallsignList *GetPeerList(void)    { m_PeerList.Lock(); return &m_PeerList; }
-	void ReleasePeerList(void)              { m_PeerList.Unlock(); }
 
 protected:
 	// thread
 	void Thread();
 
 	// operation helpers
-	bool IsNodeListedOk(const CCallsign &, const CIp &, char = ' ') const;
-	bool IsPeerListedOk(const CCallsign &, const CIp &, char) const;
-	bool IsPeerListedOk(const CCallsign &, const CIp &, char *) const;
+	bool IsNodeListedOk(const std::string &) const;
+	bool IsPeerListedOk(const std::string &, char) const;
+	bool IsPeerListedOk(const std::string &, const CIp &, char *) const;
 	const std::string ProtocolName(EProtocol) const;
 
 protected:
 	// data
-	CCallsignList       m_NodeWhiteList;
-	CCallsignList       m_NodeBlackList;
-	CPeerCallsignList   m_PeerList;
+	CBlackWhiteSet m_WhiteSet, m_BlackSet;
+	CInterlinkMap  m_InterlinkMap;
 
 	// thread
 	std::atomic<bool> keep_running;
