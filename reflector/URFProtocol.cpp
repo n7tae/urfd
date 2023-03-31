@@ -314,10 +314,49 @@ void CURFProtocol::HandlePeerLinks(void)
 		const auto cs = it->first;
 		if ((0 == cs.substr(0, 3).compare("URF")) && (nullptr==peers->FindPeer(CCallsign(cs), EProtocol::urf)))
 		{
-			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
-			Send(buffer, it->second.GetIp(), it->second.GetPort());
-			std::cout << "Sending connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
+#ifndef NO_DHT
+			it->second.UpdateIP(g_Configure.GetString(g_Keys.ip.ipv6address).empty());
+			if (it->second.GetIp().IsSet())
+			{
+				bool ok = true;
+				// does everything match up?
+				for (const auto c : it->second.GetModules())
+				{
+					if (std::string::npos == g_Configure.GetString(g_Keys.modules.modules).find(c))
+					{	// is the local module not config'ed?
+						ok = false;
+						std::cerr << "This reflector has no module '" << c << "', so it can't interlink with " << it->first << std::endl;
+					}
+					else if (it->second.UsesDHT())
+					{
+						if (std::string::npos == it->second.GetCMods().find(c))
+						{	// the remote module not config'ed!
+							ok = false;
+							std::cerr << it->first << " has no module '" << c << "'" << std::endl;
+						}
+						else if ((std::string::npos == it->second.GetTCMods().find(c)) != (std::string::npos == g_Configure.GetString(g_Keys.modules.tcmodules).find(c)))
+						{	// are the transcoding states on both sides mismatched?
+							ok = false;
+							std::cerr << "The encryption states for module '" << c << "' don't match for this reflector and " << it->first << std::endl;
+						}
+					}
+				}
+				if (ok)
+				{
+
+#endif
+					// send connect packet to re-initiate peer link
+					EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
+					Send(buffer, it->second.GetIp(), it->second.GetPort());
+					std::cout << "Sending connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
+#ifndef NO_DHT
+				}
+			}
+			else // m_Ip is not set!
+			{
+				g_Reflector.GetDHTConfig(it->first);
+			}
+#endif
 		}
 	}
 

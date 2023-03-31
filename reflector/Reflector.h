@@ -25,7 +25,6 @@
 #include "Peers.h"
 #include "Protocols.h"
 #include "PacketStream.h"
-#include "NotificationQueue.h"
 
 #ifndef NO_DHT
 #include "urfd-dht-values.h"
@@ -80,8 +79,8 @@ public:
 	void OnPeersChanged(void);
 	void OnClientsChanged(void);
 	void OnUsersChanged(void);
-	void OnStreamOpen(const CCallsign &);
-	void OnStreamClose(const CCallsign &);
+	// void OnStreamOpen(const CCallsign &);
+	// void OnStreamClose(const CCallsign &);
 
 #ifndef NO_DHT
 	// Publish DHT
@@ -123,9 +122,6 @@ protected:
 	std::atomic<bool> keep_running;
 	std::unordered_map<char, std::future<void>> m_RouterFuture;
 	std::future<void> m_XmlReportFuture;
-
-	// notifications
-	CNotificationQueue  m_Notifications;
 
 #ifndef NO_DHT
 	// Distributed Hash Table

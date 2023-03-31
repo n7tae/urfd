@@ -38,8 +38,8 @@ public:
 	CInterlinkMapItem(const char *addr, const char *mods, uint16_t port);
 
 	// Update things
-	void UpdateIP(bool IPv6NotConfigured);
 #ifndef NO_DHT
+	void UpdateIP(bool IPv6NotConfigured);
 	void UpdateItem(const std::string &cmods, const std::string &ipv4, const std::string &ipv6, uint16_t port, const std::string &tcmods);
 #endif
 
@@ -69,6 +69,6 @@ private:
 
 #ifndef NO_DHT
 	bool m_Updated;
-	std::string m_CMods, m_IPv4, m_IPv6, m_TCMods;
+	std::string m_CMods, m_TCMods, m_IPv4, m_IPv6;
 #endif
 };
