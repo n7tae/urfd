@@ -390,7 +390,7 @@ void CG3Protocol::Task(void)
 			{
 				BaseIp = &ClIp;
 				client->Alive();
-				// supress host checks - no ping needed to trigger potential ICMPs
+				// suppress host checks - no ping needed to trigger potential ICMPs
 				// the regular data flow will do it
 				m_LastKeepaliveTime.start();
 				break;
@@ -444,7 +444,7 @@ void CG3Protocol::HandleQueue(void)
 {
 	while (! m_Queue.IsEmpty())
 	{
-		// supress host checks
+		// suppress host checks
 		m_LastKeepaliveTime.start();
 
 		// get the packet

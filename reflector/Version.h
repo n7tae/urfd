@@ -38,7 +38,7 @@ public:
 	// set
 	void Set(uint8_t, uint8_t, uint8_t);
 
-	// comparaison operators
+	// comparison operators
 	bool operator ==(const CVersion &v) const;
 	bool operator !=(const CVersion &v) const;
 	bool operator >=(const CVersion &v) const;

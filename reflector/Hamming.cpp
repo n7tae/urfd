@@ -224,7 +224,7 @@ bool CHamming::decode1393(bool* d)
 		d[12] = !d[12];
 		return true;
 
-	// Data bit erros
+	// Data bit errors
 	case 0x0FU:
 		d[0] = !d[0];
 		return true;
@@ -303,7 +303,7 @@ bool CHamming::decode1063(bool* d)
 		d[9] = !d[9];
 		return true;
 
-	// Data bit erros
+	// Data bit errors
 	case 0x07U:
 		d[0] = !d[0];
 		return true;

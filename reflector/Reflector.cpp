@@ -182,7 +182,7 @@ bool CReflector::IsStreaming(char module)
 	return false;
 }
 
-// clients MUST have bee locked by the caller so we can freely access it within the fuction
+// clients MUST have bee locked by the caller so we can freely access it within the function
 std::shared_ptr<CPacketStream> CReflector::OpenStream(std::unique_ptr<CDvHeaderPacket> &DvHeader, std::shared_ptr<CClient>client)
 {
 	// check sid is not zero
@@ -655,7 +655,7 @@ void CReflector::PutDHTConfig()
 void CReflector::GetDHTConfig(const std::string &cs)
 {
 	static SUrfdConfig0 cfg;
-	cfg.timestamp = 0;	// everytime this is called, zero the timestamp
+	cfg.timestamp = 0;	// every time this is called, zero the timestamp
 	auto item = g_GateKeeper.GetInterlinkMap()->FindMapItem(cs);
 	g_GateKeeper.ReleaseInterlinkMap();
 	if (nullptr == item)

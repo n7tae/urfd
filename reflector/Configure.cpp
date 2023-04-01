@@ -493,7 +493,7 @@ bool CConfigure::ReadData(const std::string &path)
 					badParam(key);
 				break;
 			default:
-				std::cout << "WARNING: parameter '" << line << "' defined befor any [section]" << std::endl;
+				std::cout << "WARNING: parameter '" << line << "' defined before any [section]" << std::endl;
 		}
 
 	}
@@ -536,7 +536,7 @@ bool CConfigure::ReadData(const std::string &path)
 				}
 				else
 				{
-					std::cerr << "ERROR: specifed IPv4 external address, " << v4 << ", is malformed" << std::endl;
+					std::cerr << "ERROR: specified IPv4 external address, " << v4 << ", is malformed" << std::endl;
 					rval = true;
 				}
 			}
@@ -574,7 +574,7 @@ bool CConfigure::ReadData(const std::string &path)
 				}
 				else
 				{
-					std::cerr << "ERROR: the specifed IPv6 address [" << v6 << "] is malformed" << std::endl;
+					std::cerr << "ERROR: the specified IPv6 address [" << v6 << "] is malformed" << std::endl;
 					rval = true;
 				}
 			}

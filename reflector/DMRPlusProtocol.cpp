@@ -449,7 +449,7 @@ bool CDmrplusProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer
 			uint8_t dmrsync[7];
 			// get the 33 bytes ambe
 			memcpy(dmrframe, &(Buffer.data()[26]), 33);
-			// handle endianess
+			// handle endianness
 			SwapEndianess(dmrframe, sizeof(dmrframe));
 			// extract the 3 ambe frames
 			memcpy(dmr3ambe, dmrframe, 14);

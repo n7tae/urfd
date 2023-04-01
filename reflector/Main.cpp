@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 {
 	if (argc != 2)
 	{
-		std::cerr << "No configuration file specifed! Usage: " << argv[0] << " /pathname/to/configuration/file" << std::endl;
+		std::cerr << "No configuration file specified! Usage: " << argv[0] << " /pathname/to/configuration/file" << std::endl;
 		return EXIT_FAILURE;
 	}
 
@@ -98,13 +98,13 @@ static void usage(std::ostream &os, const char *name)
 		"    ysf   : The Callsign => Tx/Rx frequency database.\n"
 		"SOURCE (choose one)\n"
 		"    file  : The file specified by the FilePath ini parameter.\n"
-		"    http  : The URL specified by the URL ini paramater.\n"
+		"    http  : The URL specified by the URL ini parameter.\n"
 		"ACTION (choose one)\n"
 		"    print : Print all lines from the SOURCE that are syntactically correct.\n"
 		"    error : Print only the lines with failed syntax.\n"
 		"INIFILE   : an error-free urfd ini file (check it first with inicheck).\n\n"
 		"Only the first character of DATABASE, SOURCE and ACTION is read.\n"
-        "Example: " << name << " y f e urfd.ini  # Check your YSF Tx/Rx database file specifed in urfd.ini for syntax errors.\n\n";
+        "Example: " << name << " y f e urfd.ini  # Check your YSF Tx/Rx database file specified in urfd.ini for syntax errors.\n\n";
 }
 
 enum class Edb { none, dmr, nxdn, ysf };

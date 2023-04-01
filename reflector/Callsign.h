@@ -63,7 +63,7 @@ struct CCallsignEqual
 class CCallsign
 {
 public:
-	// contructors
+	// constructors
 	CCallsign();
 	CCallsign(const UCallsign &cs);    // no id lookup
 	CCallsign(const CCallsign &cs);
