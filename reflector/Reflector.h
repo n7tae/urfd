@@ -79,22 +79,22 @@ public:
 	void OnPeersChanged(void);
 	void OnClientsChanged(void);
 	void OnUsersChanged(void);
-	// void OnStreamOpen(const CCallsign &);
-	// void OnStreamClose(const CCallsign &);
+#ifndef NO_DHT
+	void GetDHTConfig(const std::string &cs);
+#endif
 
+protected:
 #ifndef NO_DHT
 	// Publish DHT
 	void PutDHTConfig();
 	void PutDHTPeers();
 	void PutDHTClients();
 	void PutDHTUsers();
-	void GetDHTConfig(const std::string &cs);
 #endif
 
-protected:
 	// threads
 	void RouterThread(const char);
-	void XmlReportThread(void);
+	void StateReportThread(void);
 
 	// streams
 	std::shared_ptr<CPacketStream> GetStream(char);
@@ -128,6 +128,6 @@ protected:
 	dht::DhtRunner node;
 	dht::InfoHash refhash;
 	unsigned int peers_put_count, clients_put_count, users_put_count;
+	std::atomic<bool> peers_changed, clients_changed, users_changed;
 #endif
-
 };

@@ -120,7 +120,7 @@ bool CReflector::Start(void)
 	// start the reporting thread
 	try
 	{
-		m_XmlReportFuture = std::async(std::launch::async, &CReflector::XmlReportThread, this);
+		m_XmlReportFuture = std::async(std::launch::async, &CReflector::StateReportThread, this);
 	}
 	catch(const std::exception& e)
 	{
@@ -323,10 +323,12 @@ void CReflector::RouterThread(const char ThisModule)
 
 #define XML_UPDATE_PERIOD 10
 
-void CReflector::XmlReportThread()
+void CReflector::StateReportThread()
 {
 	std::string xmlpath, jsonpath;
-
+#ifndef NO_DHT
+	peers_changed = clients_changed = users_changed = true;
+#endif
 	if (g_Configure.Contains(g_Keys.files.xml))
 		xmlpath.assign(g_Configure.GetString(g_Keys.files.xml));
 	if (g_Configure.Contains(g_Keys.files.json))
@@ -370,9 +372,29 @@ void CReflector::XmlReportThread()
 			}
 		}
 
-		// and wait a bit
+		// and wait a bit and do something useful at the same time
 		for (int i=0; i< XML_UPDATE_PERIOD && keep_running; i++)
+		{
+#ifndef NO_DHT
+			// update the dht data, if needed
+			if (peers_changed)
+			{
+				PutDHTPeers();
+				peers_changed = false;
+			}
+			if (clients_changed)
+			{
+				PutDHTClients();
+				clients_changed = false;
+			}
+			if (users_changed)
+			{
+				PutDHTUsers();
+				users_changed = false;
+			}
+#endif
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		}
 	}
 }
 
@@ -382,31 +404,23 @@ void CReflector::XmlReportThread()
 void CReflector::OnPeersChanged(void)
 {
 #ifndef NO_DHT
-	PutDHTPeers();
+	peers_changed = true;
 #endif
 }
 
 void CReflector::OnClientsChanged(void)
 {
 #ifndef NO_DHT
-	PutDHTClients();
+	clients_changed = true;
 #endif
 }
 
 void CReflector::OnUsersChanged(void)
 {
 #ifndef NO_DHT
-	PutDHTUsers();
+	users_changed = true;
 #endif
 }
-
-// void CReflector::OnStreamOpen(const CCallsign &callsign)
-// {
-// }
-
-// void CReflector::OnStreamClose(const CCallsign &callsign)
-// {
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // modules & queues
