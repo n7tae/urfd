@@ -33,7 +33,7 @@
 
 CInterlinkMap::CInterlinkMap()
 {
-	m_Filename = nullptr;
+	m_Filename.clear();
 	::memset(&m_LastModTime, 0, sizeof(time_t));
 }
 
@@ -119,7 +119,7 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 		file.close();
 
 		// keep file path
-		m_Filename = filename;
+		m_Filename.assign(filename);
 
 		// update time
 		GetLastModTime(&m_LastModTime);

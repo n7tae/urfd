@@ -97,7 +97,7 @@ bool CBlackWhiteSet::ReloadFromFile(void)
 {
 	bool ok = false;
 
-	if ( m_Filename.empty() )
+	if ( ! m_Filename.empty() )
 	{
 		ok = LoadFromFile(m_Filename);
 	}

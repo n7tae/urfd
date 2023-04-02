@@ -31,7 +31,7 @@ class CBlackWhiteSet
 {
 public:
 	// constructor
-	CBlackWhiteSet() : m_Filename(nullptr), m_LastModTime(0) {}
+	CBlackWhiteSet() : m_LastModTime(0) {}
 
 	// locks
 	void Lock(void)   const { m_Mutex.lock(); }
