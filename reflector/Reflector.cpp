@@ -655,7 +655,7 @@ void CReflector::PutDHTConfig()
 		cfg.description[m] = g_Configure.GetString(g_Keys.modules.descriptor[m-'A']);
 
 	auto nv = std::make_shared<dht::Value>(cfg);
-	nv->user_type.assign("urfd-config-0");
+	nv->user_type.assign("urfd-config-1");
 	nv->id = toUType(EUrfdValueID::Config);
 
 	node.putSigned(
