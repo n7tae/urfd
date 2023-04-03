@@ -22,45 +22,48 @@
 #include <opendht.h>
 
 /* HELPERS */
+#ifndef TO_U_TYPE_DEF
+#define TO_U_TYPE_DEF
 template<typename E> constexpr auto toUType(E enumerator) noexcept
 {
 	return static_cast<std::underlying_type_t<E>>(enumerator);
 } // Item #10 in "Effective Modern C++", by Scott Meyers, O'REILLY
+#endif
 
 enum class EUrfdValueID : uint64_t { Config=1, Peers=2, Clients=3, Users=4 };
 
 /* PEERS */
-using PeerTuple = std::tuple<std::string, std::string, std::time_t>;
+using UrfdPeerTuple = std::tuple<std::string, std::string, std::time_t>;
 enum class EUrfdPeerFields { Callsign, Modules, ConnectTime };
-struct SUrfdPeers0
+struct SUrfdPeers1
 {
 	std::time_t timestamp;
 	unsigned int sequence;
-	std::list<PeerTuple> list;
+	std::list<UrfdPeerTuple> list;
 
 	MSGPACK_DEFINE(timestamp, sequence, list)
 };
 
 /* CLIENTS */
-using ClientTuple = std::tuple<std::string, std::string, char, std::time_t, std::time_t>;
+using UrfdClientTuple = std::tuple<std::string, std::string, char, std::time_t, std::time_t>;
 enum class EUrfdClientFields { Callsign, Ip, Module, ConnectTime, LastHeardTime };
-struct SUrfdClients0
+struct SUrfdClients1
 {
 	std::time_t timestamp;
 	unsigned int sequence;
-	std::list<ClientTuple> list;
+	std::list<UrfdClientTuple> list;
 
 	MSGPACK_DEFINE(timestamp, sequence, list)
 };
 
 /* USERS */
-using UserTuple = std::tuple<std::string, std::string, char, std::string, std::time_t>;
+using UrfdUserTuple = std::tuple<std::string, std::string, char, std::string, std::time_t>;
 enum class EUrfdUserFields { Callsign, ViaNode, OnModule, ViaPeer, LastHeardTime };
-struct SUrfdUsers0
+struct SUrfdUsers1
 {
 	std::time_t timestamp;
 	unsigned int sequence;
-	std::list<UserTuple> list;
+	std::list<UrfdUserTuple> list;
 
 	MSGPACK_DEFINE(timestamp, sequence, list)
 };

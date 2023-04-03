@@ -544,7 +544,7 @@ void CReflector::PutDHTPeers()
 {
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
 	// load it up
-	SUrfdPeers0 p;
+	SUrfdPeers1 p;
 	time(&p.timestamp);
 	p.sequence = peers_put_count++;
 	auto peers = GetPeers();
@@ -555,7 +555,7 @@ void CReflector::PutDHTPeers()
 	ReleasePeers();
 
 	auto nv = std::make_shared<dht::Value>(p);
-	nv->user_type.assign("urfd-peers-0");
+	nv->user_type.assign("urfd-peers-1");
 	nv->id = toUType(EUrfdValueID::Peers);
 
 	node.putSigned(
@@ -569,7 +569,7 @@ void CReflector::PutDHTPeers()
 void CReflector::PutDHTClients()
 {
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdClients0 c;
+	SUrfdClients1 c;
 	time(&c.timestamp);
 	c.sequence = clients_put_count++;
 	auto clients = GetClients();
@@ -580,7 +580,7 @@ void CReflector::PutDHTClients()
 	ReleaseClients();
 
 	auto nv = std::make_shared<dht::Value>(c);
-	nv->user_type.assign("urfd-clients-0");
+	nv->user_type.assign("urfd-clients-1");
 	nv->id = toUType(EUrfdValueID::Clients);
 
 	node.putSigned(
@@ -594,7 +594,7 @@ void CReflector::PutDHTClients()
 void CReflector::PutDHTUsers()
 {
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdUsers0 u;
+	SUrfdUsers1 u;
 	time(&u.timestamp);
 	u.sequence = users_put_count++;
 	auto users = GetUsers();
@@ -605,7 +605,7 @@ void CReflector::PutDHTUsers()
 	ReleaseUsers();
 
 	auto nv = std::make_shared<dht::Value>(u);
-	nv->user_type.assign("urfd-users-0");
+	nv->user_type.assign("urfd-users-1");
 	nv->id = toUType(EUrfdValueID::Users);
 
 	node.putSigned(
