@@ -619,7 +619,7 @@ void CReflector::PutDHTUsers()
 void CReflector::PutDHTConfig()
 {
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdConfig0 cfg;
+	SUrfdConfig1 cfg;
 	time(&cfg.timestamp);
 	cfg.cs.assign(cs);
 	cfg.ipv4.assign(g_Configure.GetString(g_Keys.ip.ipv4address));
@@ -668,7 +668,7 @@ void CReflector::PutDHTConfig()
 
 void CReflector::GetDHTConfig(const std::string &cs)
 {
-	static SUrfdConfig0 cfg;
+	static SUrfdConfig1 cfg;
 	cfg.timestamp = 0;	// every time this is called, zero the timestamp
 	auto item = g_GateKeeper.GetInterlinkMap()->FindMapItem(cs);
 	g_GateKeeper.ReleaseInterlinkMap();
@@ -688,11 +688,11 @@ void CReflector::GetDHTConfig(const std::string &cs)
 		[](const std::shared_ptr<dht::Value> &v) {
 			if (0 == v->user_type.compare("mrefd-config-1"))
 			{
-				auto rdat = dht::Value::unpack<SUrfdConfig0>(*v);
+				auto rdat = dht::Value::unpack<SUrfdConfig1>(*v);
 				if (rdat.timestamp > cfg.timestamp)
 				{
 					// the time stamp is the newest so far, so put it in the static cfg struct
-					cfg = dht::Value::unpack<SUrfdConfig0>(*v);
+					cfg = dht::Value::unpack<SUrfdConfig1>(*v);
 				}
 			}
 			else

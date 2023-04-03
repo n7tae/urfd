@@ -74,7 +74,7 @@ enum class EUrfdPorts : unsigned { dcs, dextra, dmrplus, dplus, m17, mmdvm, nxdn
 enum class EUrfdAlMod : unsigned { nxdn, p25, ysf, SIZE };
 enum class EUrfdTxRx  : unsigned { rx, tx, SIZE };
 enum class EUrfdRefId : unsigned { nxdn, p25, SIZE };
-struct SUrfdConfig0
+struct SUrfdConfig1
 {
 	std::time_t timestamp;
 	std::string cs, ipv4, ipv6, mods, tcmods, url, email, sponsor, country, version;
