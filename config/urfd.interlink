@@ -3,7 +3,7 @@
 #
 #  One line per entry.
 #  Each entry specifies a remote URF to peer with.
-#  If no Port is specified, 17000 will be used.
+#  If no Port is specified, 10017 will be used.
 #  If DHT is enabled and the target is also DHT-enabled, then you only
 #  need to specify the URF-Callsign and the Shared-Modules
 #  format:

@@ -69,6 +69,8 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 						{
 							CCallsign callsign(token[0]);
 							// read remaining tokens
+							// 1=IP 2=Modules 3=Port Port is optional and defaults to 10017
+							// OR... 1=Modules and the dht will be used
 							for (int i=1; i<4; i++)
 							{
 								token[i] = strtok(nullptr, delim);
@@ -85,12 +87,8 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 										std::cout << token[0] << " Port " << port << " is out of range, resetting to 10017." << std::endl;
 										port = 10017;
 									}
-									m_InterlinkMap[token[0]] = CInterlinkMapItem(token[1], token[3], (uint16_t)port);
 								}
-								else
-								{
-									m_InterlinkMap[token[0]] = CInterlinkMapItem(token[1], token[2], (uint16_t)port);
-								}
+								m_InterlinkMap[token[0]] = CInterlinkMapItem(token[1], token[2], (uint16_t)port);
 							}
 #ifndef NO_DHT
 							else if (token[1])

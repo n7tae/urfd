@@ -65,6 +65,7 @@ void CURFProtocol::Task(void)
 	if ( Receive4(Buffer, Ip, 20) )
 #endif
 	{
+		Buffer.Dump("Received buffer");
 		// crack the packet
 		if ( IsValidDvFramePacket(Buffer, Frame) )
 		{
@@ -348,7 +349,7 @@ void CURFProtocol::HandlePeerLinks(void)
 					// send connect packet to re-initiate peer link
 					EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
 					Send(buffer, it->second.GetIp(), it->second.GetPort());
-					std::cout << "Sent connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
+					std::cout << "Sent connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << " to port " << it->second.GetPort() << std::endl;
 #ifndef NO_DHT
 				}
 			}
