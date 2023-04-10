@@ -686,13 +686,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 {
 	static SUrfdConfig1 cfg;
 	cfg.timestamp = 0;	// every time this is called, zero the timestamp
-	auto item = g_GateKeeper.GetInterlinkMap()->FindMapItem(cs);
-	g_GateKeeper.ReleaseInterlinkMap();
-	if (nullptr == item)
-	{
-		std::cerr << "Can't Get() for " << cs << " because it doesn't exist" << std::endl;
-		return;
-	}
+
 	std::cout << "Getting " << cs << " connection info..." << std::endl;
 
 	// we only want the configuration section of the reflector's document

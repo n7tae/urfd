@@ -312,7 +312,9 @@ void CURFProtocol::HandlePeerLinks(void)
 	for ( auto it=ilmap->begin(); it!=ilmap->end(); it++ )
 	{
 		const auto cs = it->first;
-		if ((0 == cs.substr(0, 3).compare("URF")) && (nullptr==peers->FindPeer(CCallsign(cs), EProtocol::urf)))
+		CCallsign callsign;
+		callsign.SetCallsign(cs, false);
+		if ((0 == cs.substr(0, 3).compare("URF")) && (nullptr==peers->FindPeer(callsign, EProtocol::urf)))
 		{
 #ifndef NO_DHT
 			it->second.UpdateIP(g_Configure.GetString(g_Keys.ip.ipv6address).empty());
