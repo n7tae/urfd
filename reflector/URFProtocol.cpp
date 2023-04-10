@@ -441,16 +441,13 @@ bool CURFProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *call
 
 bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
-	std::cout << "Checking for valid CONN packet\n";
 	bool valid;
 	uint8_t magic[] = { 'C','O','N','N' };
 	if ((Buffer.size() == 40) && (0 == Buffer.Compare(magic, 4)) && (Buffer.data()[36] == 0))
 	{
 		callsign->CodeIn(Buffer.data()+4);
 		valid = callsign->IsValid();
-		std::cout << "Callsign '" << callsign->GetCS() << " is " << (valid ? "valid" : "not valid") << std::endl;
 		*version = CVersion(Buffer.at(37), Buffer.at(38), Buffer.at(39));
-		std::cout << *callsign << " version: " << *version << std::endl;
 		if (valid)
 		{
 			memcpy(modules, Buffer.data()+10, 27);
