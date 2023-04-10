@@ -81,7 +81,7 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 								int port = 10017;
 								if (token[3])
 								{
-									port = std::atoi(token[2]);
+									port = std::atoi(token[3]);
 									if (port < 1024 || port > 49000)
 									{
 										std::cout << token[0] << " Port " << port << " is out of range, resetting to 10017." << std::endl;
