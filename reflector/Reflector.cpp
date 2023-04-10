@@ -718,6 +718,11 @@ void CReflector::GetDHTConfig(const std::string &cs)
 				{
 					// if the get() call was successful and there is a nonzero timestamp, then do the update
 					g_GateKeeper.GetInterlinkMap()->Update(cfg.cs, cfg.mods, cfg.ipv4, cfg.ipv6, cfg.port[toUType(EUrfdPorts::urf)], cfg.tcmods);
+					g_GateKeeper.ReleaseInterlinkMap();
+				}
+				else
+				{
+					std::cerr << "node.Get() was successful, but the timestamp was zero" << std::endl;
 				}
 			}
 			else
