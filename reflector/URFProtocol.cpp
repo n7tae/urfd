@@ -441,7 +441,7 @@ bool CURFProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *call
 
 bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
-	bool valid;
+	bool valid = false;
 	uint8_t magic[] = { 'C','O','N','N' };
 	if ((Buffer.size() == 40) && (0 == Buffer.Compare(magic, 4)) && (Buffer.data()[36] == 0))
 	{
