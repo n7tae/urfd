@@ -178,14 +178,6 @@ bool CInterlinkMap::IsCallsignListed(const std::string &callsign, const CIp &ip,
 			{
 				return true;
 			}
-			else
-			{
-				std::cout << ip << " is not equal to " << item->second.GetIp() << std::endl;
-			}
-		}
-		else
-		{
-			std::cout << "Problem with linking " << callsign << " modules '" << modules << "'\n";
 		}
 	}
 	else
