@@ -337,7 +337,7 @@ void CURFProtocol::HandlePeerLinks(void)
 						else if ((std::string::npos == it->second.GetTCMods().find(c)) != (std::string::npos == g_Configure.GetString(g_Keys.modules.tcmodules).find(c)))
 						{	// are the transcoding states on both sides mismatched?
 							ok = false;
-							std::cerr << "The encryption states for module '" << c << "' don't match for this reflector and " << it->first << std::endl;
+							std::cerr << "The transcode states for module '" << c << "' don't match for this reflector and " << it->first << std::endl;
 						}
 					}
 				}
@@ -348,7 +348,7 @@ void CURFProtocol::HandlePeerLinks(void)
 					// send connect packet to re-initiate peer link
 					EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
 					Send(buffer, it->second.GetIp(), it->second.GetPort());
-					std::cout << "Sending connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
+					std::cout << "Sent connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
 #ifndef NO_DHT
 				}
 			}
@@ -441,17 +441,28 @@ bool CURFProtocol::IsValidKeepAlivePacket(const CBuffer &Buffer, CCallsign *call
 
 bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsign, char *modules, CVersion *version)
 {
-	bool valid = false;
+	std::cout << "Checking for valid CONN packet\n";
+	bool valid;
 	uint8_t magic[] = { 'C','O','N','N' };
 	if ((Buffer.size() == 40) && (0 == Buffer.Compare(magic, 4)) && (Buffer.data()[36] == 0))
 	{
 		callsign->CodeIn(Buffer.data()+4);
 		valid = callsign->IsValid();
+		std::cout << "Callsign '" << callsign->GetCS() << " is " << (valid ? "valid" : "not valid") << std::endl;
 		*version = CVersion(Buffer.at(37), Buffer.at(38), Buffer.at(39));
-		memcpy(modules, Buffer.data()+10, 27);
-		for ( unsigned i = 0; i < strlen(modules); i++ )
+		std::cout << *callsign << " version: " << *version << std::endl;
+		if (valid)
 		{
-			valid = valid && (g_Reflector.IsValidModule (modules[i]));
+			memcpy(modules, Buffer.data()+10, 27);
+			for ( unsigned i = 0; i < strlen(modules); i++ )
+			{
+				auto moduleok = g_Reflector.IsValidModule(modules[i]);
+				if (! moduleok)
+				{
+					valid = false;
+					std::cout << "Requested module '" << modules[i] << "' is not confgured\n";
+				}
+			}
 		}
 	}
 	return valid;
