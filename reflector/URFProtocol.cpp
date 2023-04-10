@@ -65,7 +65,6 @@ void CURFProtocol::Task(void)
 	if ( Receive4(Buffer, Ip, 20) )
 #endif
 	{
-		Buffer.Dump("Received buffer");
 		// crack the packet
 		if ( IsValidDvFramePacket(Buffer, Frame) )
 		{

@@ -67,7 +67,6 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 					{
 						if (m_InterlinkMap.end() == m_InterlinkMap.find(token[0]))
 						{
-							CCallsign callsign(token[0]);
 							// read remaining tokens
 							// 1=IP 2=Modules 3=Port Port is optional and defaults to 10017
 							// OR... 1=Modules and the dht will be used
@@ -179,7 +178,19 @@ bool CInterlinkMap::IsCallsignListed(const std::string &callsign, const CIp &ip,
 			{
 				return true;
 			}
+			else
+			{
+				std::cout << ip << " is not equal to " << item->second.GetIp() << std::endl;
+			}
 		}
+		else
+		{
+			std::cout << "Problem with linking " << callsign << " modules '" << modules << "'\n";
+		}
+	}
+	else
+	{
+		std::cout << "'" << callsign << "' not found in interlink map\n";
 	}
 
 	return false;

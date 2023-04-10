@@ -354,7 +354,7 @@ std::string CCallsign::GetBase() const
 	auto u = GetKey();
 	std::string rval(u.c, CALLSIGN_LEN);
 	auto pos = rval.find(' ');
-	if (std::string::npos == rval.find(' '))
+	if (std::string::npos != pos)
 		rval.resize(pos);
 	return rval;
 }
