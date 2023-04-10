@@ -88,6 +88,7 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 										port = 10017;
 									}
 								}
+								std::cout << "USING PORT " << port << std::endl;
 								m_InterlinkMap[token[0]] = CInterlinkMapItem(token[1], token[2], (uint16_t)port);
 							}
 #ifndef NO_DHT

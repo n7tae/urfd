@@ -348,7 +348,7 @@ void CURFProtocol::HandlePeerLinks(void)
 #endif
 					// send connect packet to re-initiate peer link
 					EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
-					Send(buffer, it->second.GetIp(), it->second.GetPort());
+					Send(buffer, it->second.GetIp());
 					std::cout << "Sent connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << " to port " << it->second.GetPort() << std::endl;
 #ifndef NO_DHT
 				}
