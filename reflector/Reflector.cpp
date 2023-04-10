@@ -696,7 +696,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 	node.get(
 		dht::InfoHash::get(cs),
 		[](const std::shared_ptr<dht::Value> &v) {
-			if (0 == v->user_type.compare("mrefd-config-1"))
+			if (0 == v->user_type.compare("urfd-config-1"))
 			{
 				auto rdat = dht::Value::unpack<SUrfdConfig1>(*v);
 				if (rdat.timestamp > cfg.timestamp)
