@@ -65,6 +65,8 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 				{
 					if (strcmp(token[0], g_Configure.GetString(g_Keys.names.callsign).c_str()))
 					{
+						// the default port depends on the protocol type (URF or BM)
+						int default_port = (0 == memcmp(token[0], "URF", 3)) ? 10017 : 10002;
 						if (m_InterlinkMap.end() == m_InterlinkMap.find(token[0]))
 						{
 							// read remaining tokens
@@ -77,17 +79,16 @@ bool CInterlinkMap::LoadFromFile(const std::string &filename)
 
 							if (token[2])
 							{
-								int port = 10017;
+								int port = default_port;
 								if (token[3])
 								{
 									port = std::atoi(token[3]);
 									if (port < 1024 || port > 49000)
 									{
-										std::cout << token[0] << " Port " << port << " is out of range, resetting to 10017." << std::endl;
-										port = 10017;
+										std::cout << token[0] << " Port " << port << " is out of range, resetting to " << default_port << std::endl;
+										port = default_port;
 									}
 								}
-								std::cout << "USING PORT " << port << std::endl;
 								m_InterlinkMap[token[0]] = CInterlinkMapItem(token[1], token[2], (uint16_t)port);
 							}
 #ifndef NO_DHT
