@@ -51,6 +51,29 @@ sudo apt install build-essential
 sudo apt install nlohmann-json3-dev
 ```
 
+### DVIN support (optional, but highly recommended)
+
+**DVIN**, the Digital Voice Information Network, is implemented using a distributed hash table provided by OpenDHT.
+
+OpenDHT is available [here](https://github./com/savoirfairelinux/opendht.git). Building and installing instructions are in the [OpenDHT Wiki](https://github.com/savoirfairelinux/opendht/wiki/Build-the-library). Pascal support and proxy-server support (RESTinio) is not required for urfd and so can be considered optional. With this in mind, this should work on Debian/Ubuntu-based systems:
+
+```bash
+# Install OpenDHT dependencies
+sudo apt install libncurses5-dev libreadline-dev nettle-dev libgnutls28-dev libargon2-0-dev libmsgpack-dev  libssl-dev libfmt-dev libjsoncpp-dev libhttp-parser-dev libasio-dev cmake pkg-config libcppunit-dev
+
+# clone the repo
+git clone https://github.com/savoirfairelinux/opendht.git
+
+# build and install
+cd opendht
+mkdir build && cd build
+cmake -DOPENDHT_PYTHON=OFF -DCMAKE_INSTALL_PREFIX=/usr ..
+make
+sudo make install
+```
+
+Please note that there is no easy way to uninstall OpenDHT once it's been installed.
+
 ### Download and build the repository and
 
 ```bash

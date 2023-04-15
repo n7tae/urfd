@@ -88,7 +88,7 @@ void CPacket::EncodeInterlinkPacket(const char *magic, CBuffer &buf) const
 	data[19] = m_uiYsfPacketFrameId;
 }
 
-// dstar contstructor
+// dstar constructor
 CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 {
 	m_uiStreamId = sid;

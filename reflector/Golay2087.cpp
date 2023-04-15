@@ -219,7 +219,7 @@ unsigned int CGolay2087::getSyndrome1987(unsigned int pattern)
  * Compute the syndrome corresponding to the given pattern, i.e., the
  * remainder after dividing the pattern (when considering it as the vector
  * representation of a polynomial) by the generator polynomial, GENPOL.
- * In the program this pattern has several meanings: (1) pattern = infomation
+ * In the program this pattern has several meanings: (1) pattern = information
  * bits, when constructing the encoding table; (2) pattern = error pattern,
  * when constructing the decoding table; and (3) pattern = received vector, to
  * obtain its syndrome in decoding.

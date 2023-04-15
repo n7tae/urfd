@@ -22,7 +22,7 @@
 
 /************************************************************
  *                 THIS IS IMPORTANT
- * This template is primarly designed for std::unique_ptr!
+ * This template is primarily designed for std::unique_ptr!
  * If you are going to use it for std::shared_ptr, then
  * please consider that when you Push(), what you pushed
  * from will be nullptr after the Push()!
@@ -56,13 +56,13 @@ public:
 		}
 	}
 
-	// If the queue is empty, wait until an element is avaiable.
+	// If the queue is empty, wait until an element is available.
 	T PopWait(void)
 	{
 		std::unique_lock<std::mutex> lock(m);
 		while(q.empty())
 		{
-			// release lock as long as the wait and reaquire it afterwards.
+			// release lock as long as the wait and reacquire it afterwards.
 			c.wait(lock);
 		}
 		T val = std::move(q.front());

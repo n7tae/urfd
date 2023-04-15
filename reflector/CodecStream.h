@@ -50,7 +50,7 @@ public:
 	void Thread(void);
 	void Task(void);
 
-	// pass-thru
+	// pass-through
 	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
 
 protected:

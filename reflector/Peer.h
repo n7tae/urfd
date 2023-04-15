@@ -42,6 +42,7 @@ public:
 	const CCallsign &GetCallsign(void) const            { return m_Callsign; }
 	const CIp &GetIp(void) const                        { return m_Ip; }
 	char *GetReflectorModules(void)                     { return m_ReflectorModules; }
+	std::time_t GetConnectTime(void) const              { return m_ConnectTime; }
 
 	// set
 
@@ -60,7 +61,7 @@ public:
 	int     GetNbClients(void) const                    { return (int)m_Clients.size(); }
 	void    ClearClients(void)                          { m_Clients.clear(); }
 
-	// pass-thru
+	// pass-through
 	std::list<std::shared_ptr<CClient>>::iterator begin()              { return m_Clients.begin(); }
 	std::list<std::shared_ptr<CClient>>::iterator end()                { return m_Clients.end(); }
 	std::list<std::shared_ptr<CClient>>::const_iterator cbegin() const { return m_Clients.cbegin(); }

@@ -1,4 +1,5 @@
-//  Copyright © 2023 Thomas A. Early N7TAE.
+//
+//  Copyright © 2020 Thomas A. Early, N7TAE
 //
 // ----------------------------------------------------------------------------
 //    This file is part of m17ref.
@@ -19,38 +20,42 @@
 
 #pragma once
 
-#include <cstdint>
-#include <iostream>
+#include <set>
+#include <string>
+#include <mutex>
 
-class CVersion
+////////////////////////////////////////////////////////////////////////////////////////
+// class
+
+class CBlackWhiteSet
 {
 public:
-	// constructors
-	CVersion();
-	CVersion(uint8_t maj, uint8_t min, uint8_t rev);
+	// constructor
+	CBlackWhiteSet() : m_LastModTime(0) {}
 
-	// get
-	int GetMajor(void) const;
-	int GetMinor(void) const;
-	int GetRevision(void) const;
-	int GetVersion(void) const;
+	// locks
+	void Lock(void)   const { m_Mutex.lock(); }
+	void Unlock(void) const { m_Mutex.unlock(); }
 
-	// set
-	void Set(uint8_t, uint8_t, uint8_t);
+	// file io
+	bool LoadFromFile(const std::string &filename);
+	bool ReloadFromFile(void);
+	bool NeedReload(void);
 
-	// comparison operators
-	bool operator ==(const CVersion &v) const;
-	bool operator !=(const CVersion &v) const;
-	bool operator >=(const CVersion &v) const;
-	bool operator <=(const CVersion &v) const;
-	bool operator  >(const CVersion &v) const;
-	bool operator  <(const CVersion &v) const;
+	// pass-through
+	bool empty() const { return m_Callsigns.empty(); }
 
-	// output
-	friend std::ostream &operator <<(std::ostream &os, const CVersion &v);
-
+	// compare
+	bool IsMatched(const std::string &) const;
 
 protected:
+	bool GetLastModTime(time_t *);
+	char *TrimWhiteSpaces(char *);
+	char *ToUpper(char *str);
+
 	// data
-	int version;
+	mutable std::mutex  m_Mutex;
+	std::string m_Filename;
+	time_t m_LastModTime;
+	std::set<std::string> m_Callsigns;
 };

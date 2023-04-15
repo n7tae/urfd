@@ -349,6 +349,16 @@ UCallsign CCallsign::GetKey() const
 	return rval;
 }
 
+std::string CCallsign::GetBase() const
+{
+	auto u = GetKey();
+	std::string rval(u.c, CALLSIGN_LEN);
+	auto pos = rval.find(' ');
+	if (std::string::npos != pos)
+		rval.resize(pos);
+	return rval;
+}
+
 void CCallsign::GetCallsign(uint8_t *buffer) const
 {
 	memcpy(buffer, m_Callsign.c, CALLSIGN_LEN);
@@ -402,16 +412,6 @@ bool CCallsign::HasSameCallsignWithWildcard(const CCallsign &cs) const
 		}
 	}
 	return same;
-}
-
-bool CCallsign::HasLowerCallsign(const CCallsign &cs) const
-{
-	return (memcmp(m_Callsign.c, cs.m_Callsign.c, CALLSIGN_LEN) < 0);
-}
-
-bool CCallsign::HasSameModule(const CCallsign &Callsign) const
-{
-	return (m_Module == Callsign.m_Module);
 }
 
 

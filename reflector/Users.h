@@ -40,9 +40,11 @@ public:
 	int    GetSize(void) const          { return (int)m_Users.size(); }
 	void   AddUser(const CUser &);
 
-	// pass-thru
+	// pass-through
 	std::list<CUser>::iterator begin()              { return m_Users.begin(); }
 	std::list<CUser>::iterator end()                { return m_Users.end(); }
+	std::list<CUser>::const_iterator cbegin()       { return m_Users.cbegin(); }
+	std::list<CUser>::const_iterator cend()         { return m_Users.cend(); }
 
 	// operation
 	void   Hearing(const CCallsign &, const CCallsign &, const CCallsign &);

@@ -27,26 +27,6 @@
 enum class Eaction { normal, parse, error_only };
 enum class Esource { http, file };
 
-// compare function for std::map::find
-
-struct CCallsignHash
-{
-	std::size_t operator() (const UCallsign &ucs) const
-	{
-		std::hash<uint64_t> hash;
-		return hash(ucs.l);
-	}
-};
-
-struct CCallsignEqual
-{
-	bool operator() (const UCallsign &ucs1, const UCallsign &ucs2) const
-	{
-		return ucs1.l == ucs2.l;
-	}
-};
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 class CLookup

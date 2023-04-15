@@ -1,14 +1,20 @@
 ##############################################################################
 #  URFD interlink file
 #
-#  one line per entry
-#  each entry specifies a remote XLX or XRF to peer with
-#  format:
-#    <URF callsign> <ip> <list of modules shared>
-#  example:
-#    URF270 158.64.26.132 ACD
+#  One line per entry.
+#  Each entry specifies a remote URF to peer with.
+#  If no Port is specified, 10017 will be used.
+#  If DHT is enabled and the target is also DHT-enabled, then you only
+#  need to specify the URF-Callsign and the Shared-Modules.
+#  Format:
+#    <URF-Callsign> <IP-Address> <Shared-Mdoules> <Port>
+#  Examples:
+#    URF270 158.64.26.132 EF
+#    URF280 ABC
 #
-#  note: the remote URFD must list this in its interlink file
-#        for the link to be established
+#  Brandmeister links use three params, no port is specified. Example:
+#    BM3104 162.248.88.117 E
 #
+#  note: Remote URFD must list this in its interlink file
+#        for the link to be established.
 #############################################################################

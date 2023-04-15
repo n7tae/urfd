@@ -288,16 +288,16 @@ void CBMProtocol::HandlePeerLinks(void)
 	CBuffer buffer;
 
 	// get the list of peers
-	CPeerCallsignList *list = g_GateKeeper.GetPeerList();
+	auto ilmap = g_GateKeeper.GetInterlinkMap();
 	CPeers *peers = g_Reflector.GetPeers();
 
 	// check if all our connected peers are still listed by gatekeeper
 	// if not, disconnect
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::bm, pit)) != nullptr )
+	while ( nullptr != (peer = peers->FindNextPeer(EProtocol::bm, pit)) )
 	{
-		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
+		if ( nullptr == ilmap->FindMapItem(peer->GetCallsign().GetBase()) )
 		{
 			// send disconnect packet
 			EncodeDisconnectPacket(&buffer);
@@ -310,23 +310,21 @@ void CBMProtocol::HandlePeerLinks(void)
 
 	// check if all ours peers listed by gatekeeper are connected
 	// if not, connect or reconnect
-	for ( auto it=list->begin(); it!=list->end(); it++ )
+	for ( auto it=ilmap->begin(); it!=ilmap->end(); it++ )
 	{
-		CCallsign cs = it->GetCallsign();
-		if (cs.HasSameCallsignWithWildcard(CCallsign("BM*")) && (nullptr==peers->FindPeer(cs, EProtocol::bm)))
+		const auto cs = it->first;
+		if (0 == cs.substr(0, 2).compare("BM") && (nullptr==peers->FindPeer(CCallsign(cs), EProtocol::bm)))
 		{
-			// resolve again peer's IP in case it's a dynamic IP
-			it->ResolveIp();
 			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, it->GetModules());
-			Send(buffer, it->GetIp(), m_Port);
-			std::cout << "Sending connect packet to BM peer " << cs << " @ " << it->GetIp() << " for modules " << it->GetModules() << std::endl;
+			EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
+			Send(buffer, it->second.GetIp(), m_Port);
+			std::cout << "Sending connect packet to BM peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
 		}
 	}
 
 	// done
 	g_Reflector.ReleasePeers();
-	g_GateKeeper.ReleasePeerList();
+	g_GateKeeper.ReleaseInterlinkMap();
 }
 
 

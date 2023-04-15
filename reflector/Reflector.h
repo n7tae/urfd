@@ -25,7 +25,10 @@
 #include "Peers.h"
 #include "Protocols.h"
 #include "PacketStream.h"
-#include "NotificationQueue.h"
+
+#ifndef NO_DHT
+#include "urfd-dht-values.h"
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +45,7 @@
 class CReflector
 {
 public:
+	CReflector();
 	// destructor
 	~CReflector();
 
@@ -75,13 +79,22 @@ public:
 	void OnPeersChanged(void);
 	void OnClientsChanged(void);
 	void OnUsersChanged(void);
-	void OnStreamOpen(const CCallsign &);
-	void OnStreamClose(const CCallsign &);
+#ifndef NO_DHT
+	void GetDHTConfig(const std::string &cs);
+#endif
 
 protected:
+#ifndef NO_DHT
+	// Publish DHT
+	void PutDHTConfig();
+	void PutDHTPeers();
+	void PutDHTClients();
+	void PutDHTUsers();
+#endif
+
 	// threads
 	void RouterThread(const char);
-	void XmlReportThread(void);
+	void StateReportThread(void);
 
 	// streams
 	std::shared_ptr<CPacketStream> GetStream(char);
@@ -92,7 +105,6 @@ protected:
 	void WriteXmlFile(std::ofstream &);
 	void JsonReport(nlohmann::json &report);
 
-protected:
 	// identity
 	CCallsign   m_Callsign;
 	std::string m_Modules, m_TCmodules;
@@ -111,6 +123,11 @@ protected:
 	std::unordered_map<char, std::future<void>> m_RouterFuture;
 	std::future<void> m_XmlReportFuture;
 
-	// notifications
-	CNotificationQueue  m_Notifications;
+#ifndef NO_DHT
+	// Distributed Hash Table
+	dht::DhtRunner node;
+	dht::InfoHash refhash;
+	unsigned int peers_put_count, clients_put_count, users_put_count;
+	std::atomic<bool> peers_changed, clients_changed, users_changed;
+#endif
 };

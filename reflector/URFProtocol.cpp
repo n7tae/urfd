@@ -287,16 +287,16 @@ void CURFProtocol::HandlePeerLinks(void)
 	CBuffer buffer;
 
 	// get the list of peers
-	CPeerCallsignList *list = g_GateKeeper.GetPeerList();
+	auto ilmap = g_GateKeeper.GetInterlinkMap();
 	CPeers *peers = g_Reflector.GetPeers();
 
 	// check if all our connected peers are still listed by gatekeeper
 	// if not, disconnect
 	auto pit = peers->begin();
 	std::shared_ptr<CPeer>peer = nullptr;
-	while ( (peer = peers->FindNextPeer(EProtocol::urf, pit)) != nullptr )
+	while (nullptr != (peer = peers->FindNextPeer(EProtocol::urf, pit)))
 	{
-		if ( list->FindListItem(peer->GetCallsign()) == nullptr )
+		if (nullptr == ilmap->FindMapItem(peer->GetCallsign().GetBase()))
 		{
 			// send disconnect packet
 			EncodeDisconnectPacket(&buffer);
@@ -307,29 +307,64 @@ void CURFProtocol::HandlePeerLinks(void)
 		}
 	}
 
-	// check if all ours peers listed by gatekeeper are connected
+	// check if all ours peers listed by interlink file are connected
 	// if not, connect or reconnect
-	for ( auto it=list->begin(); it!=list->end(); it++ )
+	for ( auto it=ilmap->begin(); it!=ilmap->end(); it++ )
 	{
-		if ( it->GetCallsign().HasSameCallsignWithWildcard(CCallsign("XRF*")) )
-			continue;
-		if ( it->GetCallsign().HasSameCallsignWithWildcard(CCallsign("BM*")) )
-			continue;
-		CCallsign cs = it->GetCallsign();
-		if (cs.HasSameCallsignWithWildcard(CCallsign("URF*")) && (nullptr==peers->FindPeer(cs, EProtocol::urf)))
+		const auto cs = it->first;
+		CCallsign callsign;
+		callsign.SetCallsign(cs, false);
+		if ((0 == cs.substr(0, 3).compare("URF")) && (nullptr==peers->FindPeer(callsign, EProtocol::urf)))
 		{
-			// resolve again peer's IP in case it's a dynamic IP
-			it->ResolveIp();
-			// send connect packet to re-initiate peer link
-			EncodeConnectPacket(&buffer, it->GetModules());
-			Send(buffer, it->GetIp(), m_Port);
-			std::cout << "Sending connect packet to URF peer " << cs << " @ " << it->GetIp() << " for modules " << it->GetModules() << std::endl;
+#ifndef NO_DHT
+			it->second.UpdateIP(g_Configure.GetString(g_Keys.ip.ipv6address).empty());
+			if (it->second.GetIp().IsSet())
+			{
+				bool ok = true;
+				// does everything match up?
+				for (const auto c : it->second.GetModules())
+				{
+					if (std::string::npos == g_Configure.GetString(g_Keys.modules.modules).find(c))
+					{	// is the local module not config'ed?
+						ok = false;
+						std::cerr << "This reflector has no module '" << c << "', so it can't interlink with " << it->first << std::endl;
+					}
+					else if (it->second.UsesDHT())
+					{
+						if (std::string::npos == it->second.GetCMods().find(c))
+						{	// the remote module not config'ed!
+							ok = false;
+							std::cerr << it->first << " has no module '" << c << "'" << std::endl;
+						}
+						else if ((std::string::npos == it->second.GetTCMods().find(c)) != (std::string::npos == g_Configure.GetString(g_Keys.modules.tcmodules).find(c)))
+						{	// are the transcoding states on both sides mismatched?
+							ok = false;
+							std::cerr << "The transcode states for module '" << c << "' don't match for this reflector and " << it->first << std::endl;
+						}
+					}
+				}
+				if (ok)
+				{
+
+#endif
+					// send connect packet to re-initiate peer link
+					EncodeConnectPacket(&buffer, it->second.GetModules().c_str());
+					Send(buffer, it->second.GetIp());
+					std::cout << "Sent connect packet to URF peer " << cs << " @ " << it->second.GetIp() << " for modules " << it->second.GetModules() << std::endl;
+#ifndef NO_DHT
+				}
+			}
+			else // m_Ip is not set!
+			{
+				g_Reflector.GetDHTConfig(it->first);
+			}
+#endif
 		}
 	}
 
 	// done
 	g_Reflector.ReleasePeers();
-	g_GateKeeper.ReleasePeerList();
+	g_GateKeeper.ReleaseInterlinkMap();
 }
 
 
@@ -415,10 +450,18 @@ bool CURFProtocol::IsValidConnectPacket(const CBuffer &Buffer, CCallsign *callsi
 		callsign->CodeIn(Buffer.data()+4);
 		valid = callsign->IsValid();
 		*version = CVersion(Buffer.at(37), Buffer.at(38), Buffer.at(39));
-		memcpy(modules, Buffer.data()+10, 27);
-		for ( unsigned i = 0; i < strlen(modules); i++ )
+		if (valid)
 		{
-			valid = valid && (g_Reflector.IsValidModule (modules[i]));
+			memcpy(modules, Buffer.data()+10, 27);
+			for ( unsigned i = 0; i < strlen(modules); i++ )
+			{
+				auto moduleok = g_Reflector.IsValidModule(modules[i]);
+				if (! moduleok)
+				{
+					valid = false;
+					std::cout << "Requested module '" << modules[i] << "' is not confgured\n";
+				}
+			}
 		}
 	}
 	return valid;

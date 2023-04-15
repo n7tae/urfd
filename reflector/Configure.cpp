@@ -33,9 +33,11 @@
 // ini file keywords
 #define JAUTOLINKMODULE          "AutoLinkModule"
 #define JBLACKLISTPATH           "BlacklistPath"
+#define JBOOTSTRAP               "Bootstrap"
 #define JBRANDMEISTER            "Brandmeister"
 #define JCALLSIGN                "Callsign"
 #define JCOUNTRY                 "Country"
+#define JDASHBOARDURL            "DashboardUrl"
 #define JDCS                     "DCS"
 #define JDEFAULTID               "DefaultId"
 #define JDEFAULTRXFREQ           "DefaultRxFreq"
@@ -250,6 +252,10 @@ bool CConfigure::ReadData(const std::string &path)
 			case ESection::names:
 				if (0 == key.compare(JCALLSIGN))
 					data[g_Keys.names.callsign] = value;
+				else if (0 == key.compare(JBOOTSTRAP))
+					data[g_Keys.names.bootstrap] = value;
+				else if (0 == key.compare(JDASHBOARDURL))
+					data[g_Keys.names.url] = value;
 				else if (0 == key.compare(JSYSOPEMAIL))
 					data[g_Keys.names.email] = value;
 				else if (0 == key.compare(JCOUNTRY))
@@ -487,7 +493,7 @@ bool CConfigure::ReadData(const std::string &path)
 					badParam(key);
 				break;
 			default:
-				std::cout << "WARNING: parameter '" << line << "' defined befor any [section]" << std::endl;
+				std::cout << "WARNING: parameter '" << line << "' defined before any [section]" << std::endl;
 		}
 
 	}
@@ -506,6 +512,10 @@ bool CConfigure::ReadData(const std::string &path)
 		}
 	}
 
+#ifndef NO_DHT
+	isDefined(ErrorLevel::fatal, JNAMES, JBOOTSTRAP, g_Keys.names.bootstrap, rval);
+#endif
+	isDefined(ErrorLevel::fatal, JNAMES, JDASHBOARDURL, g_Keys.names.url, rval);
 	isDefined(ErrorLevel::mild, JNAMES, JSYSOPEMAIL, g_Keys.names.email, rval);
 	isDefined(ErrorLevel::mild, JNAMES, JCOUNTRY, g_Keys.names.country, rval);
 	isDefined(ErrorLevel::mild, JNAMES, JSPONSOR, g_Keys.names.sponsor, rval);
@@ -526,7 +536,7 @@ bool CConfigure::ReadData(const std::string &path)
 				}
 				else
 				{
-					std::cerr << "ERROR: specifed IPv4 external address, " << v4 << ", is malformed" << std::endl;
+					std::cerr << "ERROR: specified IPv4 external address, " << v4 << ", is malformed" << std::endl;
 					rval = true;
 				}
 			}
@@ -564,7 +574,7 @@ bool CConfigure::ReadData(const std::string &path)
 				}
 				else
 				{
-					std::cerr << "ERROR: the specifed IPv6 address [" << v6 << "] is malformed" << std::endl;
+					std::cerr << "ERROR: the specified IPv6 address [" << v6 << "] is malformed" << std::endl;
 					rval = true;
 				}
 			}

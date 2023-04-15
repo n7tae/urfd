@@ -32,7 +32,7 @@ public:
 	void Lock(void)   { m_Mutex.lock(); }
 	void Unlock(void) { m_Mutex.unlock(); }
 
-	// pass-thru
+	// pass-through
 	std::list<std::unique_ptr<CProtocol>>::iterator begin() { return m_Protocols.begin(); }
 	std::list<std::unique_ptr<CProtocol>>::iterator end()   { return m_Protocols.end(); }
 

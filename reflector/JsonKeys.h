@@ -39,8 +39,8 @@ struct SJsonKeys {
 	struct MMDVM { const std::string port, defaultid; }
 	mmdvm { "MMDVMPort", "mmdvmdefaultid" };
 
-	struct NAMES { const std::string callsign, email, country, sponsor; }
-	names { "Callsign", "SysopEmail", "Country", "Sponsor" };
+	struct NAMES { const std::string callsign, bootstrap, url, email, country, sponsor; }
+	names { "Callsign", "bootstrap", "DashboardUrl", "SysopEmail", "Country", "Sponsor" };
 
 	struct IP { const std::string ipv4bind, ipv4address, ipv6bind, ipv6address, transcoder; }
 	ip { "ipv4bind", "IPv4Address", "ipv6bind", "IPv6Address", "tcaddress" };
