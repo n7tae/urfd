@@ -555,7 +555,7 @@ void CReflector::PutDHTPeers()
 	ReleasePeers();
 
 	auto nv = std::make_shared<dht::Value>(p);
-	nv->user_type.assign("urfd-peers-1");
+	nv->user_type.assign(URFD_PEERS_1);
 	nv->id = toUType(EUrfdValueID::Peers);
 
 	node.putSigned(
@@ -584,7 +584,7 @@ void CReflector::PutDHTClients()
 	ReleaseClients();
 
 	auto nv = std::make_shared<dht::Value>(c);
-	nv->user_type.assign("urfd-clients-1");
+	nv->user_type.assign(URFD_CLIENTS_1);
 	nv->id = toUType(EUrfdValueID::Clients);
 
 	node.putSigned(
@@ -613,7 +613,7 @@ void CReflector::PutDHTUsers()
 	ReleaseUsers();
 
 	auto nv = std::make_shared<dht::Value>(u);
-	nv->user_type.assign("urfd-users-1");
+	nv->user_type.assign(URFD_USERS_1);
 	nv->id = toUType(EUrfdValueID::Users);
 
 	node.putSigned(
@@ -633,11 +633,11 @@ void CReflector::PutDHTConfig()
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
 	SUrfdConfig1 cfg;
 	time(&cfg.timestamp);
-	cfg.cs.assign(cs);
-	cfg.ipv4.assign(g_Configure.GetString(g_Keys.ip.ipv4address));
-	cfg.ipv6.assign(g_Configure.GetString(g_Keys.ip.ipv6address));
-	cfg.mods.assign(g_Configure.GetString(g_Keys.modules.modules));
-	cfg.tcmods.assign(g_Configure.GetString(g_Keys.modules.tcmodules));
+	cfg.callsign.assign(cs);
+	cfg.ipv4addr.assign(g_Configure.GetString(g_Keys.ip.ipv4address));
+	cfg.ipv6addr.assign(g_Configure.GetString(g_Keys.ip.ipv6address));
+	cfg.modules.assign(g_Configure.GetString(g_Keys.modules.modules));
+	cfg.transcodedmods.assign(g_Configure.GetString(g_Keys.modules.tcmodules));
 	cfg.url.assign(g_Configure.GetString(g_Keys.names.url));
 	cfg.email.assign(g_Configure.GetString(g_Keys.names.email));
 	cfg.country.assign(g_Configure.GetString(g_Keys.names.country));
@@ -663,11 +663,11 @@ void CReflector::PutDHTConfig()
 	cfg.port[toUType(EUrfdPorts::urf)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.urf.port);
 	cfg.port[toUType(EUrfdPorts::ysf)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.ysf.port);
 	cfg.g3enabled = g_Configure.GetBoolean(g_Keys.g3.enable);
-	for (const auto m : cfg.mods)
+	for (const auto m : cfg.modules)
 		cfg.description[m] = g_Configure.GetString(g_Keys.modules.descriptor[m-'A']);
 
 	auto nv = std::make_shared<dht::Value>(cfg);
-	nv->user_type.assign("urfd-config-1");
+	nv->user_type.assign(URFD_CONFIG_1);
 	nv->id = toUType(EUrfdValueID::Config);
 
 	node.putSigned(
@@ -696,7 +696,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 	node.get(
 		dht::InfoHash::get(cs),
 		[](const std::shared_ptr<dht::Value> &v) {
-			if (0 == v->user_type.compare("urfd-config-1"))
+			if (0 == v->user_type.compare(URFD_CONFIG_1))
 			{
 				auto rdat = dht::Value::unpack<SUrfdConfig1>(*v);
 				if (rdat.timestamp > cfg.timestamp)
@@ -717,7 +717,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 				if (cfg.timestamp)
 				{
 					// if the get() call was successful and there is a nonzero timestamp, then do the update
-					g_GateKeeper.GetInterlinkMap()->Update(cfg.cs, cfg.mods, cfg.ipv4, cfg.ipv6, cfg.port[toUType(EUrfdPorts::urf)], cfg.tcmods);
+					g_GateKeeper.GetInterlinkMap()->Update(cfg.callsign, cfg.modules, cfg.ipv4addr, cfg.ipv6addr, cfg.port[toUType(EUrfdPorts::urf)], cfg.transcodedmods);
 					g_GateKeeper.ReleaseInterlinkMap();
 				}
 				else

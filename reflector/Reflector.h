@@ -27,7 +27,7 @@
 #include "PacketStream.h"
 
 #ifndef NO_DHT
-#include "urfd-dht-values.h"
+#include "dht-values.h"
 #endif
 
 
