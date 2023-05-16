@@ -456,8 +456,7 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 	if ( Fich.getFI() == YSF_FI_HEADER )
 	{
 		// get stream id
-		//uint32_t uiStreamId = IpToStreamId(Ip);
-		m_uiStreamId = static_cast<uint32_t>(::rand());
+		uint32_t uiStreamId = IpToStreamId(Ip);
 
 		// get header data
 		CYSFPayload ysfPayload;
@@ -486,14 +485,14 @@ bool CYsfProtocol::IsValidDvHeaderPacket(const CIp &Ip, const CYSFFICH &Fich, co
 			rpt2.SetCSModule(' ');
 
 			// and packet
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, Fich.getFN()));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, uiStreamId, Fich.getFN()));
 		}
 		// and 2 DV Frames
 		{
 			uint8_t  uiAmbe[9];
 			memset(uiAmbe, 0x00, sizeof(uiAmbe));
-			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, m_uiStreamId, Fich.getFN(), 0, 0, csMY, false));
-			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, m_uiStreamId, Fich.getFN(), 1, 0, csMY, false));
+			frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0, csMY, false));
+			frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0, csMY, false));
 		}
 
 		// check validity of packets
@@ -510,14 +509,13 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 	if ( Fich.getFI() == YSF_FI_COMMUNICATIONS )
 	{
 		// get stream id
-		//uint32_t uiStreamId = IpToStreamId(Ip);
+		uint32_t uiStreamId = IpToStreamId(Ip);
 
-		auto stream = GetStream(m_uiStreamId, &Ip);
+		auto stream = GetStream(uiStreamId, &Ip);
 		if ( !stream )
 		{
 			std::cerr << "Late entry YSF voice frame, creating YSF header" << std::endl;
 			CCallsign csMY;
-			m_uiStreamId = static_cast<uint32_t>(::rand());
 			char sz[YSF_CALLSIGN_LENGTH+1];
 			memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
 			sz[YSF_CALLSIGN_LENGTH] = 0;
@@ -535,7 +533,7 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 			rpt1.SetCSModule(YSF_MODULE_ID);
 			CCallsign rpt2 = m_ReflectorCallsign;
 			rpt2.SetCSModule(' ');
-			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, m_uiStreamId, Fich.getFN()));
+			header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(csMY, CCallsign("CQCQCQ"), rpt1, rpt2, uiStreamId, Fich.getFN()));
 
 			if ( g_GateKeeper.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::ysf, header->GetRpt2Module())  )
 			{
@@ -566,11 +564,11 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 
 		// get DV frames
 		uint8_t fid = Buffer.data()[34];
-		frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe0, m_uiStreamId, Fich.getFN(), 0, fid, csMY, false));
-		frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe1, m_uiStreamId, Fich.getFN(), 1, fid, csMY, false));
-		frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe2, m_uiStreamId, Fich.getFN(), 2, fid, csMY, false));
-		frames[3] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe3, m_uiStreamId, Fich.getFN(), 3, fid, csMY, false));
-		frames[4] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe4, m_uiStreamId, Fich.getFN(), 4, fid, csMY, false));
+		frames[0] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe0, uiStreamId, Fich.getFN(), 0, fid, csMY, false));
+		frames[1] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe1, uiStreamId, Fich.getFN(), 1, fid, csMY, false));
+		frames[2] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe2, uiStreamId, Fich.getFN(), 2, fid, csMY, false));
+		frames[3] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe3, uiStreamId, Fich.getFN(), 3, fid, csMY, false));
+		frames[4] = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(ambe4, uiStreamId, Fich.getFN(), 4, fid, csMY, false));
 
 		// check validity of packets
 		if ( frames[0] && frames[0]->IsValid() && frames[1] && frames[1]->IsValid() && frames[2] && frames[2]->IsValid() && frames[3] && frames[3]->IsValid() && frames[4] && frames[4]->IsValid() )
@@ -585,7 +583,7 @@ bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich,
 	if ( Fich.getFI() == YSF_FI_TERMINATOR )
 	{
 		// get stream id
-		//uint32_t uiStreamId = IpToStreamId(Ip);
+		uint32_t uiStreamId = IpToStreamId(Ip);
 
 		// get DV frames
 		{
@@ -604,8 +602,8 @@ bool CYsfProtocol::IsValidDvLastFramePacket(const CIp &Ip, const CYSFFICH &Fich,
 
 			CCallsign csMY = CCallsign((const char *)sz);
 
-			oneframe  = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, m_uiStreamId, Fich.getFN(), 0, 0, csMY, false));
-			lastframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, m_uiStreamId, Fich.getFN(), 1, 0, csMY, true));
+			oneframe  = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 0, 0, csMY, false));
+			lastframe = std::unique_ptr<CDvFramePacket>(new CDvFramePacket(uiAmbe, uiStreamId, Fich.getFN(), 1, 0, csMY, true));
 		}
 
 		// check validity of packets
