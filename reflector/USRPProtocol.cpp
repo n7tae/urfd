@@ -291,7 +291,7 @@ bool CUSRPProtocol::IsValidDvPacket(const CIp &Ip, const CBuffer &Buffer, std::u
 		if ( !stream )
 		{
 			m_uiStreamId = static_cast<uint32_t>(::rand());
-			CCallsign csMY;
+			CCallsign csMY = m_Callsign;
 			CCallsign rpt1 = m_Callsign;
 			CCallsign rpt2 = m_ReflectorCallsign;
 			rpt1.SetCSModule(m_Module);

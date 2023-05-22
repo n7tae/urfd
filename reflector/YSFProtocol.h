@@ -129,7 +129,6 @@ protected:
 	// for wires-x
 	CWiresxCmdHandler   m_WiresxCmdHandler;
 	unsigned char m_seqNo;
-	uint32_t m_uiStreamId;
 
 	// config data
 	char m_AutolinkModule;
