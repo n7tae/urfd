@@ -1,10 +1,10 @@
 ﻿# Universal, Multi-protocol Digital Voice Reflector
 
-The URF Multiprotocol Gateway Reflector Server, ***urfd***, is part of the software system for a Digital Voice Network. The sources are published under GPL Licenses.
+The URF Multi-protocol Gateway Reflector Server, ***urfd***, is part of the software system for a Digital Voice Network. The sources are published under GPL Licenses.
 
 ## Introduction
 
-This will build a new kind of digital voice reflector. A *urfd* supports DStar protocols (DPlus, DCS, DExtra and G3) DMR protocols (MMDVMHost, DMR+ and NXDN), M17, YSF, P25 (using IMBE) and USRP (Allstar). A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a seperate repository. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same codec. Please note that currently, urfd only supports the tcd transcoder when run locally. As a local device, urfd and tcd uses UNIX DGRAM sockets for interprocess communications. These kernel-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
+This will build a new kind of digital voice reflector. A *urfd* supports DStar protocols (DPlus, DCS, DExtra and G3) DMR protocols (MMDVMHost, DMR+ and NXDN), M17, YSF, P25 (using IMBE) and USRP (Allstar). A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a separate repository. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same codec. Please note that currently, urfd only supports the tcd transcoder when run locally. As a local device, urfd and tcd uses UNIX DGRAM sockets for inter-process communications. These kernel-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
 
 This build support *dual-stack* operation, so the server on which it's running, must have both an IPv4 and IPv6 routable address if you are going to configure a dual-stack reflector.
 
@@ -13,12 +13,12 @@ There are many improvements previous multi-mode reflectors:
 
 - Nearly all std::vector containers have been replaced with more appropriate containers.
 - No classes are derived from any standard containers.
-- For concurancy, *i.e.*, thread management, the standard thread (std::thread) library calls have been replaced with std::future.
+- For concurrency, *i.e.*, thread management, the standard thread (std::thread) library calls have been replaced with std::future.
 - Managed memory, std::unique_ptr and std::shared_ptr, is used replacing the need for calls to *new* and *delete*.
-- Your reflector can be configured with up to 26 modules, *A* through *Z* and as few as one module. For other choices, the configure modules don't have to be contigious. For example, you could configure modules A, B, C and E.
-- An integraded P25 Reflector with software imbe vocoder.
+- Your reflector can be configured with up to 26 modules, *A* through *Z* and as few as one module. For other choices, the configure modules don't have to be contiguous. For example, you could configure modules A, B, C and E.
+- An integrated P25 Reflector with software imbe vocoder.
 - An integrated NXDN Reflector
-- An inegrated USRP Reflector
+- An integrated USRP Reflector
 
 Only systemd-based operating systems are supported. Debian or Ubuntu is recommended. If you want to install this on a non-systemd based OS, you are on your own. Finally, this repository is designed so that you don't have to modify any file in the repository when you build your system. Any file you need to modify to properly configure your reflector will be a file you copy from you locally cloned repo. This makes it easier to update the source code when this repository is updated. Follow the instructions below to build your transcoding URF reflector.
 
@@ -33,7 +33,7 @@ The packages which are described in this document are designed to install server
 
 Below are instructions to build a URF reflector. If you are planning on an URF reflector without a transcoder, you can help your users by naming modules with names that suggest which protocol is welcome. You name modules in the config.inc.php file mentioned below.
 
-The transcoder is in a seperate repository, but you will build, install and monitor the transcoder and reflector from two different scripts, *rconfig* and *radmin* in this repository. You *should* look over the README.md file in the tcd repository to understand the transcoder.
+The transcoder is in a separate repository, but you can install and monitor the transcoder and reflector from a script, *radmin* in this repository. You *should* look over the README.md file in the tcd repository to understand the transcoder.
 
 ### After a clean installation of Debian make sure to run update and upgrade
 
@@ -51,9 +51,9 @@ sudo apt install build-essential
 sudo apt install nlohmann-json3-dev
 ```
 
-### DVIN support (optional, but highly recommended)
+### Ham-DHT support (optional, but highly recommended)
 
-**DVIN**, the Digital Voice Information Network, is implemented using a distributed hash table provided by OpenDHT.
+**Ham-DHT**, a DHT network for hams, is implemented using a distributed hash table provided by OpenDHT.
 
 OpenDHT is available [here](https://github./com/savoirfairelinux/opendht.git). Building and installing instructions are in the [OpenDHT Wiki](https://github.com/savoirfairelinux/opendht/wiki/Build-the-library). Pascal support and proxy-server support (RESTinio) is not required for urfd and so can be considered optional. With this in mind, this should work on Debian/Ubuntu-based systems:
 
