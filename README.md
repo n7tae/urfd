@@ -42,13 +42,10 @@ sudo apt update
 sudo apt upgrade
 ```
 
-### Required packages (some of these will probably already be installed)
+### Required packages (some of these may already be installed)
 
 ```bash
-sudo apt install git
-sudo apt install apache2 php5
-sudo apt install build-essential
-sudo apt install nlohmann-json3-dev
+sudo apt install git apache2 php5 build-essential nlohmann-json3-dev libcurl4-gnutls-dev
 ```
 
 ### Ham-DHT support (optional, but highly recommended)
