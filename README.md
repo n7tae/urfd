@@ -4,7 +4,7 @@ The URF Multi-protocol Gateway Reflector Server, ***urfd***, is part of the soft
 
 ## Introduction
 
-This will build a new kind of digital voice reflector. A *urfd* supports DStar protocols (DPlus, DCS, DExtra and G3) DMR protocols (MMDVMHost, DMR+ and NXDN), M17, YSF, P25 (using IMBE) and USRP (Allstar). A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a separate repository. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same codec. Please note that currently, urfd only supports the tcd transcoder when run locally. As a local device, urfd and tcd uses UNIX DGRAM sockets for inter-process communications. These kernel-base sockets are signifantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
+This will build a new kind of digital voice reflector. A *urfd* supports DStar protocols (DPlus, DCS, DExtra and G3) DMR protocols (MMDVMHost, DMR+ and NXDN), M17, YSF, P25 (using IMBE) and USRP (Allstar). A key part of this is the hybrid transcoder, [tcd](https://github.com/n7tae/tcd), which is in a separate repository. You can't interlink urfd with xlxd. This reflector can be built without a transcoder, but clients will only hear other clients using the same codec. Please note that currently, urfd only supports the tcd transcoder when run locally. As a local device, urfd and tcd uses UNIX DGRAM sockets for inter-process communications. These kernel-base sockets are significantly faster than conventional UDP/IP sockets. It should be noted that tcd supports DVSI-3003 nad DVSI-3000 devices, which it uses for AMBE vocoding.
 
 This build support *dual-stack* operation, so the server on which it's running, must have both an IPv4 and IPv6 routable address if you are going to configure a dual-stack reflector.
 
@@ -24,7 +24,7 @@ Only systemd-based operating systems are supported. Debian or Ubuntu is recommen
 
 ## Usage
 
-The packages which are described in this document are designed to install server software which is used for the D-Star network infrastructure. It requires a 24/7 internet connection which can support up to three transcoded modules and up to 23 more untranscoded modules to connect repeaters and hot-spot dongles!
+The packages which are described in this document are designed to install server software which is used for the D-Star network infrastructure. It requires a 24/7 internet connection which can support up to three transcoded modules and up to 23 more untranscoded modules to connect repeaters and hot-spot dongles.
 
 - The server can build a reflector that support IPv4, IPv6 or both (dual stack).
 - The public IP addresses should have a DNS record which must be published in the common host files.
@@ -45,7 +45,7 @@ sudo apt upgrade
 ### Required packages (some of these may already be installed)
 
 ```bash
-sudo apt install git apache2 php5 build-essential nlohmann-json3-dev libcurl4-gnutls-dev
+sudo apt install git apache2 php build-essential nlohmann-json3-dev libcurl4-gnutls-dev
 ```
 
 ### Ham-DHT support (optional, but highly recommended)
@@ -90,12 +90,12 @@ This will create seven files:
 1. The `urfd.mk` file contains compile-time options for *urfd*. If you change the `BINDIR`, you'll need to update how `urfd.service` starts *urfd*.
 2. The `urfd.ini` file contains the run-time options for *urfd* and will be discussed below.
 3. The `urfd.blacklist` file defines callsigns that are blocked from linking or transmitting.
-4. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the astrisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one. Both files support a limited wildcard feature.
+4. The `urfd.whitelist` file defines callsigns that are allowed to link and transmit. Both of these files support the asterisk as a wild-card. The supplied blacklist and whitelist file are empty, which will allow any callsign to link and transmit, blocking no one. Both files support a limited wildcard feature.
 5. The `urfd.interlink` file defines possible Brandmeister and URF linking.
 6. The `urfd.terminal` file defines operations for Icom's Terminal and Access Point mode, sometimes called *G3*. This protocol requires significantly higher connection resources than any other mode, so it is possible to build a URF reflector without G3 support.
 7. The `urfd.service` file is a systemd file that will start and stop *urfd*. Importantly, it contains the only reference to where the *urfd* ini file is located. Be sure to set a fully qualified path to your urfd.ini file on the `ExecStart` line.
 
-You can acutally put the blacklist, whitelist, interlink, terminal and ini file anyplace and even rename them. Just make sure your ini file and service file have the proper, fully-qualified paths. The service file and the mk file need to remain in your `urfd/reflector` directory.
+You can actually put the blacklist, whitelist, interlink, terminal and ini file anyplace and even rename them. Just make sure your ini file and service file have the proper, fully-qualified paths. The service file and the mk file need to remain in your `urfd/reflector` directory.
 
 
 When you are done with the configuration files and ready to start the installation process, you can return to the main repository directory:
@@ -114,7 +114,7 @@ Use your favorite text editor to set your run-time configuration in your copy of
 
 There are only a few things that need to be specified. Most important are, the reflector callsign and the IP addresses for the IPv4 and IPv6 listen ports and a transcoder port, if there is a transcoder. Dual-stack operation is enabled by specifying both an IPv4 and IPv6 address. IPv4-only single stack can be specified by leaving the IPv6 address undefined.
 
-You can configure any modules, from **A** to **Z**. They don't have to be contigious. If your reflector is configured with a transcoder, you can specify which configured modules will be transcoded. Up to three modules can be transcoded if you have the necessary hardware.
+You can configure any modules, from **A** to **Z**. They don't have to be contiguous. If your reflector is configured with a transcoder, you can specify which configured modules will be transcoded. Up to three modules can be transcoded if you have the necessary hardware.
 
 Three protocols, BrandMeister, G3 and USRP should be disabled if you aren't going to use them.
 
@@ -139,20 +139,20 @@ If you want to create listen-only clients, but you don't need a configured read/
 
 ### Helper apps
 
-There are two, very useful helper applications, *inicheck* and *dbutil*. Both apps will show you a usage message if you execuate them without any arguments.
+There are two, very useful helper applications, *inicheck* and *dbutil*. Both apps will show you a usage message if you execute them without any arguments.
 
-The *inicheck* app will use the exact same code that urfd uses to validate your `urfd.ini` file. Do `./inicheck -q mrefd.ini` to check your infile for errors. If you see any messages containing `ERROR`, that means that *urfd* won't start. You'll have to fix the errors described in the message(s). If you only see messages containing `WARNING`, *urfd* will start, but it may not perform as expected. You will have to decide if the warning should be fixed. If you don't see any messages, it means that your ini file is syntactly correct.
+The *inicheck* app will use the exact same code that urfd uses to validate your `urfd.ini` file. Do `./inicheck -q mrefd.ini` to check your infile for errors. If you see any messages containing `ERROR`, that means that *urfd* won't start. You'll have to fix the errors described in the message(s). If you only see messages containing `WARNING`, *urfd* will start, but it may not perform as expected. You will have to decide if the warning should be fixed. If you don't see any messages, it means that your ini file is syntactically correct.
 
-The *dbutil* app can be used for serveral tasks relating to the three databases that *urfd* uses. The usage is: `./dbutil DATABASE SOURCE ACTION INIFILE`, where:
+The *dbutil* app can be used for several tasks relating to the three databases that *urfd* uses. The usage is: `./dbutil DATABASE SOURCE ACTION INIFILE`, where:
 - DATABASE is "dmr", "nxdn" or "ysf"
 - SOURCE is "html" or "file"
 - ACTION is "parse" or "errors"
-- INIFLILE is the path to the infile that defines the location of the http and file sources for these three databases.
+- INIFILE is the path to the infile that defines the location of the http and file sources for these three databases.
 One at a time, *dbutil* can work with any of the three DATABASEs. It can read either the http or the file SOURCE. It can either show you the data entries that are syntactically correct or incorrect (ACTION).
 
 ### Installing your system
 
-After you have written your configutation files, you can install your system:
+After you have written your configuration files, you can install your system:
 
 ```bash
 ./radmin
@@ -160,7 +160,7 @@ After you have written your configutation files, you can install your system:
 
 You can use this interactive shell script to install and uninstall your system. This can also perform other tasks like restarting the reflector or transcoder process, or be used to view the reflector or transcoder log in real time.
 
-### Stoping and starting the services manually
+### Stopping and starting the services manually
 
 ```bash
 sudo systemctl stop urfd # (or xrfd)
@@ -208,11 +208,11 @@ UDP port 62030         (MMDVM protocol)
 ## YSF Master Server
 
 Pay attention, the URF Server acts as an YSF Master, which provides 26 wires-x rooms.
-It has nothing to do with the regular YSFReflector network, hence you don’t need to register your URF at ysfreflector.de !
+It has nothing to do with the regular YSFReflector network, hence you don’t need to register your URF at ysfreflector.de!
 
 ## To-dos
 
-I will eventually support a remote transcoder option, so that you can, for example, run *urfd* in a data center, and then run the transcoder somewhere you have physical access so you can plug in your AMBE vocoders. I don't recommend this as it will add unnessary and variable latency to your reflector.
+I will eventually support a remote transcoder option, so that you can, for example, run *urfd* in a data center, and then run the transcoder somewhere you have physical access so you can plug in your AMBE vocoders. I don't recommend this as it will add unnecessary and variable latency to your reflector.
 
 A new dashboard is on the to-do list!
 
