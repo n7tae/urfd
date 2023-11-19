@@ -54,8 +54,8 @@ void CM17Protocol::Task(void)
 	std::unique_ptr<CDvFramePacket>  Frame;
 
 	// handle incoming packets
-#if DSTAR_IPV6==true
-#if DSTAR_IPV4==true
+#if M17_IPV6==true
+#if M17_IPV4==true
 	if ( ReceiveDS(Buffer, Ip, 20) )
 #else
 	if ( Receive6(Buffer, Ip, 20) )
@@ -81,8 +81,6 @@ void CM17Protocol::Task(void)
 
 				// push the "first" packet
 				OnDvFramePacketIn(Frame, &Ip);
-				// leave a space between this pair of frames
-				std::this_thread::sleep_for(std::chrono::milliseconds(16));
 				// push the "second" packet
 				OnDvFramePacketIn(secondFrame, &Ip); // push two packet because we need a packet every 20 ms
 			}
