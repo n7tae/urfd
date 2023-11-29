@@ -3,8 +3,6 @@
 header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
 
-date_default_timezone_set("UTC");
-
 if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/pgs/functions.php")) require_once($_SERVER['DOCUMENT_ROOT'] . "/pgs/functions.php");
 if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/pgs/config.inc.php")) require_once($_SERVER['DOCUMENT_ROOT'] . "/pgs/config.inc.php");
 

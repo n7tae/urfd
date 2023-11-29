@@ -7,8 +7,8 @@ for ($i=0;$i<$Reflector->PeerCount();$i++) {
         'callsign'      => $Reflector->Peers[$i]->GetCallSign(),
         'ip'            => $Reflector->Peers[$i]->GetIP(),
         'linkedmodule'  => $Reflector->Peers[$i]->GetLinkedModule(),
-        'connecttime'   => date('Y-m-d\TH:i:sp', $Reflector->Peers[$i]->GetConnectTime()),
-        'lastheardtime' => date('Y-m-d\TH:i:sp', $Reflector->Peers[$i]->GetLastHeardTime())
+        'connecttime'   => gmdate('Y-m-d\TH:i:sp', $Reflector->Peers[$i]->GetConnectTime()),
+        'lastheardtime' => gmdate('Y-m-d\TH:i:sp', $Reflector->Peers[$i]->GetLastHeardTime())
     );
 
 }

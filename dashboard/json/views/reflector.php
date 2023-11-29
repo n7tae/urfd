@@ -40,8 +40,8 @@ for ($i=0;$i<$Reflector->NodeCount();$i++) {
         'ip'            => $Reflector->Nodes[$i]->GetIP(),
         'linkedmodule'  => $Reflector->Nodes[$i]->GetLinkedModule(),
         'protocol'      => $Reflector->Nodes[$i]->GetProtocol(),
-        'connecttime'   => date('Y-m-d\TH:i:sp', $Reflector->Nodes[$i]->GetConnectTime()),
-        'lastheardtime' => date('Y-m-d\TH:i:sp', $Reflector->Nodes[$i]->GetLastHeardTime())
+        'connecttime'   => gmdate('Y-m-d\TH:i:sp', $Reflector->Nodes[$i]->GetConnectTime()),
+        'lastheardtime' => gmdate('Y-m-d\TH:i:sp', $Reflector->Nodes[$i]->GetLastHeardTime())
     );
 
 }
@@ -56,7 +56,7 @@ for ($i=0;$i<$Reflector->StationCount();$i++) {
         'vianode'       => $Reflector->Stations[$i]->GetVia(),
         'onmodule'      => $Reflector->Stations[$i]->GetModule(),
         'viapeer'       => $Reflector->Stations[$i]->GetPeer(),
-        'lastheardtime' => date('Y-m-d\TH:i:sp', $Reflector->Stations[$i]->GetLastHeardTime())
+        'lastheardtime' => gmdate('Y-m-d\TH:i:sp', $Reflector->Stations[$i]->GetLastHeardTime())
     );
 
 }

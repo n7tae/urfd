@@ -15,7 +15,7 @@ for ($i=0;$i<$Reflector->StationCount();$i++) {
         'callsignsuffix' => $CallsignSuffix,
         'vianode'        => $Reflector->Stations[$i]->GetVia(),
         'onmodule'       => $Reflector->Stations[$i]->GetModule(),
-        'lastheard'      => date('Y-m-d\TH:i:sp', $Reflector->Stations[$i]->GetLastHeardTime())
+        'lastheard'      => gmdate('Y-m-d\TH:i:sp', $Reflector->Stations[$i]->GetLastHeardTime())
     );
 
     list ($CountryCode, $Country) = $Reflector->GetFlag($Reflector->Stations[$i]->GetCallSign());
