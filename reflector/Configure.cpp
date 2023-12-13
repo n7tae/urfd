@@ -284,11 +284,7 @@ bool CConfigure::ReadData(const std::string &path)
 				}
 				else if (0 == key.compare(JTRANSCODER))
 				{
-					if (value.compare("local"))
-					{
-						std::cout << "WARNING: Line #" << counter << ": malformed transcoder address, '" << value << "', resetting..." << std::endl;
-					}
-					data[g_Keys.ip.transcoder] = "local";
+					data[g_Keys.ip.transcoder] = value;
 				}
 				else
 					badParam(key);
