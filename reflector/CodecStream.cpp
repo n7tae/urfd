@@ -23,14 +23,26 @@
 #include "PacketStream.h"
 #include "CodecStream.h"
 #include "UnixDgramSocket.h"
+#include "Global.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
 CCodecStream::CCodecStream(CPacketStream *PacketStream, char module) : m_CSModule(module), m_IsOpen(false)
 {
-	m_TCReader = std::make_unique<CUnixDgramReader>();
-	m_TCWriter = std::make_unique<CUnixDgramWriter>();
+	const std::string TCType(g_Configure.GetString(g_Keys.ip.transcoder));
+	std::cout << "Transcoder Type: " << TCType << std::endl;
+	if (0 == TCType.compare("local"))
+	{
+		m_TCReader = std::make_unique<CUnixDgramReader>();
+		m_TCWriter = std::make_unique<CUnixDgramWriter>();
+	}
+	else
+	{
+		std::cerr << "Invalid transcoder type '" << TCType << "' defaulting to local" << std::endl;
+		m_TCReader = std::make_unique<CUnixDgramReader>();
+		m_TCWriter = std::make_unique<CUnixDgramWriter>();
+	}
 	m_PacketStream = PacketStream;
 }
 
