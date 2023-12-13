@@ -38,3 +38,17 @@ using STCPacket = struct tcpacket_tag {
 	uint8_t p25[11];
 	int16_t usrp[160];
 };
+
+class TCReader {
+	public:
+		virtual bool Open(const char *path) { return false; }
+		virtual bool Read(STCPacket *pack) const { return false; }
+		virtual bool Receive(STCPacket *pack, unsigned timeout) const { return false; }
+		virtual void Close() {}
+};
+
+class TCWriter {
+	public:
+		virtual void SetUp(const char *path) { }
+		virtual bool Send(const STCPacket *pack) const { return false; }
+};

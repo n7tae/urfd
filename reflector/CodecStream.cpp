@@ -16,17 +16,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <memory>
 
 #include <string.h>
 #include "DVFramePacket.h"
 #include "PacketStream.h"
 #include "CodecStream.h"
+#include "UnixDgramSocket.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
 
 CCodecStream::CCodecStream(CPacketStream *PacketStream, char module) : m_CSModule(module), m_IsOpen(false)
 {
+	m_TCReader = std::make_unique<CUnixDgramReader>();
+	m_TCWriter = std::make_unique<CUnixDgramWriter>();
 	m_PacketStream = PacketStream;
 }
 
@@ -42,7 +46,7 @@ CCodecStream::~CCodecStream()
 		m_Future.get();
 	}
 	// and close the socket
-	m_TCReader.Close();
+	m_TCReader->Close();
 }
 
 void CCodecStream::ResetStats(uint16_t streamid, ECodecType type)
@@ -80,10 +84,10 @@ void CCodecStream::ReportStats()
 
 bool CCodecStream::InitCodecStream()
 {
-	m_TCWriter.SetUp(REF2TC);
+	m_TCWriter->SetUp(REF2TC);
 	std::string name(TC2REF);
 	name.append(1, m_CSModule);
-	if (m_TCReader.Open(name.c_str()))
+	if (m_TCReader->Open(name.c_str()))
 		return true;
 	std::cout << "Initialized CodecStream receive socket " << name << std::endl;
 	keep_running = true;
@@ -94,7 +98,7 @@ bool CCodecStream::InitCodecStream()
 	catch(const std::exception& e)
 	{
 		std::cerr << "Could not start Codec processing on module '" << m_CSModule << "': " << e.what() << std::endl;
-		m_TCReader.Close();
+		m_TCReader->Close();
 		return true;
 	}
 	return false;
@@ -116,7 +120,7 @@ void CCodecStream::Task(void)
 	STCPacket pack;
 
 	// any packet from transcoder
-	if (m_TCReader.Receive(&pack, 5))
+	if (m_TCReader->Receive(&pack, 5))
 	{
 		// update statistics
 		double rt = pack.rt_timer.time();	// the round-trip time
@@ -185,12 +189,11 @@ void CCodecStream::Task(void)
 			Frame->SetTCParams(m_uiTotalPackets++);
 
 			// now send to transcoder
-			m_TCWriter.Send(Frame->GetCodecPacket());
+			m_TCWriter->Send(Frame->GetCodecPacket());
 
 			// push to our local queue where it can wait for the transcoder
 			m_LocalQueue.Push(std::move(Packet));
 		}
-
 		// get the next packet, if there is one
 		Packet = m_Queue.Pop();
 	}

@@ -20,10 +20,12 @@
 
 #include <atomic>
 #include <future>
+#include <memory>
 
 #include "DVFramePacket.h"
 #include "UnixDgramSocket.h"
 #include "SafePacketQueue.h"
+#include "TCPacketDef.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // class
@@ -65,8 +67,9 @@ protected:
 	ECodecType      m_eCodecIn;
 
 	// sockets
-	CUnixDgramReader m_TCReader;
-	CUnixDgramWriter m_TCWriter;
+	std::unique_ptr<TCReader> m_TCReader;
+	std::unique_ptr<TCWriter> m_TCWriter;
+
 
 	// associated packet stream
 	CPacketStream  *m_PacketStream;

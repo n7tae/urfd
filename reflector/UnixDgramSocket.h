@@ -22,7 +22,7 @@
 
 #include "TCPacketDef.h"
 
-class CUnixDgramReader
+class CUnixDgramReader: public TCReader
 {
 public:
 	CUnixDgramReader();
@@ -36,7 +36,7 @@ private:
 	int fd;
 };
 
-class CUnixDgramWriter
+class CUnixDgramWriter: public TCWriter
 {
 public:
 	CUnixDgramWriter();
