@@ -595,7 +595,7 @@ void CReflector::PutDHTClients()
 #else
 		[](bool success){ if (! success) std::cout << "PutDHTClients() unsuccessful" << std::endl; },
 #endif
-		true	// permanent!
+		false	// not permanent!
 	);
 }
 
@@ -624,7 +624,7 @@ void CReflector::PutDHTUsers()
 #else
 		[](bool success){ if (! success) std::cout << "PutDHTUsers() unsuccessful" << std::endl; },
 #endif
-		true	// permanent!
+		false	// not permanent
 	);
 }
 
