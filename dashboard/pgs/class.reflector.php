@@ -43,6 +43,10 @@ class xReflector {
          fclose($handle);
 
          $this->ServiceName = substr($this->XMLContent, strpos($this->XMLContent, "<XLX")+4, 3);
+         if (preg_match('/[^a-zA-Z0-9]/', $this->ServiceName) == 1) {
+            $this->ServiceName = null;
+            return false;
+         }
 
          $this->ReflectorName = "XLX".$this->ServiceName;
 
