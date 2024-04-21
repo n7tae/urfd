@@ -119,6 +119,7 @@ void CUnixDgramWriter::SetUp(const char *path)	// returns true on failure
 	memset(&addr, 0, sizeof(addr));
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path+1, path, sizeof(addr.sun_path)-2);
+	path_len = sizeof(addr.sun_family) + strlen(addr.sun_path + 1) + 1;
 }
 
 bool CUnixDgramWriter::Send(const STCPacket *pack) const
@@ -142,7 +143,6 @@ ssize_t CUnixDgramWriter::Write(const void *buf, ssize_t size) const
 	}
 	// connect to the receiver
 	// We know path is a string, so we skip the first null, get the string length and add 1 for the begining Null
-	int path_len = sizeof(addr.sun_family) + strlen(addr.sun_path + 1) + 1;
 	int rval = connect(fd, (struct sockaddr *)&addr, path_len);
 	if (rval < 0)
 	{

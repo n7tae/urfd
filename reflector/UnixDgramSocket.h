@@ -47,4 +47,5 @@ private:
 	ssize_t Write(const void *buf, ssize_t size) const;
 
 	struct sockaddr_un addr;
+	int path_len;
 };
