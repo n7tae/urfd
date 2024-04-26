@@ -60,7 +60,7 @@ bool CReflector::Start(void)
 #ifndef NO_DHT
 	// start the dht instance
 	refhash = dht::InfoHash::get(cs);
-	node.run(17171, dht::crypto::generateIdentity(cs), true);
+	node.run(17171, dht::crypto::generateIdentity(cs), true, 59973);
 	node.bootstrap(g_Configure.GetString(g_Keys.names.bootstrap), "17171");
 #endif
 
@@ -595,7 +595,7 @@ void CReflector::PutDHTClients()
 #else
 		[](bool success){ if (! success) std::cout << "PutDHTClients() unsuccessful" << std::endl; },
 #endif
-		true	// permanent!
+		false	// not permanent!
 	);
 }
 
@@ -624,7 +624,7 @@ void CReflector::PutDHTUsers()
 #else
 		[](bool success){ if (! success) std::cout << "PutDHTUsers() unsuccessful" << std::endl; },
 #endif
-		true	// permanent!
+		false	// not permanent
 	);
 }
 

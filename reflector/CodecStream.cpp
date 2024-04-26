@@ -143,30 +143,36 @@ void CCodecStream::Task(void)
 		{
 			// pop the original packet
 			auto Packet = m_LocalQueue.Pop();
-			auto Frame = (CDvFramePacket *)Packet.get();
+			auto Frame = static_cast<CDvFramePacket *>(Packet.get());
 
-			// do things look okay?
-			if (pack.module != m_CSModule)
-				std::cerr << "CodecStream '" << m_CSModule << "' received a transcoded packet from module '" << pack.module << "'" << std::dec << std::noshowbase << std::endl;
-			if (pack.sequence != Frame->GetCodecPacket()->sequence)
-				std::cerr << "Sequence mismatch: this voice frame=" << Frame->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
-			if (pack.streamid != Frame->GetCodecPacket()->streamid)
-				std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Frame->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
-
-			// update content with transcoded data
-			Frame->SetCodecData(&pack);
-			// mark the DStar sync frames if the source isn't dstar
-			if (ECodecType::dstar!=Frame->GetCodecIn() && 0==Frame->GetPacketId()%21)
+			// make sure this is the correct packet
+			if ((pack.streamid == Frame->GetCodecPacket()->streamid) && (pack.sequence == Frame->GetCodecPacket()->sequence))
 			{
-				const uint8_t DStarSync[] = { 0x55, 0x2D, 0x16 };
-				Frame->SetDvData(DStarSync);
-			}
+				// update content with transcoded data
+				Frame->SetCodecData(&pack);
+				// mark the DStar sync frames if the source isn't dstar
+				if (ECodecType::dstar!=Frame->GetCodecIn() && 0==Frame->GetPacketId()%21)
+				{
+					const uint8_t DStarSync[] = { 0x55, 0x2D, 0x16 };
+					Frame->SetDvData(DStarSync);
+				}
 
-			// and push it back to client
-			m_PacketStream->ReturnPacket(std::move(Packet));
+				// and push it back to client
+				m_PacketStream->ReturnPacket(std::move(Packet));
+			}
+			else
+			{
+				// Not the correct packet! It will be ignored
+				// Report it
+				if (pack.streamid != Frame->GetCodecPacket()->streamid)
+					std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Frame->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
+				if (pack.sequence != Frame->GetCodecPacket()->sequence)
+					std::cerr << "Sequence mismatch: this voice frame=" << Frame->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
+			}
 		}
 		else
 		{
+			// Likewise, this packet will be ignored
 			std::cout << "Transcoder packet received but CodecStream[" << m_CSModule << "] is closed: Module='" << pack.module << "' StreamID=" << std::hex << std::showbase << ntohs(pack.streamid) << std::endl;
 		}
 	}
