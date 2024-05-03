@@ -55,7 +55,8 @@ bool CReflector::Start(void)
 	const auto cs(g_Configure.GetString(g_Keys.names.callsign));
 	m_Callsign.SetCallsign(cs, false);
 	m_Modules.assign(g_Configure.GetString(g_Keys.modules.modules));
-	std::string tcmods(g_Configure.GetString(g_Keys.modules.tcmodules));
+	const auto tcmods(g_Configure.GetString(g_Keys.tc.modules));
+	const auto port = g_Configure.GetUnsigned(g_Keys.tc.port);
 
 #ifndef NO_DHT
 	// start the dht instance
@@ -66,6 +67,10 @@ bool CReflector::Start(void)
 
 	// let's go!
 	keep_running = true;
+
+	// init transcoder comms
+	if (port)
+		tcServer.Open(g_Configure.GetString(g_Keys.tc.bind), tcmods, port);
 
 	// init gate keeper. It can only return true!
 	g_GateKeeper.Init();
@@ -93,10 +98,13 @@ bool CReflector::Start(void)
 		if (stream)
 		{
 			// if it's a transcoded module, then we need to initialize the codec stream
-			if (std::string::npos != tcmods.find(c))
+			if (port)
 			{
-				if (stream->InitCodecStream())
-					return true;
+				if (std::string::npos != tcmods.find(c))
+				{
+					if (stream->InitCodecStream())
+						return true;
+				}
 			}
 			m_Stream[c] = stream;
 		}
@@ -138,6 +146,10 @@ void CReflector::Stop(void)
 {
 	// stop & delete all threads
 	keep_running = false;
+
+	// stop transcoder comms
+	// if it was never opened, then there is nothing to close;
+	tcServer.Close();
 
 	// stop & delete report threads
 	if ( m_XmlReportFuture.valid() )
@@ -637,7 +649,8 @@ void CReflector::PutDHTConfig()
 	cfg.ipv4addr.assign(g_Configure.GetString(g_Keys.ip.ipv4address));
 	cfg.ipv6addr.assign(g_Configure.GetString(g_Keys.ip.ipv6address));
 	cfg.modules.assign(g_Configure.GetString(g_Keys.modules.modules));
-	cfg.transcodedmods.assign(g_Configure.GetString(g_Keys.modules.tcmodules));
+	if (g_Configure.GetUnsigned(g_Keys.tc.port))
+		cfg.transcodedmods.assign(g_Configure.GetString(g_Keys.tc.modules));
 	cfg.url.assign(g_Configure.GetString(g_Keys.names.url));
 	cfg.email.assign(g_Configure.GetString(g_Keys.names.email));
 	cfg.country.assign(g_Configure.GetString(g_Keys.names.country));

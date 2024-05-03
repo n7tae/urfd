@@ -22,7 +22,6 @@
 #include <future>
 
 #include "DVFramePacket.h"
-#include "UnixDgramSocket.h"
 #include "SafePacketQueue.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -63,10 +62,6 @@ protected:
 	uint16_t        m_uiPort;
 	uint8_t         m_uiPid;
 	ECodecType      m_eCodecIn;
-
-	// sockets
-	CUnixDgramReader m_TCReader;
-	CUnixDgramWriter m_TCWriter;
 
 	// associated packet stream
 	CPacketStream  *m_PacketStream;
