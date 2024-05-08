@@ -32,6 +32,7 @@ CVersion    g_Version(3,1,2); // The major byte should only change if the interl
 CLookupDmr  g_LDid;
 CLookupNxdn g_LNid;
 CLookupYsf  g_LYtr;
+CTCServer   g_TCServer;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

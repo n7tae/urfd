@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
@@ -41,6 +42,18 @@ public:
 		std::lock_guard<std::mutex> lock(m);
 		q.push(std::move(t));
 		c.notify_one();
+	}
+
+	// You will die if the queue is empty!
+	T &Front(void)
+	{
+		std::lock_guard<std::mutex> lock(m);
+		if (q.empty())
+		{
+			std::cerr << "ERROR: CSavePacketQueue::Front() called, but queue is EMPTY!" << std::endl;
+			exit(1);
+		}
+		return q.front();
 	}
 
 	T Pop(void)

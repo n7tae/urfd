@@ -50,7 +50,7 @@ public:
 	void Task(void);
 
 	// pass-through
-	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
+	void Push(std::unique_ptr<CDvFramePacket> p) { m_Queue.Push(std::move(p)); }
 
 protected:
 	// identity
@@ -67,7 +67,7 @@ protected:
 	CPacketStream  *m_PacketStream;
 
 	// queues
-	CSafePacketQueue<std::unique_ptr<CPacket>> m_LocalQueue, m_Queue;
+	CSafePacketQueue<std::unique_ptr<CDvFramePacket>> m_LocalQueue, m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;

@@ -20,12 +20,11 @@
 #include <string.h>
 #include <sys/select.h>
 
+#include "Global.h"
 #include "DVFramePacket.h"
 #include "PacketStream.h"
 #include "CodecStream.h"
 #include "Reflector.h"
-
-extern CReflector g_Reflector;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -110,6 +109,21 @@ void CCodecStream::Thread()
 
 void CCodecStream::Task(void)
 {
+	int fd = g_TCServer.GetFD(m_CSModule);
+	if (fd < 0) // log the situation
+		std::cout << "Lost connection to transcoder, module '" << m_CSModule << "', waiting..." << std::endl;
+	while (fd < 0)
+	{
+		if (g_TCServer.Accept()) // we will block until we have a new connection
+		{
+			std::cerr << "UNRECOVERABLE ERROR!" << std::endl;
+			exit(1);
+		}
+		// Accept was sucessful, but we need to make sure THIS MODULE was reestablished
+		// It's possile that other Transcoder ports were lost
+		fd = g_TCServer.GetFD(m_CSModule);
+	}
+
 	STCPacket pack;
     struct timeval tv;
     fd_set readfds;
@@ -117,15 +131,14 @@ void CCodecStream::Task(void)
     tv.tv_sec = 0;
     tv.tv_usec = 7000;
 
-	int fd = g_Reflector.tcServer.GetFD(m_CSModule);
-
     FD_ZERO(&readfds);
     FD_SET(fd, &readfds);
 
     // don't care about writefds and exceptfds:
     if (select(fd+1, &readfds, NULL, NULL, &tv))
 	{
-		g_Reflector.tcServer.Receive(fd, &pack);
+		if (g_TCServer.Receive(fd, &pack))
+			return;
 		// update statistics
 		double rt = pack.rt_timer.time();	// the round-trip time
 		if (0 == m_RTCount)
@@ -151,18 +164,17 @@ void CCodecStream::Task(void)
 		{
 			// pop the original packet
 			auto Packet = m_LocalQueue.Pop();
-			auto Frame = static_cast<CDvFramePacket *>(Packet.get());
 
 			// make sure this is the correct packet
-			if ((pack.streamid == Frame->GetCodecPacket()->streamid) && (pack.sequence == Frame->GetCodecPacket()->sequence))
+			if ((pack.streamid == Packet->GetCodecPacket()->streamid) && (pack.sequence == Packet->GetCodecPacket()->sequence))
 			{
 				// update content with transcoded data
-				Frame->SetCodecData(&pack);
+				Packet->SetCodecData(&pack);
 				// mark the DStar sync frames if the source isn't dstar
-				if (ECodecType::dstar!=Frame->GetCodecIn() && 0==Frame->GetPacketId()%21)
+				if (ECodecType::dstar!=Packet->GetCodecIn() && 0==Packet->GetPacketId()%21)
 				{
 					const uint8_t DStarSync[] = { 0x55, 0x2D, 0x16 };
-					Frame->SetDvData(DStarSync);
+					Packet->SetDvData(DStarSync);
 				}
 
 				// and push it back to client
@@ -172,10 +184,10 @@ void CCodecStream::Task(void)
 			{
 				// Not the correct packet! It will be ignored
 				// Report it
-				if (pack.streamid != Frame->GetCodecPacket()->streamid)
-					std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Frame->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
-				if (pack.sequence != Frame->GetCodecPacket()->sequence)
-					std::cerr << "Sequence mismatch: this voice frame=" << Frame->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
+				if (pack.streamid != Packet->GetCodecPacket()->streamid)
+					std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Packet->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
+				if (pack.sequence != Packet->GetCodecPacket()->sequence)
+					std::cerr << "Sequence mismatch: this voice frame=" << Packet->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
 			}
 		}
 		else
@@ -185,12 +197,10 @@ void CCodecStream::Task(void)
 		}
 	}
 
-	// anything in our queue
-	auto Packet = m_Queue.Pop();
-	while (Packet)
+	// anything in our queue, then get it to the transcoder!
+	while (! m_Queue.IsEmpty())
 	{
-		// we need a CDvFramePacket pointer to access Frame stuff
-		auto Frame = (CDvFramePacket *)Packet.get();
+		auto &Frame = m_Queue.Front();
 
 		if (m_IsOpen)
 		{
@@ -199,13 +209,22 @@ void CCodecStream::Task(void)
 			Frame->SetTCParams(m_uiTotalPackets++);
 
 			// now send to transcoder
-			g_Reflector.tcServer.Send(Frame->GetCodecPacket());
+			int fd = g_TCServer.GetFD(Frame->GetCodecPacket()->module);
+			if (fd < 0)
+			{
+				// Crap! We've lost connection to the transcoder!
+				// we'll try to fix this on the next pass
+				return;
+			}
 
-			// push to our local queue where it can wait for the transcoder
-			m_LocalQueue.Push(std::move(Packet));
+			if (g_TCServer.Send(fd, Frame->GetCodecPacket()))
+			{
+				// ditto, we'll try to fix this on the next pass
+				return;
+			}
+			// the fd was good and then the send was successful, so...
+			// push the frame to our local queue where it can wait for the transcoder
+			m_LocalQueue.Push(std::move(m_Queue.Pop()));
 		}
-
-		// get the next packet, if there is one
-		Packet = m_Queue.Pop();
 	}
 }

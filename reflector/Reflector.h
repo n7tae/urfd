@@ -25,7 +25,6 @@
 #include "Peers.h"
 #include "Protocols.h"
 #include "PacketStream.h"
-#include "TCTCPSocket.h"
 
 #ifndef NO_DHT
 #include "dht-values.h"
@@ -83,9 +82,6 @@ public:
 #ifndef NO_DHT
 	void GetDHTConfig(const std::string &cs);
 #endif
-
-	// transcoder communication
-	CTCTCPServer tcServer;
 
 protected:
 #ifndef NO_DHT

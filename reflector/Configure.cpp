@@ -305,6 +305,7 @@ bool CConfigure::ReadData(const std::string &path)
 				}
 				else
 					badParam(key);
+				break;
 			case ESection::modules:
 				if (0 == key.compare(JMODULES))
 				{
@@ -668,6 +669,12 @@ bool CConfigure::ReadData(const std::string &path)
 					}
 				}
 			}
+		}
+		else
+		{
+			// there is no transcoder
+			data[g_Keys.tc.modules] = "";
+			data[g_Keys.tc.bind] = "";
 		}
 	}
 

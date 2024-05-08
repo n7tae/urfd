@@ -70,7 +70,7 @@ bool CReflector::Start(void)
 
 	// init transcoder comms
 	if (port)
-		tcServer.Open(g_Configure.GetString(g_Keys.tc.bind), tcmods, port);
+		g_TCServer.Open(g_Configure.GetString(g_Keys.tc.bind), tcmods, port);
 
 	// init gate keeper. It can only return true!
 	g_GateKeeper.Init();
@@ -149,7 +149,7 @@ void CReflector::Stop(void)
 
 	// stop transcoder comms
 	// if it was never opened, then there is nothing to close;
-	tcServer.Close();
+	g_TCServer.Close();
 
 	// stop & delete report threads
 	if ( m_XmlReportFuture.valid() )

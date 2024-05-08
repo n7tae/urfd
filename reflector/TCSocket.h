@@ -18,43 +18,53 @@
 
 #include <string>
 #include <cstdint>
+#include <mutex>
 #include <unordered_map>
 
 #include "TCPacketDef.h"
 
-class CTCTCPSocket
+class CTCSocket
 {
 public:
-	CTCTCPSocket() {}
-	virtual ~CTCTCPSocket() { Close(); }
+	CTCSocket() {}
+	virtual ~CTCSocket() { Close(); }
 
 	void Close(); // close all open sockets
+	void Close(char module); // close a specific module
+	void Close(int fd); // close a specific file descriptor
 
 	// bool functions return true on failure
-	virtual bool Open(const std::string &address, const std::string &modules, uint16_t port) = 0;
-	bool Send(const STCPacket *packet);
+	bool Send(int fd, const STCPacket *packet);
 	bool Receive(int fd, STCPacket *packet);
 
 	int GetFD(char module) const; // can return -1!
+	char GetMod(int fd) const;
 
 protected:
-	void Close(char); // close a specific module
-
 	std::unordered_map<char, int> m_FD;
+	mutable std::mutex m_Mutex;
 };
 
-class CTCTCPServer : public CTCTCPSocket
+class CTCServer : public CTCSocket
 {
 public:
-	CTCTCPServer() : CTCTCPSocket() {}
-	~CTCTCPServer() {}
+	CTCServer() : CTCSocket() {}
+	~CTCServer() {}
 	bool Open(const std::string &address, const std::string &modules, uint16_t port);
+	bool Accept();
+private:
+	int m_listenSock;
+	std::string m_Modules;
 };
 
-class CTCTCPClient : public CTCTCPSocket
+class CTCClient : public CTCSocket
 {
 public:
-	CTCTCPClient() : CTCTCPSocket() {}
-	~CTCTCPClient() {}
-	bool Open(const std::string &address, const std::string &modules, uint16_t port);
+	CTCClient() : CTCSocket(), m_Port(0) {}
+	~CTCClient() {}
+	bool Initialize(const std::string &address, const std::string &modules, uint16_t port);
+	bool Connect(char module);
+private:
+	std::string m_Address, m_Modules;
+	uint16_t m_Port;
 };

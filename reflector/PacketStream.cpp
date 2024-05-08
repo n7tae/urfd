@@ -92,9 +92,11 @@ void CPacketStream::Push(std::unique_ptr<CPacket> Packet)
 	if ( m_CodecStream && Packet->IsDvFrame() && Packet->IsLocalOrigin())
 	{
 		// yes, push packet to trancoder queue
-		// trancoder will push it after transcoding
+		// first, recast to a CDvFramePacket
+		auto Frame = std::unique_ptr<CDvFramePacket>(static_cast<CDvFramePacket *>(Packet.release()));
+		// trancoder will push it to m_Queue after transcoding
 		// is completed
-		m_CodecStream->Push(std::move(Packet));
+		m_CodecStream->Push(std::move(Frame));
 	}
 	else
 	{
