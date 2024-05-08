@@ -20,6 +20,7 @@
 #include <chrono>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 
 #include "IP.h"
 #include "TCSocket.h"
@@ -159,7 +160,7 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 	}
 
 	auto n = m_Modules.size();
-	std::cout << "Waiting for " << n << " tC connection(s)..." << std::endl;
+	std::cout << "Waiting for " << n << " transcoder connection(s)..." << std::endl;
 
 	while (m_FD.size() < n)
 	{
@@ -174,6 +175,29 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 
 bool CTCServer::Accept()
 {
+	struct timeval tv;
+    fd_set readfds;
+
+	// 10 milliseconds
+    tv.tv_sec = 0;
+    tv.tv_usec = 10000;
+
+    FD_ZERO(&readfds);
+    FD_SET(m_listenSock, &readfds);
+
+    // don't care about writefds and exceptfds:
+    int rv = select(m_listenSock+1, &readfds, NULL, NULL, &tv);
+	if (rv < 0)
+	{
+		perror("Accept select");
+		return true;
+	}
+
+	if (0 == rv)	// we timed out waiting for something
+		return false;
+
+	// here comes a connect
+
 	CIp their_addr; // connector's address information
 
 	socklen_t sin_size = sizeof(struct sockaddr_storage);
@@ -183,16 +207,16 @@ bool CTCServer::Accept()
 	{
 		if (EAGAIN == errno || EWOULDBLOCK == errno)
 			return false;
-		perror("accept");
+		perror("Accept accept");
 		return true;
 	}
 
 	char mod;
-	auto rv = recv(newfd, &mod, 1, 0);	// retrieve the identification byte
+	rv = recv(newfd, &mod, 1, 0);	// retrieve the identification byte
 	if (rv != 1)
 	{
 		if (rv < 0)
-			perror("accept recv");
+			perror("Accept recv");
 		else
 			std::cerr << "recv got no identification byte!" << std::endl;
 		close(newfd);
