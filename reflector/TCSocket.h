@@ -19,7 +19,8 @@
 #include <string>
 #include <cstdint>
 #include <mutex>
-#include <unordered_map>
+#include <vector>
+#include <poll.h>
 
 #include "TCPacketDef.h"
 
@@ -33,16 +34,16 @@ public:
 	void Close(char module); // close a specific module
 	void Close(int fd); // close a specific file descriptor
 
-	// bool functions return true on failure
-	bool Send(int fd, const STCPacket *packet);
-	bool Receive(int fd, STCPacket *packet);
+	// most bool functions return true on failure
+	bool Send(const STCPacket *packet);
 
 	int GetFD(char module) const; // can return -1!
 	char GetMod(int fd) const;
 
 protected:
-	std::unordered_map<char, int> m_FD;
-	mutable std::mutex m_Mutex;
+	bool any_are_closed();
+	std::vector<struct pollfd> m_Pfd;
+	std::string m_Modules;
 };
 
 class CTCServer : public CTCSocket
@@ -52,9 +53,7 @@ public:
 	~CTCServer() {}
 	bool Open(const std::string &address, const std::string &modules, uint16_t port);
 	bool Accept();
-private:
-	int m_listenSock;
-	std::string m_Modules;
+	bool Receive(char module, STCPacket *packet, int ms);
 };
 
 class CTCClient : public CTCSocket
@@ -65,6 +64,6 @@ public:
 	bool Initialize(const std::string &address, const std::string &modules, uint16_t port);
 	bool Connect(char module);
 private:
-	std::string m_Address, m_Modules;
+	std::string m_Address;
 	uint16_t m_Port;
 };

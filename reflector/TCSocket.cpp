@@ -27,34 +27,36 @@
 
 void CTCSocket::Close()
 {
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	for (auto item : m_FD)
-		close(item.second);
-	m_FD.clear();
+	for (auto &item : m_Pfd)
+	{
+		if (item.fd >= 0)
+		{
+			close(item.fd);
+		}
+	}
+	m_Pfd.clear();
 }
 
 void CTCSocket::Close(char mod)
 {
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	auto item = m_FD.find(mod);
-	if (m_FD.end() == item)
+	auto pos = m_Modules.find(mod);
+	if (std::string::npos == pos)
 	{
-		std::cerr << "Could not find a file descriptor for module '" << mod << "'" << std::endl;
+		std::cerr << "Could not find module '" << mod << "'" << std::endl;
 		return;
 	}
-	close(item->second);
-	m_FD.erase(item);
+	close(m_Pfd[pos].fd);
+	m_Pfd[pos].fd = -1;
 }
 
 void CTCSocket::Close(int fd)
 {
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	for (auto &p : m_FD)
+	for (auto &p : m_Pfd)
 	{
-		if (fd == p.second)
+		if (fd == p.fd)
 		{
-			close(fd);
-			m_FD.erase(p.first);
+			close(p.fd);
+			p.fd = -1;
 			return;
 		}
 	}
@@ -63,32 +65,47 @@ void CTCSocket::Close(int fd)
 
 int CTCSocket::GetFD(char module) const
 {
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	const auto item = m_FD.find(module);
-	if (m_FD.cend() == item)
-	{
+	auto pos = m_Modules.find(module);
+	if (std::string::npos == pos)
 		return -1;
-	}
-	return item->second;
+	return m_Pfd[pos].fd;
 }
 
 char CTCSocket::GetMod(int fd) const
 {
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	for (const auto &p : m_FD)
+	for (unsigned i=0; i<m_Pfd.size(); i++)
 	{
-		if (fd == p.second)
-			return p.first;
+		if (fd == m_Pfd[i].fd)
+		{
+			return m_Modules[i];
+		}
 	}
 	return '?';
 }
 
-bool CTCSocket::Send(int fd, const STCPacket *packet)
+bool CTCSocket::any_are_closed()
 {
+	const auto n = m_Modules.size();
+	for (unsigned i=0; i<n; i++)
+	{
+		if (0 > m_Pfd[i].fd)
+			return true;
+	}
+	return false;
+}
+
+bool CTCSocket::Send(const STCPacket *packet)
+{
+	const auto pos = m_Modules.find(packet->module);
+	if (pos == std::string::npos)
+	{
+		std::cerr << "Can't Send() this packet to unconfigured module '" << packet->module << "'" << std::endl;
+		return true;
+	}
 	unsigned count = 0;
 	auto data = (const unsigned char *)packet;
 	do {
-		auto n = send(fd, data+count, sizeof(STCPacket)-count, 0);
+		auto n = send(m_Pfd[pos].fd, data+count, sizeof(STCPacket)-count, 0);
 		if (n <= 0)
 		{
 			if (0 == n)
@@ -107,22 +124,47 @@ bool CTCSocket::Send(int fd, const STCPacket *packet)
 	return false;
 }
 
-bool CTCSocket::Receive(int fd, STCPacket *packet)
+// returns true if successful
+bool CTCServer::Receive(char module, STCPacket *packet, int ms)
 {
+	const auto pos = m_Modules.find(module);
+	if (pos == std::string::npos)
+	{
+		std::cerr << "Can't Recevieve on unconfigured module '" << module << "'" << std::endl;
+		return false;
+	}
+
+	auto rv = poll(&m_Pfd[pos], 1, ms);
+	if (rv < 0)
+	{
+		perror("Recieve poll");
+		Close(m_Pfd[pos].fd);
+		return false;
+	}
+
 	auto data = (unsigned char *)packet;
-	auto n = recv(fd, data, sizeof(STCPacket), MSG_WAITALL);
+	auto n = recv(m_Pfd[pos].fd, data, sizeof(STCPacket), MSG_WAITALL);
 	if (n < 0)
 	{
-		perror("CTCSocket::Receive");
-		Close(fd);
-		return true;
+		perror("Receive recv");
+		Close(m_Pfd[pos].fd);
+		return false;
 	}
-	return n == sizeof(STCPacket);
+	if (n != sizeof(STCPacket))
+		std::cout << "Warning: Receive only read " << n << " bytes of the transcoder packet!" << std::endl;
+
+	return true;
 }
 
 bool CTCServer::Open(const std::string &address, const std::string &modules, uint16_t port)
 {
 	m_Modules.assign(modules);
+	m_Pfd.resize(m_Modules.size()+1);
+	for (auto &pf : m_Pfd)
+	{
+		pf.fd = -1;
+		pf.events = POLLIN;
+	}
 
 	CIp ip(address.c_str(), AF_UNSPEC, SOCK_STREAM, port);
 
@@ -162,51 +204,38 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 	auto n = m_Modules.size();
 	std::cout << "Waiting for " << n << " transcoder connection(s)..." << std::endl;
 
-	while (m_FD.size() < n)
+	while (any_are_closed())
 	{
 		if (Accept())
 			return true;
 	}
 
-	m_listenSock = fd;
+	m_Pfd.back().fd = fd;
 
 	return false;
 }
 
 bool CTCServer::Accept()
 {
-	struct timeval tv;
-    fd_set readfds;
-
-	// 10 milliseconds
-    tv.tv_sec = 0;
-    tv.tv_usec = 10000;
-
-    FD_ZERO(&readfds);
-    FD_SET(m_listenSock, &readfds);
-
-    // don't care about writefds and exceptfds:
-    int rv = select(m_listenSock+1, &readfds, NULL, NULL, &tv);
+	auto rv = poll(&m_Pfd.back(), 1, 10);
 	if (rv < 0)
 	{
-		perror("Accept select");
+		perror("Accept poll");
 		return true;
 	}
 
 	if (0 == rv)	// we timed out waiting for something
 		return false;
 
-	// here comes a connect
+	// rv has to be 1, so, here comes a connect request
 
 	CIp their_addr; // connector's address information
 
 	socklen_t sin_size = sizeof(struct sockaddr_storage);
 
-	auto newfd = accept(m_listenSock, their_addr.GetPointer(), &sin_size);
+	auto newfd = accept(m_Pfd.back().fd, their_addr.GetPointer(), &sin_size);
 	if (newfd < 0)
 	{
-		if (EAGAIN == errno || EWOULDBLOCK == errno)
-			return false;
 		perror("Accept accept");
 		return true;
 	}
@@ -223,7 +252,8 @@ bool CTCServer::Accept()
 		return true;
 	}
 
-	if (std::string::npos == m_Modules.find(mod))
+	const auto pos = m_Modules.find(mod);
+	if (std::string::npos == pos)
 	{
 		std::cerr << "New connection for module '" << mod << "', but it's not configured!" << std::endl;
 		std::cerr << "The transcoded modules need to be configured identically for both urfd and tcd." << std::endl;
@@ -233,8 +263,7 @@ bool CTCServer::Accept()
 
 	std::cout << "File descriptor " << newfd << " opened TCP port for module '" << mod << "' on " << their_addr << std::endl;
 
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	m_FD[mod] = newfd;
+	m_Pfd[pos].fd = newfd;
 
 	return false;
 }
@@ -259,6 +288,12 @@ bool CTCClient::Initialize(const std::string &address, const std::string &module
 
 bool CTCClient::Connect(char module)
 {
+	const auto pos = m_Modules.find(module);
+	if (pos == std::string::npos)
+	{
+		std::cerr << "CTCClient::Connect: could not find module '" << module << "' in configured modules!" << std::endl;
+		return true;
+	}
 	CIp ip(m_Address.c_str(), AF_UNSPEC, SOCK_STREAM, m_Port);
 
 	auto fd = socket(ip.GetFamily(), SOCK_STREAM, 0);
@@ -311,8 +346,7 @@ bool CTCClient::Connect(char module)
 
 	std::cout << "File descriptor " << fd << " on " << ip << " opened for module '" << module << "'" << std::endl;
 
-	std::lock_guard<std::mutex> lck(m_Mutex);
-	m_FD[module] = fd;
+	m_Pfd[pos].fd = fd;
 
 	return false;
 }

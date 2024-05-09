@@ -18,7 +18,6 @@
 
 
 #include <string.h>
-#include <sys/select.h>
 
 #include "Global.h"
 #include "DVFramePacket.h"
@@ -114,6 +113,7 @@ void CCodecStream::Task(void)
 	// if the fd is not good we need to reestablish it
 	if (fd < 0) // log the situation
 		std::cout << "Lost connection to transcoder, module '" << m_CSModule << "', waiting for new connection..." << std::endl;
+
 	while (fd < 0)
 	{
 		if (g_TCServer.Accept()) // try to get a connection
@@ -127,20 +127,8 @@ void CCodecStream::Task(void)
 	}
 
 	STCPacket pack;
-    struct timeval tv;
-    fd_set readfds;
-
-    tv.tv_sec = 0;
-    tv.tv_usec = 7000;
-
-    FD_ZERO(&readfds);
-    FD_SET(fd, &readfds);
-
-    // don't care about writefds and exceptfds:
-    if (select(fd+1, &readfds, NULL, NULL, &tv))
+    if (g_TCServer.Receive(m_CSModule, &pack, 8))
 	{
-		if (g_TCServer.Receive(fd, &pack))
-			return;
 		// update statistics
 		double rt = pack.rt_timer.time();	// the round-trip time
 		if (0 == m_RTCount)
@@ -219,7 +207,7 @@ void CCodecStream::Task(void)
 				return;
 			}
 
-			if (g_TCServer.Send(fd, Frame->GetCodecPacket()))
+			if (g_TCServer.Send(Frame->GetCodecPacket()))
 			{
 				// ditto, we'll try to fix this on the next pass
 				return;
