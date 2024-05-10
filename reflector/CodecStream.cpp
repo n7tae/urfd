@@ -122,7 +122,7 @@ void CCodecStream::Task(void)
 			exit(1);
 		}
 		// Either Accept timed out, or it's possile that other Transcoder ports were instead reopened
-		// So we'll check to see if the one for this module is okay now
+		// So we'll check to see if this module is now open
 		fd = g_TCServer.GetFD(m_CSModule);
 	}
 

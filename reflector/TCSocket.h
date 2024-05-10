@@ -20,6 +20,8 @@
 #include <cstdint>
 #include <mutex>
 #include <vector>
+#include <queue>
+#include <memory>
 #include <poll.h>
 
 #include "TCPacketDef.h"
@@ -63,6 +65,8 @@ public:
 	~CTCClient() {}
 	bool Initialize(const std::string &address, const std::string &modules, uint16_t port);
 	bool Connect(char module);
+	bool CheckConnections();
+	bool Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms);
 private:
 	std::string m_Address;
 	uint16_t m_Port;
