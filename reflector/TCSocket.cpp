@@ -293,6 +293,13 @@ bool CTCClient::Initialize(const std::string &address, const std::string &module
 	m_Modules.assign(modules);
 	m_Port = port;
 
+	m_Pfd.resize(m_Modules.size());
+	for (auto &pf : m_Pfd)
+	{
+		pf.fd = -1;
+		pf.events = POLLIN;
+	}
+
 	std::cout << "Connecting to the TCP server..." << std::endl;
 
 	for (char c : modules)
