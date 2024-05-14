@@ -222,6 +222,7 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 
 	auto n = m_Modules.size();
 	std::cout << "Waiting for " << n << " transcoder connection(s)..." << std::endl;
+	m_Pfd.back().fd = fd;
 
 	while (any_are_closed())
 	{
@@ -229,7 +230,6 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 			return true;
 	}
 
-	m_Pfd.back().fd = fd;
 
 	return false;
 }
