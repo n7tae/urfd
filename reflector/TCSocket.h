@@ -35,15 +35,15 @@ public:
 	void Close(); // close all open sockets
 	void Close(char module); // close a specific module
 	void Close(int fd); // close a specific file descriptor
+	bool receive(int fd, STCPacket &packet);
 
-	// most bool functions return true on failure
+	// All bool functions return true if there was an error
 	bool Send(const STCPacket *packet);
 
 	int GetFD(char module) const; // can return -1!
 	char GetMod(int fd) const;
 
 protected:
-	bool any_are_closed();
 	std::vector<struct pollfd> m_Pfd;
 	std::string m_Modules;
 };
@@ -54,8 +54,12 @@ public:
 	CTCServer() : CTCSocket() {}
 	~CTCServer() {}
 	bool Open(const std::string &address, const std::string &modules, uint16_t port);
+	bool Receive(char module, STCPacket &packet, int ms);
 	bool Accept();
-	bool Receive(char module, STCPacket *packet, int ms);
+
+private:
+	bool any_are_closed();
+	bool AcceptOne();
 };
 
 class CTCClient : public CTCSocket
@@ -64,10 +68,11 @@ public:
 	CTCClient() : CTCSocket(), m_Port(0) {}
 	~CTCClient() {}
 	bool Initialize(const std::string &address, const std::string &modules, uint16_t port);
-	bool Connect(char module);
-	bool CheckConnections();
 	bool Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms);
+	bool ReConnect();
+
 private:
+	bool Connect(char module);
 	std::string m_Address;
 	uint16_t m_Port;
 };
