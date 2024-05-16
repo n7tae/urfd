@@ -227,7 +227,7 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 
 	m_Pfd.back().fd = fd;
 
-	std::cout << "Waiting for " << m_Modules.size() << " transcoder connection(s) on fd " << fd << "..." << std::endl;
+	std::cout << "Waiting for " << m_Modules.size() << " transcoder connection(s) on " << ip << "..." << std::endl;
 	return Accept();
 }
 
@@ -235,14 +235,14 @@ bool CTCServer::Accept()
 {
 	while (any_are_closed())
 	{
-		if (AcceptOne())
+		if (acceptone())
 			return true;
 	}
 
 	return false;
 }
 
-bool CTCServer::AcceptOne()
+bool CTCServer::acceptone()
 {
 	auto rv = poll(&m_Pfd.back(), 1, 10);
 	if (rv < 0)
@@ -295,7 +295,7 @@ bool CTCServer::AcceptOne()
 	return false;
 }
 
-bool CTCClient::Initialize(const std::string &address, const std::string &modules, uint16_t port)
+bool CTCClient::Open(const std::string &address, const std::string &modules, uint16_t port)
 {
 	m_Address.assign(address);
 	m_Modules.assign(modules);
@@ -409,12 +409,13 @@ bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 	if (rv < 0)
 	{
 		perror("Receive poll");
-		return false;
+		return true;
 	}
 
 	if (0 == rv)
 		return false;
 
+	bool some_closed = false;
 	for (auto &pfd : m_Pfd)
 	{
 		if (pfd.revents & POLLIN)
@@ -434,7 +435,8 @@ bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 		{
 			std::cerr << "IO ERROR on Receive module " << GetMod(pfd.fd) << std::endl;
 			Close(pfd.fd);
+			some_closed = true;
 		}
 	}
-	return ! queue.empty();
+	return some_closed;
 }

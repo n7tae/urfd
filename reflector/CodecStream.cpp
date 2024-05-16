@@ -118,7 +118,7 @@ void CCodecStream::Task(void)
 	{
 		if (g_TCServer.Accept()) // try to get a connection
 		{
-			std::cerr << "UNRECOVERABLE ERROR!" << std::endl;
+			std::cerr << "Unrecoverable ERROR! Quiting..." << std::endl;
 			exit(1);
 		}
 		// Either Accept timed out, or it's possile that other Transcoder ports were instead reopened

@@ -32,6 +32,7 @@ public:
 	CTCSocket() {}
 	virtual ~CTCSocket() { Close(); }
 
+	virtual bool Open(const std::string &address, const std::string &modules, uint16_t port) = 0;
 	void Close(); // close all open sockets
 	void Close(char module); // close a specific module
 	void Close(int fd); // close a specific file descriptor
@@ -59,7 +60,7 @@ public:
 
 private:
 	bool any_are_closed();
-	bool AcceptOne();
+	bool acceptone();
 };
 
 class CTCClient : public CTCSocket
@@ -67,7 +68,7 @@ class CTCClient : public CTCSocket
 public:
 	CTCClient() : CTCSocket(), m_Port(0) {}
 	~CTCClient() {}
-	bool Initialize(const std::string &address, const std::string &modules, uint16_t port);
+	bool Open(const std::string &address, const std::string &modules, uint16_t port);
 	bool Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms);
 	bool ReConnect();
 
