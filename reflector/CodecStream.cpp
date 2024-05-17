@@ -127,7 +127,7 @@ void CCodecStream::Task(void)
 	}
 
 	STCPacket pack;
-    if (! g_TCServer.Receive(m_CSModule, pack, 8))
+    if (g_TCServer.Receive(m_CSModule, pack, 8))
 	{
 		// update statistics
 		double rt = pack.rt_timer.time();	// the round-trip time

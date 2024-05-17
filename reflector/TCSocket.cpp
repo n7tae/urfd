@@ -149,7 +149,7 @@ bool CTCSocket::receive(int fd, STCPacket &packet)
 	return false;
 }
 
-// returns false if there is data to return
+// returns true if there is data to return
 bool CTCServer::Receive(char module, STCPacket &packet, int ms)
 {
 	bool rv = false;
@@ -183,7 +183,7 @@ bool CTCServer::Receive(char module, STCPacket &packet, int ms)
 		rv = ! receive(pfds->fd, packet);
 	}
 
-	// I think it's possible that we read the data, but the socket had an error after the read...
+	// I think it's possible that even if we read the data, the socket can have an error after the read...
 	// So we'll check...
 	if (pfds->revents & POLLERR || pfds->revents & POLLHUP)
 	{
