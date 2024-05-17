@@ -149,47 +149,49 @@ bool CTCSocket::receive(int fd, STCPacket &packet)
 	return false;
 }
 
-// returns true on error
+// returns false if there is data to return
 bool CTCServer::Receive(char module, STCPacket &packet, int ms)
 {
+	bool rv = false;
 	const auto pos = m_Modules.find(module);
 	if (pos == std::string::npos)
 	{
 		std::cerr << "Can't receive on unconfigured module '" << module << "'" << std::endl;
-		return true;
+		return rv;
 	}
 
 	auto pfds = &m_Pfd[pos];
 	if (pfds->fd < 0)
 	{
 		std::cerr << "Can't receive on module '" << module << "' because it's closed" << std::endl;
-		return true;
+		return rv;
 	}
 
-	auto rv = poll(pfds, 1, ms);
-	if (rv < 0)
+	auto n = poll(pfds, 1, ms);
+	if (n < 0)
 	{
 		perror("Recieve poll");
 		Close(pfds->fd);
-		return true;
+		return rv;
 	}
 
-	if (0 == rv)
-		return false;	// timeout
+	if (0 == n)
+		return rv;	// timeout
 
 	if (pfds->revents & POLLIN)
 	{
-		return receive(pfds->fd, packet);
+		rv = ! receive(pfds->fd, packet);
 	}
 
+	// I think it's possible that we read the data, but the socket had an error after the read...
+	// So we'll check...
 	if (pfds->revents & POLLERR || pfds->revents & POLLHUP)
 	{
 		std::cerr << ((pfds->revents & POLLERR) ? "POLLERR" : "POLLHUP") << " received on module " << module << "', closing socket" << std::endl;
 		Close(pfds->fd);
-		return true;
 	}
 
-	return false;
+	return rv;
 }
 
 bool CTCServer::Open(const std::string &address, const std::string &modules, uint16_t port)
@@ -404,6 +406,7 @@ bool CTCClient::ReConnect()
 	return rv;
 }
 
+// returns true if there's an error, but there still make be something in the returned queue
 bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 {
 	for (auto &pfd : m_Pfd)

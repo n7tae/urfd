@@ -39,7 +39,7 @@ public:
 	void Close(int fd); // close a specific file descriptor
 	bool receive(int fd, STCPacket &packet);
 
-	// All bool functions return true if there was an error
+	// All bool functions, except Server Receive, return true if there was an error
 	bool Send(const STCPacket *packet);
 
 	int GetFD(char module) const; // can return -1!
@@ -56,6 +56,7 @@ public:
 	CTCServer() : CTCSocket() {}
 	~CTCServer() {}
 	bool Open(const std::string &address, const std::string &modules, uint16_t port);
+	// Returns true if there is data
 	bool Receive(char module, STCPacket &packet, int ms);
 	bool Accept();
 
