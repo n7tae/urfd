@@ -24,6 +24,7 @@
 #include <memory>
 #include <poll.h>
 
+#include "IP.h"
 #include "TCPacketDef.h"
 
 class CTCSocket
@@ -59,6 +60,7 @@ public:
 	bool Accept();
 
 private:
+	CIp m_Ip;
 	bool any_are_closed();
 	bool acceptone();
 };
@@ -73,7 +75,7 @@ public:
 	bool ReConnect();
 
 private:
-	bool Connect(char module);
 	std::string m_Address;
 	uint16_t m_Port;
+	bool Connect(char module);
 };
