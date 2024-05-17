@@ -70,7 +70,10 @@ bool CReflector::Start(void)
 
 	// init transcoder comms
 	if (port)
-		g_TCServer.Open(g_Configure.GetString(g_Keys.tc.bind), tcmods, port);
+	{
+		if (g_TCServer.Open(g_Configure.GetString(g_Keys.tc.bind), tcmods, port))
+			return true;
+	}
 
 	// init gate keeper. It can only return true!
 	g_GateKeeper.Init();

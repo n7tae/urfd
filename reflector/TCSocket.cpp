@@ -248,7 +248,7 @@ bool CTCServer::Accept()
 
 	while (any_are_closed())
 	{
-		if (acceptone())
+		if (acceptone(fd))
 			return true;
 	}
 
@@ -257,13 +257,13 @@ bool CTCServer::Accept()
 	return false;
 }
 
-bool CTCServer::acceptone()
+bool CTCServer::acceptone(int fd)
 {
 	CIp their_addr; // connector's address information
 
 	socklen_t sin_size = sizeof(struct sockaddr_storage);
 
-	auto newfd = accept(m_Pfd.back().fd, their_addr.GetPointer(), &sin_size);
+	auto newfd = accept(fd, their_addr.GetPointer(), &sin_size);
 	if (newfd < 0)
 	{
 		perror("Accept accept");

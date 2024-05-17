@@ -62,7 +62,7 @@ public:
 private:
 	CIp m_Ip;
 	bool any_are_closed();
-	bool acceptone();
+	bool acceptone(int fd);
 };
 
 class CTCClient : public CTCSocket
