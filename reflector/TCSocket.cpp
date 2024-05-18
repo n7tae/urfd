@@ -127,9 +127,9 @@ bool CTCSocket::Send(const STCPacket *packet)
 	return false;
 }
 
-bool CTCSocket::receive(int fd, STCPacket &packet)
+bool CTCSocket::receive(int fd, STCPacket *packet)
 {
-	auto n = recv(fd, &packet, sizeof(STCPacket), MSG_WAITALL);
+	auto n = recv(fd, packet, sizeof(STCPacket), MSG_WAITALL);
 	if (n < 0)
 	{
 		perror("Receive recv");
@@ -139,18 +139,18 @@ bool CTCSocket::receive(int fd, STCPacket &packet)
 
 	if (0 == n)
 	{
-		std::cerr << "recv() returned zero bytes from mdule '" << GetMod(fd) << "'";
+		std::cerr << "recv(): Module '" << GetMod(fd) << "' has been closed on the server" << std::endl;
 		Close(fd);
 		return true;
 	}
 
 	if (n != sizeof(STCPacket))
-		std::cout << "WARNING: Receive only read " << n << " bytes of the transcoder packet from module '" << GetMod(fd) << "'" << std::endl;
+		std::cout << "receive() only read " << n << " bytes of the transcoder packet from module '" << GetMod(fd) << "'" << std::endl;
 	return false;
 }
 
 // returns true if there is data to return
-bool CTCServer::Receive(char module, STCPacket &packet, int ms)
+bool CTCServer::Receive(char module, STCPacket *packet, int ms)
 {
 	bool rv = false;
 	const auto pos = m_Modules.find(module);
@@ -432,7 +432,7 @@ bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 		if (pfd.revents & POLLIN)
 		{
 			auto p_tcpack = std::make_unique<STCPacket>();
-			if (receive(pfd.fd, *p_tcpack))
+			if (receive(pfd.fd, p_tcpack.get()))
 			{
 				p_tcpack.reset();
 			}

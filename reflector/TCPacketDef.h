@@ -19,10 +19,6 @@
 
 #include "Timer.h"
 
-// unix socket names
-#define TC2REF "TC2URFMod"
-#define REF2TC "URF2TC"
-
 enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4, p25 = 5, usrp = 6 };
 
 using STCPacket = struct tcpacket_tag {
