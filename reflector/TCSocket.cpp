@@ -57,7 +57,6 @@ void CTCSocket::Close(int fd)
 {
 	if (fd < 0)
 	{
-		std::cerr << "Close(fd) : fd is -1" << std::endl;
 		return;
 	}
 	for (auto &p : m_Pfd)
@@ -207,6 +206,8 @@ bool CTCServer::Receive(char module, STCPacket *packet, int ms)
 		std::cerr << "POLLNVAL received on module " << module << "'" << std::endl;
 	}
 
+	if (rv)
+		Close(pfds->fd);
 	return ! rv;
 }
 
