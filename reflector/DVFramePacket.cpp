@@ -21,7 +21,7 @@
 #include "DVFramePacket.h"
 
 // default constructor
-CDvFramePacket::CDvFramePacket()
+CDvFramePacket::CDvFramePacket() : CPacket()
 {
 	memset(m_TCPack.dstar, 0, sizeof(m_TCPack.dstar));
 	memset(m_uiDvData,     0, sizeof(m_uiDvData));

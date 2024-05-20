@@ -139,7 +139,7 @@ bool CTCSocket::receive(int fd, STCPacket *packet)
 
 	if (0 == n)
 	{
-		std::cerr << "recv(): Module '" << GetMod(fd) << "' has been closed on the server" << std::endl;
+		std::cerr << "recv(): Module '" << GetMod(fd) << "' has been closed from the other side" << std::endl;
 		Close(fd);
 		return true;
 	}
@@ -435,6 +435,7 @@ bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 			if (receive(pfd.fd, p_tcpack.get()))
 			{
 				p_tcpack.reset();
+				Close(pfd.fd);
 			}
 			else
 			{
