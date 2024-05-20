@@ -51,7 +51,7 @@ public:
 		if (q.empty())
 		{
 			std::cerr << "ERROR: CSavePacketQueue::Front() called, but queue is EMPTY!" << std::endl;
-			exit(1);
+			abort();
 		}
 		return q.front();
 	}

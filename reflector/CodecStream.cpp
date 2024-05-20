@@ -119,7 +119,7 @@ void CCodecStream::Task(void)
 		if (g_TCServer.Accept()) // try to get a connection
 		{
 			std::cerr << "Unrecoverable ERROR! Quiting..." << std::endl;
-			exit(1);
+			abort();
 		}
 		// Either Accept timed out, or it's possile that other Transcoder ports were instead reopened
 		// So we'll check to see if this module is now open
