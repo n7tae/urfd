@@ -44,12 +44,22 @@ void CTCSocket::Close(char mod)
 		std::cerr << "Could not find module '" << mod << "'" << std::endl;
 		return;
 	}
+	if (m_Pfd[pos].fd < 0)
+	{
+		std::cerr << "Close(" << mod << ") is already closed" << std::endl;
+		return;
+	}
 	Close(m_Pfd[pos].fd);
 	m_Pfd[pos].fd = -1;
 }
 
 void CTCSocket::Close(int fd)
 {
+	if (fd < 0)
+	{
+		std::cerr << "Close(fd) : fd is -1" << std::endl;
+		return;
+	}
 	for (auto &p : m_Pfd)
 	{
 		if (fd == p.fd)
@@ -140,7 +150,6 @@ bool CTCSocket::receive(int fd, STCPacket *packet)
 	if (0 == n)
 	{
 		std::cerr << "recv(): Module '" << GetMod(fd) << "' has been closed from the other side" << std::endl;
-		Close(fd);
 		return true;
 	}
 
@@ -180,18 +189,25 @@ bool CTCServer::Receive(char module, STCPacket *packet, int ms)
 
 	if (pfds->revents & POLLIN)
 	{
-		rv = ! receive(pfds->fd, packet);
+		rv = receive(pfds->fd, packet);
 	}
 
-	// I think it's possible that even if we read the data, the socket can have an error after the read...
+	// It's possible that even if we read the data, the socket can have an error after the read...
 	// So we'll check...
 	if (pfds->revents & POLLERR || pfds->revents & POLLHUP)
 	{
-		std::cerr << ((pfds->revents & POLLERR) ? "POLLERR" : "POLLHUP") << " received on module " << module << "', closing socket" << std::endl;
+		if (pfds->revents & POLLERR)
+			std::cerr << "POLLERR received on module '" << module << "', closing socket" << std::endl;
+		if (pfds->revents & POLLHUP)
+			std::cerr << "POLLHUP received on module '" << module << "', closing socket" << std::endl;
 		Close(pfds->fd);
 	}
+	if (pfds->revents & POLLNVAL)
+	{
+		std::cerr << "POLLNVAL received on module " << module << "'" << std::endl;
+	}
 
-	return rv;
+	return ! rv;
 }
 
 bool CTCServer::Open(const std::string &address, const std::string &modules, uint16_t port)
@@ -406,8 +422,7 @@ bool CTCClient::ReConnect()
 	return rv;
 }
 
-// returns true if there's an error, but there still make be something in the returned queue
-bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
+void CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 {
 	for (auto &pfd : m_Pfd)
 		pfd.revents = 0;
@@ -417,13 +432,12 @@ bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 	if (rv < 0)
 	{
 		perror("Receive poll");
-		return true;
+		return;
 	}
 
 	if (0 == rv)
-		return false;
+		return;
 
-	bool some_closed = false;
 	for (auto &pfd : m_Pfd)
 	{
 		if (pfd.fd < 0)
@@ -447,8 +461,11 @@ bool CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)
 		{
 			std::cerr << "IO ERROR on Receive module " << GetMod(pfd.fd) << std::endl;
 			Close(pfd.fd);
-			some_closed = true;
+		}
+		if (pfd.revents & POLLNVAL)
+		{
+			std::cerr << "POLLNVAL received on fd " << pfd.fd << ", resetting to -1" << std::endl;
+			pfd.fd = -1;
 		}
 	}
-	return some_closed;
 }

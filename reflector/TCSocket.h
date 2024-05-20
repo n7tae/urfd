@@ -72,7 +72,7 @@ public:
 	CTCClient() : CTCSocket(), m_Port(0) {}
 	~CTCClient() {}
 	bool Open(const std::string &address, const std::string &modules, uint16_t port);
-	bool Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms);
+	void Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms);
 	bool ReConnect();
 
 private:
