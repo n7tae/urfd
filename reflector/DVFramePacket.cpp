@@ -23,14 +23,14 @@
 // default constructor
 CDvFramePacket::CDvFramePacket()
 {
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.dmr, 0, 9);
-	memset(m_uiDvSync, 0, 7);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.usrp, 0, 320);
-	memset(m_Nonce, 0, 14);
+	memset(m_TCPack.dstar, 0, sizeof(m_TCPack.dstar));
+	memset(m_uiDvData,     0, sizeof(m_uiDvData));
+	memset(m_TCPack.dmr,   0, sizeof(m_TCPack.dmr));
+	memset(m_uiDvSync,     0, sizeof(m_uiDvSync));
+	memset(m_TCPack.m17,   0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.p25,   0, sizeof(m_TCPack.p25));
+	memset(m_TCPack.usrp,  0, sizeof(m_TCPack.usrp));
+	memset(m_Nonce,        0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::none;
 };
 
@@ -38,14 +38,14 @@ CDvFramePacket::CDvFramePacket()
 CDvFramePacket::CDvFramePacket(const SDStarFrame *dvframe, uint16_t sid, uint8_t pid)
 	: CPacket(sid, pid)
 {
-	memcpy(m_TCPack.dstar, dvframe->AMBE, 9);
-	memcpy(m_uiDvData, dvframe->DVDATA, 3);
-	memset(m_TCPack.dmr, 0, 9);
-	memset(m_uiDvSync, 0, 7);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.usrp, 0, 320);
-	memset(m_Nonce, 0, 14);
+	memcpy(m_TCPack.dstar, dvframe->AMBE,   sizeof(m_TCPack.dstar));
+	memcpy(m_uiDvData,     dvframe->DVDATA, sizeof(m_uiDvData));
+	memset(m_TCPack.dmr,  0, sizeof(m_TCPack.dmr));
+	memset(m_uiDvSync,    0, sizeof(m_uiDvSync));
+	memset(m_TCPack.m17,  0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.p25,  0, sizeof(m_TCPack.p25));
+	memset(m_TCPack.usrp, 0, sizeof(m_TCPack.usrp));
+	memset(m_Nonce,       0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::dstar;
 }
 
@@ -53,14 +53,14 @@ CDvFramePacket::CDvFramePacket(const SDStarFrame *dvframe, uint16_t sid, uint8_t
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_t sid, uint8_t pid, uint8_t spid, bool islast)
 	: CPacket(sid, pid, spid, islast)
 {
-	memcpy(m_TCPack.dmr, ambe, 9);
-	memcpy(m_uiDvSync, sync, 7);
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.usrp, 0, 320);
-	memset(m_Nonce, 0, 14);
+	memcpy(m_TCPack.dmr, ambe, sizeof(m_TCPack.dmr));
+	memcpy(m_uiDvSync,   sync, sizeof(m_uiDvSync));
+	memset(m_TCPack.dstar,  0, sizeof(m_TCPack.dstar));
+	memset(m_uiDvData,      0, sizeof(m_uiDvData));
+	memset(m_TCPack.m17,    0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.p25,    0, sizeof(m_TCPack.p25));
+	memset(m_TCPack.usrp,   0, sizeof(m_TCPack.usrp));
+	memset(m_Nonce,         0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::dmr;
 }
 
@@ -68,14 +68,14 @@ CDvFramePacket::CDvFramePacket(const uint8_t *ambe, const uint8_t *sync, uint16_
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, uint8_t spid, uint8_t fid, CCallsign cs, bool islast)
 	: CPacket(sid, pid, spid, fid, islast)
 {
-	memcpy(m_TCPack.dmr, ambe, 9);
-	memset(m_uiDvSync, 0, 7);
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.usrp, 0, 320);
-	memset(m_Nonce, 0, 14);
+	memcpy(m_TCPack.dmr, ambe, sizeof(m_TCPack.dmr));
+	memset(m_uiDvSync,      0, sizeof(m_uiDvSync));
+	memset(m_TCPack.dstar,  0, sizeof(m_TCPack.dstar));
+	memset(m_uiDvData,      0, sizeof(m_uiDvData));
+	memset(m_TCPack.m17,    0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.p25,    0, sizeof(m_TCPack.p25));
+	memset(m_TCPack.usrp,   0, sizeof(m_TCPack.usrp));
+	memset(m_Nonce,         0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::dmr;
 	uint8_t c[12];
     cs.GetCallsign(c);
@@ -87,10 +87,10 @@ CDvFramePacket::CDvFramePacket
 (uint16_t sid, uint8_t dstarpid, const uint8_t *dstarambe, const uint8_t *dstardvdata, uint8_t dmrpid, uint8_t dprspid, const uint8_t *dmrambe, const uint8_t *dmrsync, ECodecType codecInType, bool islast)
 	: CPacket(sid, dstarpid, dmrpid, dprspid, 0xFF, 0xFF, 0xFF, codecInType, islast)
 {
-	::memcpy(m_TCPack.dstar, dstarambe, 9);
-	::memcpy(m_uiDvData, dstardvdata, 3);
-	::memcpy(m_TCPack.dmr, dmrambe, 9);
-	::memcpy(m_uiDvSync, dmrsync, 7);
+	memcpy(m_TCPack.dstar, dstarambe, sizeof(m_TCPack.dstar));
+	memcpy(m_TCPack.dmr,   dmrambe,   sizeof(m_TCPack.dmr));
+	memcpy(m_uiDvData, dstardvdata, sizeof(m_uiDvData));
+	memcpy(m_uiDvSync, dmrsync,     sizeof(m_uiDvSync));
 	m_TCPack.codec_in = codecInType;
 }
 
@@ -98,14 +98,14 @@ CDvFramePacket::CDvFramePacket
 
 CDvFramePacket::CDvFramePacket(const CM17Packet &m17) : CPacket(m17)
 {
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.dmr, 0, 9);
-	memset(m_uiDvSync, 0, 7);
-	memcpy(m_TCPack.m17, m17.GetPayload(), 16);
-	memcpy(m_Nonce, m17.GetNonce(), 14);
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.usrp, 0, 320);
+	memset(m_TCPack.dstar, 0, sizeof(m_TCPack.dstar));
+	memset(m_TCPack.dmr,   0, sizeof(m_TCPack.dmr));
+	memset(m_TCPack.p25,   0, sizeof(m_TCPack.p25));
+	memset(m_TCPack.usrp,  0, sizeof(m_TCPack.usrp));
+	memset(m_uiDvData,     0, sizeof(m_uiDvData));
+	memset(m_uiDvSync,     0, sizeof(m_uiDvSync));
+	memcpy(m_TCPack.m17, m17.GetPayload(), sizeof(m_TCPack.m17));
+	memcpy(m_Nonce,      m17.GetNonce(),   sizeof(m_Nonce));
 	switch (0x6U & m17.GetFrameType())
 	{
 		case 0x4U:
@@ -124,14 +124,14 @@ CDvFramePacket::CDvFramePacket(const CM17Packet &m17) : CPacket(m17)
 CDvFramePacket::CDvFramePacket(const uint8_t *imbe, uint16_t streamid, bool islast)
 	: CPacket(streamid, false, islast)
 {
-	memcpy(m_TCPack.p25, imbe, 11);
-	memset(m_TCPack.dmr, 0, 9);
-	memset(m_uiDvSync, 0, 7);
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_TCPack.usrp, 0, 320);
-	memset(m_Nonce, 0, 14);
+	memcpy(m_TCPack.p25, imbe, sizeof(m_TCPack.p25));
+	memset(m_TCPack.dmr,    0, sizeof(m_TCPack.dmr));
+	memset(m_TCPack.dstar,  0, sizeof(m_TCPack.dstar));
+	memset(m_TCPack.m17,    0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.usrp,   0, sizeof(m_TCPack.usrp));
+	memset(m_uiDvSync,      0, sizeof(m_uiDvSync));
+	memset(m_uiDvData,      0, sizeof(m_uiDvData));
+	memset(m_Nonce,         0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::p25;
 }
 
@@ -139,14 +139,14 @@ CDvFramePacket::CDvFramePacket(const uint8_t *imbe, uint16_t streamid, bool isla
 CDvFramePacket::CDvFramePacket(const uint8_t *ambe, uint16_t sid, uint8_t pid, bool islast)
 	: CPacket(sid, pid, islast)
 {
-	memcpy(m_TCPack.dmr, ambe, 9);
-	memset(m_uiDvSync, 0, 7);
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.usrp, 0, 320);
-	memset(m_Nonce, 0, 14);
+	memcpy(m_TCPack.dmr, ambe, sizeof(m_TCPack.dmr));
+	memset(m_TCPack.dstar,  0, sizeof(m_TCPack.dstar));
+	memset(m_TCPack.m17,    0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.p25,    0, sizeof(m_TCPack.p25));
+	memset(m_TCPack.usrp,   0, sizeof(m_TCPack.usrp));
+	memset(m_uiDvSync,      0, sizeof(m_uiDvSync));
+	memset(m_uiDvData,      0, sizeof(m_uiDvData));
+	memset(m_Nonce,         0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::dmr;
 }
 
@@ -157,25 +157,19 @@ CDvFramePacket::CDvFramePacket(const int16_t *usrp, uint16_t streamid, bool isla
 	for(int i = 0; i < 160; ++i){
 		m_TCPack.usrp[i] = usrp[i];
 	}
-	memset(m_TCPack.p25, 0, 11);
-	memset(m_TCPack.dmr, 0, 9);
-	memset(m_uiDvSync, 0, 7);
-	memset(m_TCPack.dstar, 0, 9);
-	memset(m_uiDvData, 0, 3);
-	memset(m_TCPack.m17, 0, 16);
-	memset(m_Nonce, 0, 14);
+	memset(m_TCPack.dstar, 0, sizeof(m_TCPack.dstar));
+	memset(m_TCPack.dmr,   0, sizeof(m_TCPack.dmr));
+	memset(m_TCPack.m17,   0, sizeof(m_TCPack.m17));
+	memset(m_TCPack.p25,   0, sizeof(m_TCPack.p25));
+	memset(m_uiDvSync,     0, sizeof(m_uiDvSync));
+	memset(m_uiDvData,     0, sizeof(m_uiDvData));
+	memset(m_Nonce,        0, sizeof(m_Nonce));
 	m_TCPack.codec_in = ECodecType::usrp;
 }
 
 std::unique_ptr<CPacket> CDvFramePacket::Copy(void)
 {
 	return std::unique_ptr<CPacket>(new CDvFramePacket(*this));
-}
-
-// Network
-unsigned int CDvFramePacket::GetNetworkSize()
-{
-	return CPacket::GetNetworkSize() + 4 + 3 + 7 + 14 + 9 + 9 + 16 + 11 + 320;
 }
 
 CDvFramePacket::CDvFramePacket(const CBuffer &buf) : CPacket(buf)
@@ -188,14 +182,14 @@ CDvFramePacket::CDvFramePacket(const CBuffer &buf) : CPacket(buf)
 		for (unsigned int i=0; i<4; i++)
 			seq = 0x100u * seq + data[off+i];
 		off += 4;
-		memcpy(m_uiDvData,		data+off, 3);	off += 3;
-		memcpy(m_uiDvSync,		data+off, 7);	off += 7;
-		memcpy(m_Nonce,			data+off, 14);	off += 14;
-		memcpy(m_TCPack.dstar,	data+off, 9);	off += 9;
-		memcpy(m_TCPack.dmr,	data+off, 9);	off += 9;
-		memcpy(m_TCPack.m17,	data+off, 16);	off += 16;
-		memcpy(m_TCPack.p25,    data+off, 11);	off += 11;
-		memcpy(m_TCPack.usrp,   data+off, 320);
+		memcpy(m_uiDvData,     data+off, sizeof(m_uiDvData));     off += sizeof(m_uiDvData);
+		memcpy(m_uiDvSync,     data+off, sizeof(m_uiDvSync));     off += sizeof(m_uiDvSync);
+		memcpy(m_Nonce,        data+off, sizeof(m_Nonce));        off += sizeof(m_Nonce);
+		memcpy(m_TCPack.dstar, data+off, sizeof(m_TCPack.dstar)); off += sizeof(m_TCPack.dstar);
+		memcpy(m_TCPack.dmr,   data+off, sizeof(m_TCPack.dmr));   off += sizeof (m_TCPack.dmr);
+		memcpy(m_TCPack.m17,   data+off, sizeof(m_TCPack.m17));   off += sizeof(m_TCPack.m17);
+		memcpy(m_TCPack.p25,   data+off, sizeof(m_TCPack.p25));   off += sizeof(m_TCPack.p25);
+		memcpy(m_TCPack.usrp,  data+off, sizeof(m_TCPack.usrp));
 		SetTCParams(seq);
 	}
 	else
@@ -212,14 +206,14 @@ void CDvFramePacket::EncodeInterlinkPacket(CBuffer &buf) const
 	data[off++] = (m_TCPack.sequence >> 16) & 0xffu;
 	data[off++] = (m_TCPack.sequence >>  8) & 0xffu;
 	data[off++] = m_TCPack.sequence & 0xffu;
-	memcpy(data+off, m_uiDvData,      3); off += 3;
-	memcpy(data+off, m_uiDvSync,      7); off += 7;
-	memcpy(data+off, m_Nonce,        14); off += 14;
-	memcpy(data+off, m_TCPack.dstar,  9); off += 9;
-	memcpy(data+off, m_TCPack.dmr,    9); off += 9;
-	memcpy(data+off, m_TCPack.m17,   16); off += 16;
-	memcpy(data+off, m_TCPack.p25,   11); off += 11;
-	memcpy(data+off, m_TCPack.usrp, 320);
+	memcpy(data+off, m_uiDvData,     sizeof(m_uiDvData));     off += sizeof(m_uiDvData);
+	memcpy(data+off, m_uiDvSync,     sizeof(m_uiDvSync));     off += sizeof(m_uiDvSync);
+	memcpy(data+off, m_Nonce,        sizeof(m_Nonce));        off += sizeof(m_Nonce);
+	memcpy(data+off, m_TCPack.dstar, sizeof(m_TCPack.dstar)); off += sizeof(m_TCPack.dstar);
+	memcpy(data+off, m_TCPack.dmr,   sizeof(m_TCPack.dmr));   off += sizeof(m_TCPack.dmr);
+	memcpy(data+off, m_TCPack.m17,   sizeof(m_TCPack.m17));   off += sizeof(m_TCPack.m17);
+	memcpy(data+off, m_TCPack.p25,   sizeof(m_TCPack.p25));   off += sizeof(m_TCPack.p25);
+	memcpy(data+off, m_TCPack.usrp,  sizeof(m_TCPack.usrp));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +244,7 @@ const uint8_t *CDvFramePacket::GetCodecData(ECodecType type) const
 
 void CDvFramePacket::SetDvData(const uint8_t *DvData)
 {
-	memcpy(m_uiDvData, DvData, 3);
+	memcpy(m_uiDvData, DvData, sizeof(m_uiDvData));
 }
 
 void CDvFramePacket::SetCodecData(const STCPacket *pack)
@@ -264,5 +258,4 @@ void CDvFramePacket::SetTCParams(uint32_t seq)
 	m_TCPack.streamid = m_uiStreamId;
 	m_TCPack.is_last = m_bLastPacket;
 	m_TCPack.module = m_cModule;
-	m_TCPack.rt_timer.start();
 }

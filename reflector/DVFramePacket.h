@@ -20,6 +20,7 @@
 
 #include "Packet.h"
 #include "Callsign.h"
+#include "Timer.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // defines
@@ -59,7 +60,12 @@ public:
 	CDvFramePacket(const int16_t *usrp, uint16_t streamid, bool islast);
 	// URF Network
 	CDvFramePacket(const CBuffer &buf);
-	static unsigned int GetNetworkSize();
+
+	static constexpr unsigned GetNetworkSize() noexcept
+	{
+		return CPacket::GetNetworkSize() + sizeof(m_uiDvData) + sizeof(m_uiDvSync) + sizeof(m_Nonce) + sizeof(m_TCPack.dstar) + sizeof (m_TCPack.dmr) + sizeof(m_TCPack.m17) + sizeof(m_TCPack.p25) + sizeof(m_TCPack.usrp) + sizeof(m_TCPack.sequence);
+	}
+
 	void EncodeInterlinkPacket(CBuffer &buf) const;
 
 	// identity
@@ -79,6 +85,9 @@ public:
 	void SetDvData(const uint8_t *);
 	void SetCodecData(const STCPacket *pack);
 	void SetTCParams(uint32_t seq);
+
+	// the round-trip timer
+	CTimer m_rtTimer;
 
 protected:
 	// data (dstar)

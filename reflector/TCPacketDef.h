@@ -17,12 +17,9 @@
 
 #include <cstdint>
 
-#include "Timer.h"
-
 enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4, p25 = 5, usrp = 6 };
 
 using STCPacket = struct tcpacket_tag {
-	CTimer rt_timer;
 	uint32_t sequence;
 	char module;
 	bool is_last;

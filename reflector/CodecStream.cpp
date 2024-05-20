@@ -129,23 +129,6 @@ void CCodecStream::Task(void)
 	STCPacket pack;
 	if (g_TCServer.Receive(m_CSModule, &pack, 8))
 	{
-		// update statistics
-		auto rt = pack.rt_timer.time();	// the round-trip time
-		if (0 == m_RTCount)
-		{
-			m_RTMin = rt;
-			m_RTMax = rt;
-		}
-		else
-		{
-			if (rt < m_RTMin)
-				m_RTMin = rt;
-			else if (rt > m_RTMax)
-				m_RTMax = rt;
-		}
-		m_RTSum += rt;
-		m_RTCount++;
-
 		if ( m_LocalQueue.IsEmpty() )
 		{
 			std::cout << "Unexpected transcoded packet received from transcoder: Module='" << pack.module << "' StreamID=" << std::hex << std::showbase << ntohs(pack.streamid) << std::endl;
@@ -158,6 +141,23 @@ void CCodecStream::Task(void)
 			// make sure this is the correct packet
 			if ((pack.streamid == Packet->GetCodecPacket()->streamid) && (pack.sequence == Packet->GetCodecPacket()->sequence))
 			{
+				// update statistics
+				auto rt =Packet->m_rtTimer.time();	// the round-trip time
+				if (0 == m_RTCount)
+				{
+					m_RTMin = rt;
+					m_RTMax = rt;
+				}
+				else
+				{
+					if (rt < m_RTMin)
+						m_RTMin = rt;
+					else if (rt > m_RTMax)
+						m_RTMax = rt;
+				}
+				m_RTSum += rt;
+				m_RTCount++;
+
 				// update content with transcoded data
 				Packet->SetCodecData(&pack);
 				// mark the DStar sync frames if the source isn't dstar
@@ -207,6 +207,7 @@ void CCodecStream::Task(void)
 				return;
 			}
 
+			Frame->m_rtTimer.start();	// start the round-trip timer
 			if (g_TCServer.Send(Frame->GetCodecPacket()))
 			{
 				// ditto, we'll try to fix this on the next pass
@@ -214,6 +215,7 @@ void CCodecStream::Task(void)
 			}
 			// the fd was good and then the send was successful, so...
 			// push the frame to our local queue where it can wait for the transcoder
+
 			m_LocalQueue.Push(std::move(m_Queue.Pop()));
 		}
 	}
