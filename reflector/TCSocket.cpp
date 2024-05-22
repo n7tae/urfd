@@ -231,8 +231,6 @@ bool CTCServer::Open(const std::string &address, const std::string &modules, uin
 		pf.revents = 0;
 	}
 
-	std::cout << "Waiting for " << m_Modules.size() << " transcoder connection(s) on " << m_Ip << "..." << std::endl;
-
 	return Accept();
 }
 
@@ -277,14 +275,17 @@ bool CTCServer::Accept()
 		if (GetFD(c) < 0)
 			wmod.append(1, c);
 	}
+
+	std::cout << "Waiting at " << m_Ip << " for transcoder connection";
 	if (wmod.size() > 1)
 	{
-		std::cout << "Waiting for transcoder connections for modules " << wmod << "..." << std::endl;
+		std::cout << "s for modules " << wmod << "..." << std::endl;
 	}
 	else
 	{
-		std::cout << "Waiting for transcoder connection for module " << wmod << "..." << std::endl;
+		std::cout << " for module " << wmod << "..." << std::endl;
 	}
+	std::cout << wmod << "..." << std::endl;
 
 	while (AnyAreClosed())
 	{
