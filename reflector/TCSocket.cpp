@@ -279,11 +279,11 @@ bool CTCServer::Accept()
 	std::cout << "Waiting at " << m_Ip << " for transcoder connection";
 	if (wmod.size() > 1)
 	{
-		std::cout << "s for modules " << wmod << "..." << std::endl;
+		std::cout << "s for modules ";
 	}
 	else
 	{
-		std::cout << " for module " << wmod << "..." << std::endl;
+		std::cout << " for module ";
 	}
 	std::cout << wmod << "..." << std::endl;
 
