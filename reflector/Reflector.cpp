@@ -31,9 +31,9 @@ CReflector::CReflector()
 CReflector::~CReflector()
 {
 	keep_running = false;
-	if ( m_XmlReportFuture.valid() )
+	if ( m_MaintenanceFuture.valid() )
 	{
-		m_XmlReportFuture.get();
+		m_MaintenanceFuture.get();
 	}
 
 	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
@@ -131,7 +131,7 @@ bool CReflector::Start(void)
 	// start the reporting thread
 	try
 	{
-		m_XmlReportFuture = std::async(std::launch::async, &CReflector::StateReportThread, this);
+		m_MaintenanceFuture = std::async(std::launch::async, &CReflector::MaintenanceThread, this);
 	}
 	catch(const std::exception& e)
 	{
@@ -155,9 +155,9 @@ void CReflector::Stop(void)
 	g_TCServer.Close();
 
 	// stop & delete report threads
-	if ( m_XmlReportFuture.valid() )
+	if ( m_MaintenanceFuture.valid() )
 	{
-		m_XmlReportFuture.get();
+		m_MaintenanceFuture.get();
 	}
 
 	// stop & delete all router thread
@@ -333,12 +333,11 @@ void CReflector::RouterThread(const char ThisModule)
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// report threads
-
+// Maintenance thread hands xml and/or json update,
+// and also keeps the transcoder TCP port(s) connected
 #define XML_UPDATE_PERIOD 10
 
-void CReflector::StateReportThread()
+void CReflector::MaintenanceThread()
 {
 	std::string xmlpath, jsonpath;
 #ifndef NO_DHT
@@ -348,6 +347,7 @@ void CReflector::StateReportThread()
 		xmlpath.assign(g_Configure.GetString(g_Keys.files.xml));
 	if (g_Configure.Contains(g_Keys.files.json))
 		jsonpath.assign(g_Configure.GetString(g_Keys.files.json));
+	auto tcport = g_Configure.GetUnsigned(g_Keys.tc.port);
 
 	if (xmlpath.empty() && jsonpath.empty())
 		return;	// nothing to do
@@ -387,33 +387,41 @@ void CReflector::StateReportThread()
 			}
 		}
 
-		// and wait a bit and do something useful at the same time
-		for (int i=0; i< XML_UPDATE_PERIOD && keep_running; i++)
-		{
 #ifndef NO_DHT
-			// update the dht data, if needed
-			if (peers_changed)
-			{
-				PutDHTPeers();
-				peers_changed = false;
-			}
-			if (clients_changed)
-			{
-				PutDHTClients();
-				clients_changed = false;
-			}
-			if (users_changed)
-			{
-				PutDHTUsers();
-				users_changed = false;
-			}
+		// update the dht data, if needed
+		if (peers_changed)
+		{
+			PutDHTPeers();
+			peers_changed = false;
+		}
+		if (clients_changed)
+		{
+			PutDHTClients();
+			clients_changed = false;
+		}
+		if (users_changed)
+		{
+			PutDHTUsers();
+			users_changed = false;
+		}
 #endif
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+		// and wait a bit and do something useful at the same time
+		for (int i=0; i< XML_UPDATE_PERIOD*10 && keep_running; i++)
+		{
+			if (tcport && g_TCServer.AnyAreClosed())
+			{
+				if (g_TCServer.Accept())
+				{
+					std::cerr << "Unrecoverable error, aborting..." << std::endl;
+					abort();
+				}
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
 // notifications
 
 void CReflector::OnPeersChanged(void)

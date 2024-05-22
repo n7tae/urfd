@@ -108,24 +108,6 @@ void CCodecStream::Thread()
 
 void CCodecStream::Task(void)
 {
-	int fd = g_TCServer.GetFD(m_CSModule);
-
-	// if the fd is not good we need to reestablish it
-	if (fd < 0) // log the situation
-		std::cout << "Lost connection to transcoder, module '" << m_CSModule << "', waiting for new connection..." << std::endl;
-
-	while (fd < 0)
-	{
-		if (g_TCServer.Accept()) // try to get a connection
-		{
-			std::cerr << "Unrecoverable ERROR! Quiting..." << std::endl;
-			abort();
-		}
-		// Either Accept timed out, or it's possile that other Transcoder ports were instead reopened
-		// So we'll check to see if this module is now open
-		fd = g_TCServer.GetFD(m_CSModule);
-	}
-
 	STCPacket pack;
 	if (g_TCServer.Receive(m_CSModule, &pack, 8))
 	{

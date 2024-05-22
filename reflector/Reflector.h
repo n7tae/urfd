@@ -94,7 +94,7 @@ protected:
 
 	// threads
 	void RouterThread(const char);
-	void StateReportThread(void);
+	void MaintenanceThread(void);
 
 	// streams
 	std::shared_ptr<CPacketStream> GetStream(char);
@@ -121,7 +121,7 @@ protected:
 	// threads
 	std::atomic<bool> keep_running;
 	std::unordered_map<char, std::future<void>> m_RouterFuture;
-	std::future<void> m_XmlReportFuture;
+	std::future<void> m_MaintenanceFuture;
 
 #ifndef NO_DHT
 	// Distributed Hash Table

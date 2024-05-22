@@ -63,13 +63,20 @@ void CTCSocket::Close(int fd)
 	{
 		if (fd == p.fd)
 		{
-			if (close(p.fd))
+			if (shutdown(p.fd, SHUT_RDWR))
 			{
-				std::cerr << "Error while closing " << fd << ": ";
-				perror("close");
+				perror("shutdown");
 			}
 			else
-				p.fd = -1;
+			{
+				if (close(p.fd))
+				{
+					std::cerr << "Error while closing " << fd << ": ";
+					perror("close");
+				}
+				else
+					p.fd = -1;
+			}
 			return;
 		}
 	}
@@ -96,7 +103,7 @@ char CTCSocket::GetMod(int fd) const
 	return '?';
 }
 
-bool CTCServer::any_are_closed()
+bool CTCServer::AnyAreClosed() const
 {
 	for (auto &fds : m_Pfd)
 	{
@@ -171,7 +178,6 @@ bool CTCServer::Receive(char module, STCPacket *packet, int ms)
 	auto pfds = &m_Pfd[pos];
 	if (pfds->fd < 0)
 	{
-		std::cerr << "Can't receive on module '" << module << "' because it's closed" << std::endl;
 		return rv;
 	}
 
@@ -265,10 +271,14 @@ bool CTCServer::Accept()
 		return true;
 	}
 
-	while (any_are_closed())
+	while (AnyAreClosed())
 	{
 		if (acceptone(fd))
+		{
+			close(fd);
+			Close();
 			return true;
+		}
 	}
 
 	close(fd);
