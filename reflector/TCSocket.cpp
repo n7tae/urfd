@@ -155,7 +155,6 @@ bool CTCSocket::receive(int fd, STCPacket *packet)
 
 	if (0 == n)
 	{
-		std::cerr << "recv(): Module '" << GetMod(fd) << "' has been closed from the other side" << std::endl;
 		return true;
 	}
 
