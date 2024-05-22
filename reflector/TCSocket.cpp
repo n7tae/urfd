@@ -271,6 +271,21 @@ bool CTCServer::Accept()
 		return true;
 	}
 
+	std::string wmod;
+	for (const char c : m_Modules)
+	{
+		if (GetFD(c) < 0)
+			wmod.append(1, c);
+	}
+	if (wmod.size() > 1)
+	{
+		std::cout << "Waiting for transcoder connections for modules " << wmod << "..." << std::endl;
+	}
+	else
+	{
+		std::cout << "Waiting for transcoder connection for module " << wmod << "..." << std::endl;
+	}
+
 	while (AnyAreClosed())
 	{
 		if (acceptone(fd))
@@ -383,7 +398,7 @@ bool CTCClient::Connect(char module)
 	{
 		if (ECONNREFUSED == errno)
 		{
-			if (0 == ++count % 100) std::cout << "Connection refused! Restart the system." << std::endl;
+			if (0 == ++count % 100) std::cout << "Connection refused! Restart the reflector." << std::endl;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 		else
