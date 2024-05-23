@@ -388,7 +388,8 @@ bool CTCClient::Connect(char module)
 	int yes = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)))
 	{
-		perror("TC client setsockopt");
+		std::cerr << "Moudule " << module << " error:";
+		perror("setsockopt");
 		close(fd);
 		return true;
 	}
@@ -403,7 +404,7 @@ bool CTCClient::Connect(char module)
 		}
 		else
 		{
-			std::cerr << "For module '" << module << "' : ";
+			std::cerr << "Module " << module << " error: ";
 			perror("connect");
 			close(fd);
 			return true;
@@ -439,6 +440,7 @@ bool CTCClient::ReConnect()
 	{
 		if (-1 == GetFD(m))
 		{
+			std::cout << "Reconnecting module " << m << "..." << std::endl;
 			if (Connect(m))
 			{
 				rv = true;
