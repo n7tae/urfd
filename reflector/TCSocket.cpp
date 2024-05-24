@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <thread>
 #include <chrono>
+#include <csignal>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -433,21 +434,19 @@ bool CTCClient::Connect(char module)
 	return false;
 }
 
-bool CTCClient::ReConnect()
+void CTCClient::ReConnect()
 {
-	bool rv = false;
 	for (char m : m_Modules)
 	{
-		if (-1 == GetFD(m))
+		if (0 > GetFD(m))
 		{
 			std::cout << "Reconnecting module " << m << "..." << std::endl;
 			if (Connect(m))
 			{
-				rv = true;
+				raise(SIGINT);
 			}
 		}
 	}
-	return rv;
 }
 
 void CTCClient::Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms)

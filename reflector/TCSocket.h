@@ -73,7 +73,7 @@ public:
 	~CTCClient() {}
 	bool Open(const std::string &address, const std::string &modules, uint16_t port);
 	void Receive(std::queue<std::unique_ptr<STCPacket>> &queue, int ms);
-	bool ReConnect();
+	void ReConnect();
 
 private:
 	std::string m_Address;
