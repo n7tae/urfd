@@ -290,7 +290,7 @@ bool CConfigure::ReadData(const std::string &path)
 				break;
 			case ESection::tc:
 				if (0 == key.compare(JPORT))
-					data[g_Keys.tc.port] = getUnsigned(value, "Transcoder Port", 1024, 40000, 10100);
+					data[g_Keys.tc.port] = getUnsigned(value, "Transcoder Port", 0, 40000, 10100);
 				else if (0 == key.compare(JBINDINGADDRESS))
 					data[g_Keys.tc.bind] = value;
 				else if (0 == key.compare(JMODULES))
