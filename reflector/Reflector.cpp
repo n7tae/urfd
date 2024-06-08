@@ -21,12 +21,7 @@
 
 #include "Global.h"
 
-CReflector::CReflector()
-{
-#ifndef NO_DHT
-	peers_put_count = clients_put_count = users_put_count = 0;
-#endif
-}
+CReflector::CReflector() {}
 
 CReflector::~CReflector()
 {
@@ -340,9 +335,6 @@ void CReflector::RouterThread(const char ThisModule)
 void CReflector::MaintenanceThread()
 {
 	std::string xmlpath, jsonpath;
-#ifndef NO_DHT
-	peers_changed = clients_changed = users_changed = true;
-#endif
 	if (g_Configure.Contains(g_Keys.files.xml))
 		xmlpath.assign(g_Configure.GetString(g_Keys.files.xml));
 	if (g_Configure.Contains(g_Keys.files.json))
@@ -387,24 +379,6 @@ void CReflector::MaintenanceThread()
 			}
 		}
 
-#ifndef NO_DHT
-		// update the dht data, if needed
-		if (peers_changed)
-		{
-			PutDHTPeers();
-			peers_changed = false;
-		}
-		if (clients_changed)
-		{
-			PutDHTClients();
-			clients_changed = false;
-		}
-		if (users_changed)
-		{
-			PutDHTUsers();
-			users_changed = false;
-		}
-#endif
 
 		// and wait a bit and do something useful at the same time
 		for (int i=0; i< XML_UPDATE_PERIOD*10 && keep_running; i++)
@@ -420,29 +394,6 @@ void CReflector::MaintenanceThread()
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}
-}
-
-// notifications
-
-void CReflector::OnPeersChanged(void)
-{
-#ifndef NO_DHT
-	peers_changed = true;
-#endif
-}
-
-void CReflector::OnClientsChanged(void)
-{
-#ifndef NO_DHT
-	clients_changed = true;
-#endif
-}
-
-void CReflector::OnUsersChanged(void)
-{
-#ifndef NO_DHT
-	users_changed = true;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -563,94 +514,6 @@ void CReflector::WriteXmlFile(std::ofstream &xmlFile)
 
 #ifndef NO_DHT
 // DHT put() and get()
-void CReflector::PutDHTPeers()
-{
-	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	// load it up
-	SUrfdPeers1 p;
-	time(&p.timestamp);
-	p.sequence = peers_put_count++;
-	auto peers = GetPeers();
-	for (auto pit=peers->cbegin(); pit!=peers->cend(); pit++)
-	{
-		p.list.emplace_back((*pit)->GetCallsign().GetCS(), (*pit)->GetReflectorModules(), (*pit)->GetConnectTime());
-	}
-	ReleasePeers();
-
-	auto nv = std::make_shared<dht::Value>(p);
-	nv->user_type.assign(URFD_PEERS_1);
-	nv->id = toUType(EUrfdValueID::Peers);
-
-	node.putSigned(
-		refhash,
-		nv,
-#ifdef DEBUG
-		[](bool success){ std::cout << "PutDHTPeers() " << (success ? "successful" : "unsuccessful") << std::endl; },
-#else
-		[](bool success){ if (! success) std::cout << "PutDHTPeers() unsuccessful" << std::endl; },
-#endif
-		true	// permanent!
-	);
-}
-
-void CReflector::PutDHTClients()
-{
-	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdClients1 c;
-	time(&c.timestamp);
-	c.sequence = clients_put_count++;
-	auto clients = GetClients();
-	for (auto cit=clients->cbegin(); cit!=clients->cend(); cit++)
-	{
-		c.list.emplace_back((*cit)->GetCallsign().GetCS(), std::string((*cit)->GetIp().GetAddress()), (*cit)->GetReflectorModule(), (*cit)->GetConnectTime(), (*cit)->GetLastHeardTime());
-	}
-	ReleaseClients();
-
-	auto nv = std::make_shared<dht::Value>(c);
-	nv->user_type.assign(URFD_CLIENTS_1);
-	nv->id = toUType(EUrfdValueID::Clients);
-
-	node.putSigned(
-		refhash,
-		nv,
-#ifdef DEBUG
-		[](bool success){ std::cout << "PutDHTClients() " << (success ? "successful" : "unsuccessful") << std::endl; },
-#else
-		[](bool success){ if (! success) std::cout << "PutDHTClients() unsuccessful" << std::endl; },
-#endif
-		false	// not permanent!
-	);
-}
-
-void CReflector::PutDHTUsers()
-{
-	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdUsers1 u;
-	time(&u.timestamp);
-	u.sequence = users_put_count++;
-	auto users = GetUsers();
-	for (auto uit=users->cbegin(); uit!=users->cend(); uit++)
-	{
-		u.list.emplace_back((*uit).GetCallsign(), std::string((*uit).GetViaNode()), (*uit).GetOnModule(), (*uit).GetViaPeer(), (*uit).GetLastHeardTime());
-	}
-	ReleaseUsers();
-
-	auto nv = std::make_shared<dht::Value>(u);
-	nv->user_type.assign(URFD_USERS_1);
-	nv->id = toUType(EUrfdValueID::Users);
-
-	node.putSigned(
-		refhash,
-		nv,
-#ifdef DEBUG
-		[](bool success){ std::cout << "PutDHTUsers() " << (success ? "successful" : "unsuccessful") << std::endl; },
-#else
-		[](bool success){ if (! success) std::cout << "PutDHTUsers() unsuccessful" << std::endl; },
-#endif
-		false	// not permanent
-	);
-}
-
 void CReflector::PutDHTConfig()
 {
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));

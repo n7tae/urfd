@@ -76,9 +76,6 @@ public:
 
 	// notifications
 
-	void OnPeersChanged(void);
-	void OnClientsChanged(void);
-	void OnUsersChanged(void);
 #ifndef NO_DHT
 	void GetDHTConfig(const std::string &cs);
 #endif
@@ -87,9 +84,6 @@ protected:
 #ifndef NO_DHT
 	// Publish DHT
 	void PutDHTConfig();
-	void PutDHTPeers();
-	void PutDHTClients();
-	void PutDHTUsers();
 #endif
 
 	// threads
@@ -127,7 +121,5 @@ protected:
 	// Distributed Hash Table
 	dht::DhtRunner node;
 	dht::InfoHash refhash;
-	unsigned int peers_put_count, clients_put_count, users_put_count;
-	std::atomic<bool> peers_changed, clients_changed, users_changed;
 #endif
 };
