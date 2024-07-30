@@ -27,7 +27,7 @@
 #include "PacketStream.h"
 
 #ifndef NO_DHT
-#include "urfd-dht-values.h"
+#include "dht-values.h"
 #endif
 
 
@@ -76,9 +76,6 @@ public:
 
 	// notifications
 
-	void OnPeersChanged(void);
-	void OnClientsChanged(void);
-	void OnUsersChanged(void);
 #ifndef NO_DHT
 	void GetDHTConfig(const std::string &cs);
 #endif
@@ -87,14 +84,11 @@ protected:
 #ifndef NO_DHT
 	// Publish DHT
 	void PutDHTConfig();
-	void PutDHTPeers();
-	void PutDHTClients();
-	void PutDHTUsers();
 #endif
 
 	// threads
 	void RouterThread(const char);
-	void StateReportThread(void);
+	void MaintenanceThread(void);
 
 	// streams
 	std::shared_ptr<CPacketStream> GetStream(char);
@@ -121,13 +115,11 @@ protected:
 	// threads
 	std::atomic<bool> keep_running;
 	std::unordered_map<char, std::future<void>> m_RouterFuture;
-	std::future<void> m_XmlReportFuture;
+	std::future<void> m_MaintenanceFuture;
 
 #ifndef NO_DHT
 	// Distributed Hash Table
 	dht::DhtRunner node;
 	dht::InfoHash refhash;
-	unsigned int peers_put_count, clients_put_count, users_put_count;
-	std::atomic<bool> peers_changed, clients_changed, users_changed;
 #endif
 };

@@ -22,7 +22,6 @@
 #include <future>
 
 #include "DVFramePacket.h"
-#include "UnixDgramSocket.h"
 #include "SafePacketQueue.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +50,7 @@ public:
 	void Task(void);
 
 	// pass-through
-	void Push(std::unique_ptr<CPacket> p) { m_Queue.Push(std::move(p)); }
+	void Push(std::unique_ptr<CDvFramePacket> p) { m_Queue.Push(std::move(p)); }
 
 protected:
 	// identity
@@ -64,15 +63,11 @@ protected:
 	uint8_t         m_uiPid;
 	ECodecType      m_eCodecIn;
 
-	// sockets
-	CUnixDgramReader m_TCReader;
-	CUnixDgramWriter m_TCWriter;
-
 	// associated packet stream
 	CPacketStream  *m_PacketStream;
 
 	// queues
-	CSafePacketQueue<std::unique_ptr<CPacket>> m_LocalQueue, m_Queue;
+	CSafePacketQueue<std::unique_ptr<CDvFramePacket>> m_LocalQueue, m_Queue;
 
 	// thread
 	std::atomic<bool> keep_running;

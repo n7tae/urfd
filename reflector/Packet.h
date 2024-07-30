@@ -72,7 +72,10 @@ public:
 protected:
 	// network
 	void EncodeInterlinkPacket(const char *magic, CBuffer &Buffer) const;
-	static unsigned int GetNetworkSize();
+	static constexpr unsigned GetNetworkSize() noexcept
+	{
+		return 4u + sizeof(ECodecType) + sizeof(EOrigin) + sizeof(bool) + sizeof(char) + sizeof(uint16_t) + sizeof(uint32_t) + 7u * sizeof(uint8_t);
+	}
 
 	// data
 	// if you change something here, you'll need to update the CBuffer ctor and EncodeInterlinkPacket()!!!

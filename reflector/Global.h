@@ -21,6 +21,7 @@
 #include "LookupDmr.h"
 #include "LookupNxdn.h"
 #include "LookupYsf.h"
+#include "TCSocket.h"
 #include "JsonKeys.h"
 
 extern CReflector  g_Reflector;
@@ -31,3 +32,4 @@ extern CLookupDmr  g_LDid;
 extern CLookupNxdn g_LNid;
 extern CLookupYsf  g_LYtr;
 extern SJsonKeys   g_Keys;
+extern CTCServer   g_TCServer;

@@ -64,9 +64,6 @@ void CPeers::AddPeer(std::shared_ptr<CPeer> peer)
 		clients->AddClient(*cit);
 	}
 	g_Reflector.ReleaseClients();
-
-	// notify
-	g_Reflector.OnPeersChanged();
 }
 
 void CPeers::RemovePeer(std::shared_ptr<CPeer> peer)
@@ -92,8 +89,6 @@ void CPeers::RemovePeer(std::shared_ptr<CPeer> peer)
 			// remove it
 			std::cout << "Peer " << (*pit)->GetCallsign() << " at " << (*pit)->GetIp() << " removed" << std::endl;
 			pit = m_Peers.erase(pit);
-			// notify
-			g_Reflector.OnPeersChanged();
 		}
 		else
 		{

@@ -38,11 +38,6 @@ CPacket::CPacket()
 };
 
 // for the network
-unsigned int CPacket::GetNetworkSize()
-{
-	return 20u;
-}
-
 CPacket::CPacket(const CBuffer &buf)
 {
 	if (buf.size() > 19)
@@ -53,7 +48,7 @@ CPacket::CPacket(const CBuffer &buf)
 		m_bLastPacket        = data[6] ? true : false;
 		m_cModule            = data[7];
 		m_uiStreamId         = data[8]*0x100u + data[9];
-		m_uiM17FrameNumber   = data[10]*0x1000000u + data[11]*0x10000u + data[12]*0x100 + data[13];
+		m_uiM17FrameNumber   = data[10]*0x1000000u + data[11]*0x10000u + data[12]*0x100u + data[13];
 		m_uiDstarPacketId    = data[14];
 		m_uiDmrPacketId      = data[15];
 		m_uiDmrPacketSubid   = data[16];
@@ -93,17 +88,17 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid)
 {
 	m_uiStreamId = sid;
 	m_uiDstarPacketId = dstarpid;
-	m_uiDmrPacketId = 0xFF;
-	m_uiDmrPacketSubid  = 0xFF;
-	m_uiYsfPacketId = 0xFF;
-	m_uiYsfPacketSubId = 0xFF;
-	m_uiYsfPacketFrameId = 0xFF;
-	m_uiNXDNPacketId = 0xFF;
-	m_uiM17FrameNumber = 0xFFFFFFFFU;
+	m_uiDmrPacketId = 0xffu;
+	m_uiDmrPacketSubid  = 0xffu;
+	m_uiYsfPacketId = 0xffu;
+	m_uiYsfPacketSubId = 0xffu;
+	m_uiYsfPacketFrameId = 0xffu;
+	m_uiNXDNPacketId = 0xffu;
+	m_uiM17FrameNumber = 0xffffffffu;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dstar;
-	m_bLastPacket = (0x40U == (dstarpid & 0x40U));
+	m_bLastPacket = (0x40u == (dstarpid & 0x40u));
 };
 
 // dmr constructor
@@ -112,12 +107,12 @@ CPacket::CPacket(uint16_t sid, uint8_t dmrpid, uint8_t dmrspid, bool lastpacket)
 	m_uiStreamId = sid;
 	m_uiDmrPacketId = dmrpid;
 	m_uiDmrPacketSubid = dmrspid;
-	m_uiDstarPacketId = 0xFF;
-	m_uiYsfPacketId = 0xFF;
-	m_uiYsfPacketSubId = 0xFF;
-	m_uiYsfPacketFrameId = 0xFF;
-	m_uiNXDNPacketId = 0xFF;
-	m_uiM17FrameNumber = 0xFFFFFFFFU;
+	m_uiDstarPacketId = 0xffu;
+	m_uiYsfPacketId = 0xffu;
+	m_uiYsfPacketSubId = 0xffu;
+	m_uiYsfPacketFrameId = 0xffu;
+	m_uiNXDNPacketId = 0xffu;
+	m_uiM17FrameNumber = 0xffffffffu;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
@@ -131,11 +126,11 @@ CPacket::CPacket(uint16_t sid, uint8_t ysfpid, uint8_t ysfsubpid, uint8_t ysffri
 	m_uiYsfPacketId = ysfpid;
 	m_uiYsfPacketSubId = ysfsubpid;
 	m_uiYsfPacketFrameId = ysffrid;
-	m_uiDstarPacketId = 0xFF;
-	m_uiDmrPacketId = 0xFF;
-	m_uiDmrPacketSubid = 0xFF;
-	m_uiNXDNPacketId = 0xFF;
-	m_uiM17FrameNumber = 0xFFFFFFFFU;
+	m_uiDstarPacketId = 0xffu;
+	m_uiDmrPacketId = 0xffu;
+	m_uiDmrPacketSubid = 0xffu;
+	m_uiNXDNPacketId = 0xffu;
+	m_uiM17FrameNumber = 0xffffffffu;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
@@ -147,13 +142,13 @@ CPacket::CPacket(uint16_t sid, uint8_t pid, bool lastpacket)
 {
 	m_uiStreamId = sid;
 	m_uiNXDNPacketId = pid;
-	m_uiDmrPacketId = 0xFF;
-	m_uiDmrPacketSubid = 0xFF;
-	m_uiDstarPacketId = 0xFF;
-	m_uiYsfPacketId = 0xFF;
-	m_uiYsfPacketSubId = 0xFF;
-	m_uiYsfPacketFrameId = 0xFF;
-	m_uiM17FrameNumber = 0xFFFFFFFFU;
+	m_uiDmrPacketId = 0xffu;
+	m_uiDmrPacketSubid = 0xffu;
+	m_uiDstarPacketId = 0xffu;
+	m_uiYsfPacketId = 0xffu;
+	m_uiYsfPacketSubId = 0xffu;
+	m_uiYsfPacketFrameId = 0xffu;
+	m_uiM17FrameNumber = 0xffffffffu;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = ECodecType::dmr;
@@ -164,14 +159,14 @@ CPacket::CPacket(uint16_t sid, uint8_t pid, bool lastpacket)
 CPacket::CPacket(uint16_t sid, bool isusrp, bool lastpacket)
 {
 	m_uiStreamId = sid;
-	m_uiDstarPacketId = 0xFF;
-	m_uiDmrPacketId = 0xFF;
-	m_uiDmrPacketSubid  = 0xFF;
-	m_uiYsfPacketId = 0xFF;
-	m_uiYsfPacketSubId = 0xFF;
-	m_uiYsfPacketFrameId = 0xFF;
-	m_uiNXDNPacketId = 0xFF;
-	m_uiM17FrameNumber = 0xFFFFFFFFU;
+	m_uiDstarPacketId = 0xffu;
+	m_uiDmrPacketId = 0xffu;
+	m_uiDmrPacketSubid  = 0xffu;
+	m_uiYsfPacketId = 0xffu;
+	m_uiYsfPacketSubId = 0xffu;
+	m_uiYsfPacketFrameId = 0xffu;
+	m_uiNXDNPacketId = 0xffu;
+	m_uiM17FrameNumber = 0xffffffffu;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	isusrp ? m_eCodecIn = ECodecType::usrp : ECodecType::p25;
@@ -188,8 +183,8 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 	m_uiYsfPacketId = ysfpid;
 	m_uiYsfPacketSubId = ysfsubpid;
 	m_uiYsfPacketFrameId = ysffrid;
-	m_uiM17FrameNumber = 0xFFFFFFFFU;
-	m_uiNXDNPacketId = 0xFF;
+	m_uiM17FrameNumber = 0xffffffffu;
+	m_uiNXDNPacketId = 0xffu;
 	m_cModule = ' ';
 	m_eOrigin = EOrigin::local;
 	m_eCodecIn = codecIn;
@@ -200,15 +195,15 @@ CPacket::CPacket(uint16_t sid, uint8_t dstarpid, uint8_t dmrpid, uint8_t dmrsubp
 CPacket::CPacket(const CM17Packet &m17) : CPacket()
 {
 	m_uiStreamId = m17.GetStreamId();
-	m_uiDstarPacketId = 0xFF;
-	m_uiDmrPacketId = 0xFF;
-	m_uiDmrPacketSubid  = 0xFF;
-	m_uiYsfPacketId = 0xFF;
-	m_uiYsfPacketSubId = 0xFF;
-	m_uiYsfPacketFrameId = 0xFF;
-	m_uiNXDNPacketId = 0xFF;
-	m_eCodecIn = (0x6U == (0x6U & m17.GetFrameType())) ? ECodecType::c2_1600 : ECodecType::c2_3200;
-	m_uiM17FrameNumber = 0xFFFFU & m17.GetFrameNumber();
+	m_uiDstarPacketId = 0xffu;
+	m_uiDmrPacketId = 0xffu;
+	m_uiDmrPacketSubid  = 0xffu;
+	m_uiYsfPacketId = 0xffu;
+	m_uiYsfPacketSubId = 0xffu;
+	m_uiYsfPacketFrameId = 0xffu;
+	m_uiNXDNPacketId = 0xffu;
+	m_eCodecIn = (0x6u == (0x6u & m17.GetFrameType())) ? ECodecType::c2_1600 : ECodecType::c2_3200;
+	m_uiM17FrameNumber = 0xffffu & m17.GetFrameNumber();
 	m_bLastPacket = m17.IsLastPacket();
 }
 
@@ -223,31 +218,31 @@ void CPacket::UpdatePids(const uint32_t pid)
 	// derived from each other
 
 	// dstar pid needs update ?
-	if (  m_uiDstarPacketId ==  0xFF )
+	if (  m_uiDstarPacketId ==  0xffu )
 	{
-		m_uiDstarPacketId = (pid % 21);
+		m_uiDstarPacketId = (pid % 21u);
 	}
 	// dmr pids need update ?
-	if ( m_uiDmrPacketId == 0xFF )
+	if ( m_uiDmrPacketId == 0xffu )
 	{
-		m_uiDmrPacketId = ((pid / 3) % 6);
-		m_uiDmrPacketSubid = ((pid % 3) + 1);
+		m_uiDmrPacketId = ((pid / 3u) % 6u);
+		m_uiDmrPacketSubid = ((pid % 3u) + 1u);
 	}
 	// ysf pids need update ?
-	if ( m_uiYsfPacketId == 0xFF )
+	if ( m_uiYsfPacketId == 0xffu )
 	{
-		m_uiYsfPacketId = ((pid / 5) % 8);
-		m_uiYsfPacketSubId = pid % 5;
-		m_uiYsfPacketFrameId = ((pid / 5) & 0x7FU) << 1;
+		m_uiYsfPacketId = ((pid / 5u) % 8u);
+		m_uiYsfPacketSubId = pid % 5u;
+		m_uiYsfPacketFrameId = ((pid / 5u) & 0x7fu) << 1;
 	}
-	if ( m_uiNXDNPacketId == 0xFF )
+	if ( m_uiNXDNPacketId == 0xffu )
 	{
-		m_uiNXDNPacketId = pid % 4;
+		m_uiNXDNPacketId = pid % 4u;
 	}
 	// m17 needs update?
-	if (m_uiM17FrameNumber == 0xFFFFFFFFU)
+	if (m_uiM17FrameNumber == 0xffffffffu)
 	{
 		// frames are every 20 milliseconds, so the m17 data will come every 40 milliseconds
-		m_uiM17FrameNumber = (pid / 2) % 0x8000U;
+		m_uiM17FrameNumber = (pid / 2) % 0x8000u;
 	}
 }

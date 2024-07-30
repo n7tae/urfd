@@ -32,6 +32,7 @@
 
 // ini file keywords
 #define JAUTOLINKMODULE          "AutoLinkModule"
+#define JBINDINGADDRESS          "BindingAddress"
 #define JBLACKLISTPATH           "BlacklistPath"
 #define JBOOTSTRAP               "Bootstrap"
 #define JBRANDMEISTER            "Brandmeister"
@@ -79,7 +80,6 @@
 #define JRXPORT                  "RxPort"
 #define JSPONSOR                 "Sponsor"
 #define JSYSOPEMAIL              "SysopEmail"
-#define JTRANSCODED              "Transcoded"
 #define JTRANSCODER              "Transcoder"
 #define JTXPORT                  "TxPort"
 #define JURF                     "URF"
@@ -131,6 +131,7 @@ bool CConfigure::ReadData(const std::string &path)
 	ESection section = ESection::none;
 	counter = 0;
 	SJsonKeys::DB *pdb;
+	unsigned tcport = 0;
 
 	//data.ysfalmodule = 0;
 	//data.DPlusPort = data.DCSPort = data.DExtraPort = data.BMPort = data.DMRPlusPort = 0;
@@ -180,6 +181,8 @@ bool CConfigure::ReadData(const std::string &path)
 				section = ESection::names;
 			else if (0 == hname.compare(JIPADDRESSES))
 				section = ESection::ip;
+			else if (0 == hname.compare(JTRANSCODER))
+				section = ESection::tc;
 			else if (0 == hname.compare(JMODULES))
 				section = ESection::modules;
 			else if (0 == hname.compare(JDPLUS))
@@ -282,13 +285,23 @@ bool CConfigure::ReadData(const std::string &path)
 				{
 					data[g_Keys.ip.ipv6address] = value;
 				}
-				else if (0 == key.compare(JTRANSCODER))
+				else
+					badParam(key);
+				break;
+			case ESection::tc:
+				if (0 == key.compare(JPORT))
+					data[g_Keys.tc.port] = getUnsigned(value, "Transcoder Port", 0, 40000, 10100);
+				else if (0 == key.compare(JBINDINGADDRESS))
+					data[g_Keys.tc.bind] = value;
+				else if (0 == key.compare(JMODULES))
 				{
-					if (value.compare("local"))
+					std::string m(value);
+					if (checkModules(m))
 					{
-						std::cout << "WARNING: Line #" << counter << ": malformed transcoder address, '" << value << "', resetting..." << std::endl;
+						std::cerr << "ERROR: line #" << counter << ": no letters found in transcoder Modules: '" << m << "'" << std::endl;
+						rval = true;
 					}
-					data[g_Keys.ip.transcoder] = "local";
+					data[g_Keys.tc.modules] = m;
 				}
 				else
 					badParam(key);
@@ -303,16 +316,6 @@ bool CConfigure::ReadData(const std::string &path)
 						rval = true;
 					} else
 						data[g_Keys.modules.modules] = m;
-				}
-				else if (0 == key.compare(JTRANSCODED))
-				{
-					std::string m(value);
-					if (checkModules(m))
-					{
-						std::cerr << "ERROR: line #" << counter << ": no letters found in Transcoded: '" << m << "'" << std::endl;
-						rval = true;
-					} else
-						data[g_Keys.modules.tcmodules] = m;
 				}
 				else if (0 == key.compare(0, 11, "Description"))
 				{
@@ -606,27 +609,6 @@ bool CConfigure::ReadData(const std::string &path)
 	if (isDefined(ErrorLevel::fatal, JMODULES, JMODULES, g_Keys.modules.modules, rval))
 	{
 		const auto mods(data[g_Keys.modules.modules].get<std::string>());
-		if (data.contains(g_Keys.modules.tcmodules))
-		{
-			const auto tcmods(data[g_Keys.modules.tcmodules].get<std::string>());
-
-			// how many transcoded modules
-			auto size = tcmods.size();
-			if (3 != size && 1 != size)
-				std::cout << "WARNING: [" << JMODULES << ']' << JTRANSCODED << " doesn't define one (or three) modules" << std::endl;
-
-			// make sure each transcoded module is configured
-			for (auto c : tcmods)
-			{
-				if (std::string::npos == mods.find(c))
-				{
-					std::cerr << "ERROR: transcoded module '" << c << "' not found in defined modules" << std::endl;
-					rval = true;
-				}
-			}
-		}
-		else
-			data[g_Keys.modules.tcmodules] = nullptr;
 
 		// finally, check the module descriptions
 		for (unsigned i=0; i<26; i++)
@@ -649,6 +631,50 @@ bool CConfigure::ReadData(const std::string &path)
 					data[g_Keys.modules.descriptor[i]] = value;
 				}
 			}
+		}
+	}
+
+	// Transcoder section
+	if (isDefined(ErrorLevel::fatal, JTRANSCODER, JPORT, g_Keys.tc.port, rval))
+	{
+		tcport = GetUnsigned(g_Keys.tc.port);
+		if (tcport)
+		{
+			if (isDefined(ErrorLevel::fatal, JTRANSCODER, JBINDINGADDRESS, g_Keys.tc.bind, rval))
+			{
+				const auto bind(data[g_Keys.tc.bind].get<std::string>());
+				if (!std::regex_match(bind, IPv4RegEx) && !std::regex_match(bind, IPv6RegEx))
+				{
+					std::cerr << "ERROR: Transcoder bind address [" << bind << "] is malformed" << std::endl;
+					rval = true;
+				}
+			}
+			if (isDefined(ErrorLevel::fatal, JTRANSCODER, JMODULES, g_Keys.tc.modules, rval))
+			{
+				const auto tcmods(data[g_Keys.tc.modules].get<std::string>());
+
+				// how many transcoded modules
+				auto size = tcmods.size();
+				if (3 != size && 1 != size)
+					std::cout << "WARNING: [" << JTRANSCODER << ']' << JMODULES << " doesn't define one (or three) modules" << std::endl;
+
+				// make sure each transcoded module is configured
+				const std::string mods(GetString(g_Keys.modules.modules));
+				for (auto c : tcmods)
+				{
+					if (std::string::npos == mods.find(c))
+					{
+						std::cerr << "ERROR: transcoded module '" << c << "' not found in defined modules" << std::endl;
+						rval = true;
+					}
+				}
+			}
+		}
+		else
+		{
+			// there is no transcoder
+			data[g_Keys.tc.modules] = "";
+			data[g_Keys.tc.bind] = "";
 		}
 	}
 
@@ -691,11 +717,11 @@ bool CConfigure::ReadData(const std::string &path)
 	{
 		if (GetBoolean(g_Keys.usrp.enable))
 		{
-			if (IsString(g_Keys.modules.tcmodules))
+			if (tcport)
 			{
 				if (isDefined(ErrorLevel::fatal, JUSRP, JMODULE, g_Keys.usrp.module, rval))
 				{
-					if (std::string::npos == GetString(g_Keys.modules.tcmodules).find(GetString(g_Keys.usrp.module).at(0)))
+					if (std::string::npos == GetString(g_Keys.tc.modules).find(GetString(g_Keys.usrp.module).at(0)))
 					{
 						std::cerr << "ERROR: [" << JUSRP << ']' << JMODULE << " is not a transcoded module" << std::endl;
 						rval = true;

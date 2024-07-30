@@ -27,7 +27,7 @@
 
 bool CBMProtocol::Initialize(const char *type, const EProtocol ptype, const uint16_t port, const bool has_ipv4, const bool has_ipv6)
 {
-	m_HasTranscoder = g_Configure.IsString(g_Keys.modules.tcmodules);
+	m_HasTranscoder = (0 != g_Configure.GetUnsigned(g_Keys.tc.port));
 	if (! CProtocol::Initialize(type, ptype, port, has_ipv4, has_ipv6))
 		return false;
 

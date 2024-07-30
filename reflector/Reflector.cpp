@@ -21,19 +21,14 @@
 
 #include "Global.h"
 
-CReflector::CReflector()
-{
-#ifndef NO_DHT
-	peers_put_count = clients_put_count = users_put_count = 0;
-#endif
-}
+CReflector::CReflector() {}
 
 CReflector::~CReflector()
 {
 	keep_running = false;
-	if ( m_XmlReportFuture.valid() )
+	if ( m_MaintenanceFuture.valid() )
 	{
-		m_XmlReportFuture.get();
+		m_MaintenanceFuture.get();
 	}
 
 	for (auto it=m_Modules.cbegin(); it!=m_Modules.cend(); it++)
@@ -55,17 +50,25 @@ bool CReflector::Start(void)
 	const auto cs(g_Configure.GetString(g_Keys.names.callsign));
 	m_Callsign.SetCallsign(cs, false);
 	m_Modules.assign(g_Configure.GetString(g_Keys.modules.modules));
-	std::string tcmods(g_Configure.GetString(g_Keys.modules.tcmodules));
+	const auto tcmods(g_Configure.GetString(g_Keys.tc.modules));
+	const auto port = g_Configure.GetUnsigned(g_Keys.tc.port);
 
 #ifndef NO_DHT
 	// start the dht instance
 	refhash = dht::InfoHash::get(cs);
-	node.run(17171, dht::crypto::generateIdentity(cs), true);
+	node.run(17171, dht::crypto::generateIdentity(cs), true, 59973);
 	node.bootstrap(g_Configure.GetString(g_Keys.names.bootstrap), "17171");
 #endif
 
 	// let's go!
 	keep_running = true;
+
+	// init transcoder comms
+	if (port)
+	{
+		if (g_TCServer.Open(g_Configure.GetString(g_Keys.tc.bind), tcmods, port))
+			return true;
+	}
 
 	// init gate keeper. It can only return true!
 	g_GateKeeper.Init();
@@ -93,10 +96,13 @@ bool CReflector::Start(void)
 		if (stream)
 		{
 			// if it's a transcoded module, then we need to initialize the codec stream
-			if (std::string::npos != tcmods.find(c))
+			if (port)
 			{
-				if (stream->InitCodecStream())
-					return true;
+				if (std::string::npos != tcmods.find(c))
+				{
+					if (stream->InitCodecStream())
+						return true;
+				}
 			}
 			m_Stream[c] = stream;
 		}
@@ -120,7 +126,7 @@ bool CReflector::Start(void)
 	// start the reporting thread
 	try
 	{
-		m_XmlReportFuture = std::async(std::launch::async, &CReflector::StateReportThread, this);
+		m_MaintenanceFuture = std::async(std::launch::async, &CReflector::MaintenanceThread, this);
 	}
 	catch(const std::exception& e)
 	{
@@ -139,10 +145,14 @@ void CReflector::Stop(void)
 	// stop & delete all threads
 	keep_running = false;
 
+	// stop transcoder comms
+	// if it was never opened, then there is nothing to close;
+	g_TCServer.Close();
+
 	// stop & delete report threads
-	if ( m_XmlReportFuture.valid() )
+	if ( m_MaintenanceFuture.valid() )
 	{
-		m_XmlReportFuture.get();
+		m_MaintenanceFuture.get();
 	}
 
 	// stop & delete all router thread
@@ -318,21 +328,18 @@ void CReflector::RouterThread(const char ThisModule)
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// report threads
-
+// Maintenance thread hands xml and/or json update,
+// and also keeps the transcoder TCP port(s) connected
 #define XML_UPDATE_PERIOD 10
 
-void CReflector::StateReportThread()
+void CReflector::MaintenanceThread()
 {
 	std::string xmlpath, jsonpath;
-#ifndef NO_DHT
-	peers_changed = clients_changed = users_changed = true;
-#endif
 	if (g_Configure.Contains(g_Keys.files.xml))
 		xmlpath.assign(g_Configure.GetString(g_Keys.files.xml));
 	if (g_Configure.Contains(g_Keys.files.json))
 		jsonpath.assign(g_Configure.GetString(g_Keys.files.json));
+	auto tcport = g_Configure.GetUnsigned(g_Keys.tc.port);
 
 	if (xmlpath.empty() && jsonpath.empty())
 		return;	// nothing to do
@@ -372,54 +379,21 @@ void CReflector::StateReportThread()
 			}
 		}
 
+
 		// and wait a bit and do something useful at the same time
-		for (int i=0; i< XML_UPDATE_PERIOD && keep_running; i++)
+		for (int i=0; i< XML_UPDATE_PERIOD*10 && keep_running; i++)
 		{
-#ifndef NO_DHT
-			// update the dht data, if needed
-			if (peers_changed)
+			if (tcport && g_TCServer.AnyAreClosed())
 			{
-				PutDHTPeers();
-				peers_changed = false;
+				if (g_TCServer.Accept())
+				{
+					std::cerr << "Unrecoverable error, aborting..." << std::endl;
+					abort();
+				}
 			}
-			if (clients_changed)
-			{
-				PutDHTClients();
-				clients_changed = false;
-			}
-			if (users_changed)
-			{
-				PutDHTUsers();
-				users_changed = false;
-			}
-#endif
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// notifications
-
-void CReflector::OnPeersChanged(void)
-{
-#ifndef NO_DHT
-	peers_changed = true;
-#endif
-}
-
-void CReflector::OnClientsChanged(void)
-{
-#ifndef NO_DHT
-	clients_changed = true;
-#endif
-}
-
-void CReflector::OnUsersChanged(void)
-{
-#ifndef NO_DHT
-	users_changed = true;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -540,104 +514,17 @@ void CReflector::WriteXmlFile(std::ofstream &xmlFile)
 
 #ifndef NO_DHT
 // DHT put() and get()
-void CReflector::PutDHTPeers()
-{
-	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	// load it up
-	SUrfdPeers1 p;
-	time(&p.timestamp);
-	p.sequence = peers_put_count++;
-	auto peers = GetPeers();
-	for (auto pit=peers->cbegin(); pit!=peers->cend(); pit++)
-	{
-		p.list.emplace_back((*pit)->GetCallsign().GetCS(), (*pit)->GetReflectorModules(), (*pit)->GetConnectTime());
-	}
-	ReleasePeers();
-
-	auto nv = std::make_shared<dht::Value>(p);
-	nv->user_type.assign("urfd-peers-1");
-	nv->id = toUType(EUrfdValueID::Peers);
-
-	node.putSigned(
-		refhash,
-		nv,
-#ifdef DEBUG
-		[](bool success){ std::cout << "PutDHTPeers() " << (success ? "successful" : "unsuccessful") << std::endl; },
-#else
-		[](bool success){ if (! success) std::cout << "PutDHTPeers() unsuccessful" << std::endl; },
-#endif
-		true	// permanent!
-	);
-}
-
-void CReflector::PutDHTClients()
-{
-	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdClients1 c;
-	time(&c.timestamp);
-	c.sequence = clients_put_count++;
-	auto clients = GetClients();
-	for (auto cit=clients->cbegin(); cit!=clients->cend(); cit++)
-	{
-		c.list.emplace_back((*cit)->GetCallsign().GetCS(), std::string((*cit)->GetIp().GetAddress()), (*cit)->GetReflectorModule(), (*cit)->GetConnectTime(), (*cit)->GetLastHeardTime());
-	}
-	ReleaseClients();
-
-	auto nv = std::make_shared<dht::Value>(c);
-	nv->user_type.assign("urfd-clients-1");
-	nv->id = toUType(EUrfdValueID::Clients);
-
-	node.putSigned(
-		refhash,
-		nv,
-#ifdef DEBUG
-		[](bool success){ std::cout << "PutDHTClients() " << (success ? "successful" : "unsuccessful") << std::endl; },
-#else
-		[](bool success){ if (! success) std::cout << "PutDHTClients() unsuccessful" << std::endl; },
-#endif
-		true	// permanent!
-	);
-}
-
-void CReflector::PutDHTUsers()
-{
-	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
-	SUrfdUsers1 u;
-	time(&u.timestamp);
-	u.sequence = users_put_count++;
-	auto users = GetUsers();
-	for (auto uit=users->cbegin(); uit!=users->cend(); uit++)
-	{
-		u.list.emplace_back((*uit).GetCallsign(), std::string((*uit).GetViaNode()), (*uit).GetOnModule(), (*uit).GetViaPeer(), (*uit).GetLastHeardTime());
-	}
-	ReleaseUsers();
-
-	auto nv = std::make_shared<dht::Value>(u);
-	nv->user_type.assign("urfd-users-1");
-	nv->id = toUType(EUrfdValueID::Users);
-
-	node.putSigned(
-		refhash,
-		nv,
-#ifdef DEBUG
-		[](bool success){ std::cout << "PutDHTUsers() " << (success ? "successful" : "unsuccessful") << std::endl; },
-#else
-		[](bool success){ if (! success) std::cout << "PutDHTUsers() unsuccessful" << std::endl; },
-#endif
-		true	// permanent!
-	);
-}
-
 void CReflector::PutDHTConfig()
 {
 	const std::string cs(g_Configure.GetString(g_Keys.names.callsign));
 	SUrfdConfig1 cfg;
 	time(&cfg.timestamp);
-	cfg.cs.assign(cs);
-	cfg.ipv4.assign(g_Configure.GetString(g_Keys.ip.ipv4address));
-	cfg.ipv6.assign(g_Configure.GetString(g_Keys.ip.ipv6address));
-	cfg.mods.assign(g_Configure.GetString(g_Keys.modules.modules));
-	cfg.tcmods.assign(g_Configure.GetString(g_Keys.modules.tcmodules));
+	cfg.callsign.assign(cs);
+	cfg.ipv4addr.assign(g_Configure.GetString(g_Keys.ip.ipv4address));
+	cfg.ipv6addr.assign(g_Configure.GetString(g_Keys.ip.ipv6address));
+	cfg.modules.assign(g_Configure.GetString(g_Keys.modules.modules));
+	if (g_Configure.GetUnsigned(g_Keys.tc.port))
+		cfg.transcodedmods.assign(g_Configure.GetString(g_Keys.tc.modules));
 	cfg.url.assign(g_Configure.GetString(g_Keys.names.url));
 	cfg.email.assign(g_Configure.GetString(g_Keys.names.email));
 	cfg.country.assign(g_Configure.GetString(g_Keys.names.country));
@@ -663,11 +550,11 @@ void CReflector::PutDHTConfig()
 	cfg.port[toUType(EUrfdPorts::urf)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.urf.port);
 	cfg.port[toUType(EUrfdPorts::ysf)]     = (uint16_t)g_Configure.GetUnsigned(g_Keys.ysf.port);
 	cfg.g3enabled = g_Configure.GetBoolean(g_Keys.g3.enable);
-	for (const auto m : cfg.mods)
+	for (const auto m : cfg.modules)
 		cfg.description[m] = g_Configure.GetString(g_Keys.modules.descriptor[m-'A']);
 
 	auto nv = std::make_shared<dht::Value>(cfg);
-	nv->user_type.assign("urfd-config-1");
+	nv->user_type.assign(URFD_CONFIG_1);
 	nv->id = toUType(EUrfdValueID::Config);
 
 	node.putSigned(
@@ -696,7 +583,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 	node.get(
 		dht::InfoHash::get(cs),
 		[](const std::shared_ptr<dht::Value> &v) {
-			if (0 == v->user_type.compare("urfd-config-1"))
+			if (0 == v->user_type.compare(URFD_CONFIG_1))
 			{
 				auto rdat = dht::Value::unpack<SUrfdConfig1>(*v);
 				if (rdat.timestamp > cfg.timestamp)
@@ -717,7 +604,7 @@ void CReflector::GetDHTConfig(const std::string &cs)
 				if (cfg.timestamp)
 				{
 					// if the get() call was successful and there is a nonzero timestamp, then do the update
-					g_GateKeeper.GetInterlinkMap()->Update(cfg.cs, cfg.mods, cfg.ipv4, cfg.ipv6, cfg.port[toUType(EUrfdPorts::urf)], cfg.tcmods);
+					g_GateKeeper.GetInterlinkMap()->Update(cfg.callsign, cfg.modules, cfg.ipv4addr, cfg.ipv6addr, cfg.port[toUType(EUrfdPorts::urf)], cfg.transcodedmods);
 					g_GateKeeper.ReleaseInterlinkMap();
 				}
 				else

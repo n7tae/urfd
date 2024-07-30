@@ -18,9 +18,12 @@
 
 
 #include <string.h>
+
+#include "Global.h"
 #include "DVFramePacket.h"
 #include "PacketStream.h"
 #include "CodecStream.h"
+#include "Reflector.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // constructor
@@ -42,7 +45,6 @@ CCodecStream::~CCodecStream()
 		m_Future.get();
 	}
 	// and close the socket
-	m_TCReader.Close();
 }
 
 void CCodecStream::ResetStats(uint16_t streamid, ECodecType type)
@@ -80,12 +82,6 @@ void CCodecStream::ReportStats()
 
 bool CCodecStream::InitCodecStream()
 {
-	m_TCWriter.SetUp(REF2TC);
-	std::string name(TC2REF);
-	name.append(1, m_CSModule);
-	if (m_TCReader.Open(name.c_str()))
-		return true;
-	std::cout << "Initialized CodecStream receive socket " << name << std::endl;
 	keep_running = true;
 	try
 	{
@@ -94,7 +90,6 @@ bool CCodecStream::InitCodecStream()
 	catch(const std::exception& e)
 	{
 		std::cerr << "Could not start Codec processing on module '" << m_CSModule << "': " << e.what() << std::endl;
-		m_TCReader.Close();
 		return true;
 	}
 	return false;
@@ -114,27 +109,8 @@ void CCodecStream::Thread()
 void CCodecStream::Task(void)
 {
 	STCPacket pack;
-
-	// any packet from transcoder
-	if (m_TCReader.Receive(&pack, 5))
+	if (g_TCServer.Receive(m_CSModule, &pack, 8))
 	{
-		// update statistics
-		double rt = pack.rt_timer.time();	// the round-trip time
-		if (0 == m_RTCount)
-		{
-			m_RTMin = rt;
-			m_RTMax = rt;
-		}
-		else
-		{
-			if (rt < m_RTMin)
-				m_RTMin = rt;
-			else if (rt > m_RTMax)
-				m_RTMax = rt;
-		}
-		m_RTSum += rt;
-		m_RTCount++;
-
 		if ( m_LocalQueue.IsEmpty() )
 		{
 			std::cout << "Unexpected transcoded packet received from transcoder: Module='" << pack.module << "' StreamID=" << std::hex << std::showbase << ntohs(pack.streamid) << std::endl;
@@ -143,40 +119,60 @@ void CCodecStream::Task(void)
 		{
 			// pop the original packet
 			auto Packet = m_LocalQueue.Pop();
-			auto Frame = (CDvFramePacket *)Packet.get();
 
-			// do things look okay?
-			if (pack.module != m_CSModule)
-				std::cerr << "CodecStream '" << m_CSModule << "' received a transcoded packet from module '" << pack.module << "'" << std::dec << std::noshowbase << std::endl;
-			if (pack.sequence != Frame->GetCodecPacket()->sequence)
-				std::cerr << "Sequence mismatch: this voice frame=" << Frame->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
-			if (pack.streamid != Frame->GetCodecPacket()->streamid)
-				std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Frame->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
-
-			// update content with transcoded data
-			Frame->SetCodecData(&pack);
-			// mark the DStar sync frames if the source isn't dstar
-			if (ECodecType::dstar!=Frame->GetCodecIn() && 0==Frame->GetPacketId()%21)
+			// make sure this is the correct packet
+			if ((pack.streamid == Packet->GetCodecPacket()->streamid) && (pack.sequence == Packet->GetCodecPacket()->sequence))
 			{
-				const uint8_t DStarSync[] = { 0x55, 0x2D, 0x16 };
-				Frame->SetDvData(DStarSync);
-			}
+				// update statistics
+				auto rt =Packet->m_rtTimer.time();	// the round-trip time
+				if (0 == m_RTCount)
+				{
+					m_RTMin = rt;
+					m_RTMax = rt;
+				}
+				else
+				{
+					if (rt < m_RTMin)
+						m_RTMin = rt;
+					else if (rt > m_RTMax)
+						m_RTMax = rt;
+				}
+				m_RTSum += rt;
+				m_RTCount++;
 
-			// and push it back to client
-			m_PacketStream->ReturnPacket(std::move(Packet));
+				// update content with transcoded data
+				Packet->SetCodecData(&pack);
+				// mark the DStar sync frames if the source isn't dstar
+				if (ECodecType::dstar!=Packet->GetCodecIn() && 0==Packet->GetPacketId()%21)
+				{
+					const uint8_t DStarSync[] = { 0x55, 0x2D, 0x16 };
+					Packet->SetDvData(DStarSync);
+				}
+
+				// and push it back to client
+				m_PacketStream->ReturnPacket(std::move(Packet));
+			}
+			else
+			{
+				// Not the correct packet! It will be ignored
+				// Report it
+				if (pack.streamid != Packet->GetCodecPacket()->streamid)
+					std::cerr << std::hex  << std::showbase << "StreamID mismatch: this voice frame=" << ntohs(Packet->GetCodecPacket()->streamid) << " returned transcoder packet=" << ntohs(pack.streamid) << std::dec << std::noshowbase << std::endl;
+				if (pack.sequence != Packet->GetCodecPacket()->sequence)
+					std::cerr << "Sequence mismatch: this voice frame=" << Packet->GetCodecPacket()->sequence << " returned transcoder packet=" << pack.sequence << std::endl;
+			}
 		}
 		else
 		{
+			// Likewise, this packet will be ignored
 			std::cout << "Transcoder packet received but CodecStream[" << m_CSModule << "] is closed: Module='" << pack.module << "' StreamID=" << std::hex << std::showbase << ntohs(pack.streamid) << std::endl;
 		}
 	}
 
-	// anything in our queue
-	auto Packet = m_Queue.Pop();
-	while (Packet)
+	// anything in our queue, then get it to the transcoder!
+	while (! m_Queue.IsEmpty())
 	{
-		// we need a CDvFramePacket pointer to access Frame stuff
-		auto Frame = (CDvFramePacket *)Packet.get();
+		auto &Frame = m_Queue.Front();
 
 		if (m_IsOpen)
 		{
@@ -185,13 +181,24 @@ void CCodecStream::Task(void)
 			Frame->SetTCParams(m_uiTotalPackets++);
 
 			// now send to transcoder
-			m_TCWriter.Send(Frame->GetCodecPacket());
+			int fd = g_TCServer.GetFD(Frame->GetCodecPacket()->module);
+			if (fd < 0)
+			{
+				// Crap! We've lost connection to the transcoder!
+				// we'll try to fix this on the next pass
+				return;
+			}
 
-			// push to our local queue where it can wait for the transcoder
-			m_LocalQueue.Push(std::move(Packet));
+			Frame->m_rtTimer.start();	// start the round-trip timer
+			if (g_TCServer.Send(Frame->GetCodecPacket()))
+			{
+				// ditto, we'll try to fix this on the next pass
+				return;
+			}
+			// the fd was good and then the send was successful, so...
+			// push the frame to our local queue where it can wait for the transcoder
+
+			m_LocalQueue.Push(std::move(m_Queue.Pop()));
 		}
-
-		// get the next packet, if there is one
-		Packet = m_Queue.Pop();
 	}
 }
