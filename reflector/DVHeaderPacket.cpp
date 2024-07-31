@@ -150,7 +150,17 @@ CDvHeaderPacket::CDvHeaderPacket(const CM17Packet &m17) : CPacket(m17)
 	m_uiCrc = 0;
 	m_csUR = CCallsign("CQCQCQ");
 	m_csMY = m17.GetSourceCallsign();
-	m_csRPT1 = m_csRPT2 = m17.GetDestCallsign();
+	auto str = m17.GetDestCallsign().GetCS();
+	if (0 == str.compare(0, 4, "URF-"))
+	{
+		// take care of WPSD M17Host file format
+		str.erase(str.begin()+3);
+		m_csRPT1 = m_csRPT2 = CCallsign(str);
+	}
+	else
+	{
+		m_csRPT1 = m_csRPT2 = m17.GetDestCallsign();
+	}
 	m_csRPT1.SetCSModule('G');
 }
 
