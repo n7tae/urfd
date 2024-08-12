@@ -37,7 +37,6 @@ public:
 	void Close(); // close all open sockets
 	void Close(char module); // close a specific module
 	void Close(int fd); // close a specific file descriptor
-	bool receive(int fd, STCPacket *packet);
 
 	// All bool functions, except Server Receive, return true if there was an error
 	bool Send(const STCPacket *packet);
@@ -46,6 +45,7 @@ public:
 	char GetMod(int fd) const;
 
 protected:
+	bool receive(int fd, STCPacket *packet);
 	std::vector<struct pollfd> m_Pfd;
 	std::string m_Modules;
 };
