@@ -17,7 +17,7 @@
 
 #include <cstdint>
 
-enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4, p25 = 5, usrp = 6 };
+enum class ECodecType : std::uint8_t { none = 0, dstar = 1, dmr = 2, c2_1600 = 3, c2_3200 = 4, p25 = 5, usrp = 6, ping = 0xff };
 
 using STCPacket = struct tcpacket_tag {
 	uint32_t sequence;

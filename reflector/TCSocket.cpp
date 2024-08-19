@@ -116,11 +116,18 @@ bool CTCServer::AnyAreClosed() const
 
 bool CTCSocket::Send(const STCPacket *packet)
 {
-	const auto pos = m_Modules.find(packet->module);
+	auto pos = m_Modules.find(packet->module);
 	if (pos == std::string::npos)
 	{
-		std::cerr << "Can't Send() this packet to unconfigured module '" << packet->module << "'" << std::endl;
-		return true;
+		if(packet->codec_in == ECodecType::ping)
+		{
+			pos = 0; // There is at least one transcoding module, use it to send the ping
+		}
+		else
+		{
+			std::cerr << "Can't Send() this packet to unconfigured module '" << packet->module << "'" << std::endl;
+			return true;
+		}
 	}
 	unsigned count = 0;
 	auto data = (const unsigned char *)packet;
@@ -214,7 +221,11 @@ bool CTCServer::Receive(char module, STCPacket *packet, int ms)
 
 	if (rv)
 		Close(pfds->fd);
-	return ! rv;
+		
+	if(packet->codec_in == ECodecType::ping)
+		return false; 
+	else 
+		return !rv;
 }
 
 bool CTCServer::Open(const std::string &address, const std::string &modules, uint16_t port)
@@ -434,8 +445,12 @@ bool CTCClient::Connect(char module)
 	return false;
 }
 
-void CTCClient::ReConnect()
+void CTCClient::ReConnect() // and sometimes ping
 {
+	static std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	auto now = std::chrono::system_clock::now();
+	std::chrono::duration<double> secs = now - start;
+	
 	for (char m : m_Modules)
 	{
 		if (0 > GetFD(m))
@@ -446,6 +461,14 @@ void CTCClient::ReConnect()
 				raise(SIGINT);
 			}
 		}
+	}
+	
+	if(secs.count() > 5.0)
+	{
+		STCPacket ping;
+		ping.codec_in = ECodecType::ping;
+		Send(&ping);
+		start = now;
 	}
 }
 
