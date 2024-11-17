@@ -95,7 +95,7 @@ void CDmrmmdvmProtocol::Task(void)
 	{
 		//Buffer.DebugDump(g_Reflector.m_DebugFile);
 		// crack the packet
-		if ( IsValidDvFramePacket(Buffer, Frames) )
+		if ( IsValidDvFramePacket(Ip, Buffer, Header, Frames) )
 		{
 			for ( int i = 0; i < 3; i++ )
 			{
@@ -652,7 +652,7 @@ bool CDmrmmdvmProtocol::IsValidDvHeaderPacket(const CBuffer &Buffer, std::unique
 	return false;
 }
 
-bool CDmrmmdvmProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::array<std::unique_ptr<CDvFramePacket>, 3> &frames)
+bool CDmrmmdvmProtocol::IsValidDvFramePacket(const CIp &Ip, const CBuffer &Buffer, std::unique_ptr<CDvHeaderPacket> &header, std::array<std::unique_ptr<CDvFramePacket>, 3> &frames)
 {
 	uint8_t tag[] = { 'D','M','R','D' };
 
@@ -667,11 +667,48 @@ bool CDmrmmdvmProtocol::IsValidDvFramePacket(const CBuffer &Buffer, std::array<s
 		{
 			// crack DMR header
 			//uint8_t uiSeqId = Buffer.data()[4];
-			//uint32_t uiSrcId = MAKEDWORD(MAKEWORD(Buffer.data()[7],Buffer.data()[6]),MAKEWORD(Buffer.data()[5],0));
-			//uint32_t uiDstId = MAKEDWORD(MAKEWORD(Buffer.data()[10],Buffer.data()[9]),MAKEWORD(Buffer.data()[8],0));
-			//uint32_t uiRptrId = MAKEDWORD(MAKEWORD(Buffer.data()[14],Buffer.data()[13]),MAKEWORD(Buffer.data()[12],Buffer.data()[11]));
+			uint32_t uiSrcId = MAKEDWORD(MAKEWORD(Buffer.data()[7],Buffer.data()[6]),MAKEWORD(Buffer.data()[5],0));
+			uint32_t uiDstId = MAKEDWORD(MAKEWORD(Buffer.data()[10],Buffer.data()[9]),MAKEWORD(Buffer.data()[8],0));
+			uint32_t uiRptrId = MAKEDWORD(MAKEWORD(Buffer.data()[14],Buffer.data()[13]),MAKEWORD(Buffer.data()[12],Buffer.data()[11]));
 			uint8_t uiVoiceSeq = (Buffer.data()[15] & 0x0F);
 			uint32_t uiStreamId = *(uint32_t *)(&Buffer.data()[16]);
+
+			auto stream = GetStream(uiStreamId, &Ip);
+			if ( !stream )
+			{
+				std::cerr << "Late entry DMR voice frame, creating DMR header" << std::endl;
+				uint8_t cmd;
+
+				// link/unlink command ?
+				if ( uiDstId == 4000 )
+				{
+					cmd = CMD_UNLINK;
+				}
+				else if ( DmrDstIdToModule(uiDstId) != ' ' )
+				{
+					cmd = CMD_LINK;
+				}
+				else
+				{
+					cmd = CMD_NONE;
+				}
+
+				// build DVHeader
+				CCallsign csMY = CCallsign("", uiSrcId);
+				CCallsign rpt1 = CCallsign("", uiRptrId);
+				rpt1.SetCSModule(MMDVM_MODULE_ID);
+				CCallsign rpt2 = m_ReflectorCallsign;
+				rpt2.SetCSModule(DmrDstIdToModule(uiDstId));
+
+				// and packet
+				header = std::unique_ptr<CDvHeaderPacket>(new CDvHeaderPacket(uiSrcId, CCallsign("CQCQCQ"), rpt1, rpt2, uiStreamId, 0, 0));
+
+				if ( g_GateKeeper.MayTransmit(header->GetMyCallsign(), Ip, EProtocol::dmrmmdvm) )
+				{
+					// handle it
+					OnDvHeaderPacketIn(header, Ip, cmd, uiCallType);
+				}
+			}
 
 			// crack payload
 			uint8_t dmrframe[33];
