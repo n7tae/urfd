@@ -514,7 +514,7 @@ bool CYsfProtocol::IsValidDvFramePacket(const CIp &Ip, const CYSFFICH &Fich, con
 		auto stream = GetStream(uiStreamId, &Ip);
 		if ( !stream )
 		{
-			std::cerr << "Late entry YSF voice frame, creating YSF header" << std::endl;
+			std::cerr << "Late entry YSF voice frame, creating YSF header on " << Ip << std::endl;
 			CCallsign csMY;
 			char sz[YSF_CALLSIGN_LENGTH+1];
 			memcpy(sz, &(Buffer.data()[14]), YSF_CALLSIGN_LENGTH);
